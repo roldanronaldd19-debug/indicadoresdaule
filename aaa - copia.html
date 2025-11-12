@@ -3,217 +3,187 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel de Indicadores - Daule ♻️</title>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Supabase -->
+  <title>Indicadores de Desechos - Daule</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- TailwindCSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Iconos -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      background: linear-gradient(120deg, #d1fae5, #a7f3d0, #99f6e4);
-      font-family: 'Poppins', sans-serif;
-      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f2f5f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
     }
-    .card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-      padding: 25px;
-      transition: all 0.3s ease;
+    header {
+      background: #008080;
+      color: #fff;
+      padding: 1.2rem 2rem;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    .card:hover {
-      transform: translateY(-4px);
+    main {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
-    .btn {
-      transition: all 0.3s ease;
+    h2 {
+      text-align: center;
+      color: #008080;
+      margin-bottom: 1rem;
     }
-    .btn:hover {
-      transform: scale(1.05);
+    .filtros {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
     }
-    select {
-      background-color: #f0fdf4;
-      border-radius: 10px;
-      padding: 8px;
-      border: 1px solid #a7f3d0;
-      outline: none;
+    select, button {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      background: #008080;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #006666;
+    }
+    canvas {
+      margin-top: 2rem;
+      width: 100%;
+      max-height: 500px;
     }
   </style>
 </head>
-<body class="flex flex-col items-center p-6">
-
-  <header class="text-center mb-8">
-    <h1 class="text-4xl font-bold text-gray-800 mb-2">♻️ Panel de Indicadores - Daule</h1>
-    <p class="text-gray-600">Análisis de caracterización de desechos según lugar, grupo y fecha</p>
+<body>
+  <header>
+    <h1>Indicadores de Caracterización de Desechos - Daule</h1>
   </header>
 
-  <!-- FILTROS -->
-  <div class="flex flex-wrap justify-center gap-4 mb-8 bg-white shadow-md rounded-2xl p-4 w-full max-w-5xl">
-    <div>
-      <label class="block text-sm text-gray-600 font-semibold">Lugar:</label>
-      <select id="filtroLugar" class="min-w-[150px]"></select>
+  <main>
+    <h2>Visualización de datos</h2>
+    <div class="filtros">
+      <select id="lugarSelect">
+        <option value="">Todos los lugares</option>
+      </select>
+      <select id="grupoSelect">
+        <option value="">Todos los grupos</option>
+      </select>
+      <select id="tipoGrafico">
+        <option value="bar">Barras</option>
+        <option value="pie">Pastel</option>
+        <option value="doughnut">Dona</option>
+        <option value="radar">Radar</option>
+        <option value="polarArea">Área polar</option>
+      </select>
+      <button onclick="cargarDatos()">Actualizar</button>
     </div>
-    <div>
-      <label class="block text-sm text-gray-600 font-semibold">Grupo:</label>
-      <select id="filtroGrupo" class="min-w-[150px]"></select>
-    </div>
-    <div>
-      <label class="block text-sm text-gray-600 font-semibold">Fecha:</label>
-      <select id="filtroFecha" class="min-w-[150px]"></select>
-    </div>
-  </div>
-
-  <!-- BOTONES DE GRÁFICOS -->
-  <div class="flex gap-3 flex-wrap justify-center mb-8">
-    <button id="pieBtn" class="btn px-4 py-2 rounded-lg bg-teal-500 text-white font-semibold shadow-md">Pastel</button>
-    <button id="barBtn" class="btn px-4 py-2 rounded-lg bg-white font-semibold shadow-md">Barras</button>
-    <button id="radarBtn" class="btn px-4 py-2 rounded-lg bg-white font-semibold shadow-md">Radar</button>
-    <button id="lineBtn" class="btn px-4 py-2 rounded-lg bg-white font-semibold shadow-md">Líneas</button>
-  </div>
-
-  <!-- GRÁFICO -->
-  <div class="card w-full max-w-6xl">
-    <canvas id="chartCanvas"></canvas>
-  </div>
-
-  <!-- PIE -->
-  <p class="mt-6 text-gray-700 text-center text-sm">
-    Fuente: Supabase - Caracterización de Desechos Daule
-  </p>
+    <canvas id="grafico"></canvas>
+  </main>
 
   <script>
-    // 🔗 Conexión a Supabase
-    const supabaseUrl = "https://dutapywxsiuxboqsjqvf.supabase.co";
-    const supabaseAnonKey =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1dGFweXd4c2l1eGJvcXNqcXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3MTk1MTUsImV4cCI6MjA2OTI5NTUxNX0.SBIDeV_WAWlyLs-ROD1ibXtqqY5bbbh0gouY8gRB9Y4";
-    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+    // --- Configuración Supabase ---
+    const SUPABASE_URL = "https://dutapywxsiuxboqsjqvf.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1dGFweXd4c2l1eGJvcXNqcXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3MTk1MTUsImV4cCI6MjA2OTI5NTUxNX0.SBIDeV_WAWlyLs-ROD1ibXtqqY5bbbh0gouY8gRB9Y4";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentChart = null;
-    let allData = [];
+    const ctx = document.getElementById("grafico");
+    let chart;
 
-    async function cargarFiltros() {
-      const { data, error } = await supabase
-        .from("caracterizacion_desechos_daule")
-        .select("lugar, grupo, fecha_registro");
-      if (error) {
-        console.error("Error al cargar filtros:", error);
-        return;
+    async function inicializarFiltros() {
+      const { data } = await supabase.from("caracterizacion_desechos_daule").select("lugar, grupo");
+      if (data) {
+        const lugares = [...new Set(data.map(d => d.lugar))];
+        const grupos = [...new Set(data.map(d => d.grupo))];
+
+        const lugarSelect = document.getElementById("lugarSelect");
+        const grupoSelect = document.getElementById("grupoSelect");
+
+        lugares.forEach(l => {
+          const opt = document.createElement("option");
+          opt.value = l;
+          opt.textContent = l;
+          lugarSelect.appendChild(opt);
+        });
+        grupos.forEach(g => {
+          const opt = document.createElement("option");
+          opt.value = g;
+          opt.textContent = g;
+          grupoSelect.appendChild(opt);
+        });
       }
-
-      allData = data;
-      const lugares = [...new Set(data.map((d) => d.lugar))];
-      const grupos = [...new Set(data.map((d) => d.grupo))];
-      const fechas = [...new Set(data.map((d) => new Date(d.fecha_registro).toISOString().split("T")[0]))];
-
-      llenarSelect("filtroLugar", lugares);
-      llenarSelect("filtroGrupo", grupos);
-      llenarSelect("filtroFecha", fechas);
     }
 
-    function llenarSelect(id, valores) {
-      const select = document.getElementById(id);
-      select.innerHTML = `<option value="">Todos</option>`;
-      valores.forEach((v) => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        select.appendChild(opt);
-      });
-    }
-
-    async function obtenerDatosFiltrados() {
-      const lugar = document.getElementById("filtroLugar").value;
-      const grupo = document.getElementById("filtroGrupo").value;
-      const fecha = document.getElementById("filtroFecha").value;
+    async function cargarDatos() {
+      const lugar = document.getElementById("lugarSelect").value;
+      const grupo = document.getElementById("grupoSelect").value;
+      const tipoGrafico = document.getElementById("tipoGrafico").value;
 
       let query = supabase.from("caracterizacion_desechos_daule").select("*");
       if (lugar) query = query.eq("lugar", lugar);
       if (grupo) query = query.eq("grupo", grupo);
-      if (fecha) query = query.gte("fecha_registro", fecha);
 
       const { data, error } = await query;
       if (error) {
-        console.error("Error al obtener datos:", error);
-        return [];
+        alert("Error al cargar datos");
+        console.error(error);
+        return;
       }
-      return data;
-    }
 
-    async function renderChart(tipo = "pie") {
-      const data = await obtenerDatosFiltrados();
-      const totales = {};
+      if (!data || data.length === 0) {
+        alert("No hay datos disponibles para el filtro seleccionado.");
+        return;
+      }
 
-      data.forEach((row) => {
-        for (const [key, value] of Object.entries(row)) {
-          if (key.endsWith("_kg")) {
-            totales[key] = (totales[key] || 0) + parseFloat(value || 0);
-          }
-        }
-      });
-
-      const etiquetas = Object.keys(totales).map((k) =>
-        k.replace(/_/g, " ").replace("kg", "").toUpperCase()
-      );
-      const valores = Object.values(totales);
-      const colores = etiquetas.map(
-        () => `hsl(${Math.random() * 360}, 70%, 55%)`
+      const categorias = Object.keys(data[0]).filter(k => k.endsWith("_kg"));
+      const totales = categorias.map(cat => 
+        data.reduce((sum, row) => sum + parseFloat(row[cat] || 0), 0)
       );
 
-      const ctx = document.getElementById("chartCanvas").getContext("2d");
-      if (currentChart) currentChart.destroy();
-
-      currentChart = new Chart(ctx, {
-        type: tipo,
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: tipoGrafico,
         data: {
-          labels: etiquetas,
-          datasets: [
-            {
-              label: "Total (kg)",
-              data: valores,
-              backgroundColor: colores,
-              borderColor: "#fff",
-              borderWidth: 1.5,
-            },
-          ],
+          labels: categorias.map(c => c.replace(/_/g, " ").replace("kg", "").trim()),
+          datasets: [{
+            label: "Cantidad (kg)",
+            data: totales,
+            backgroundColor: [
+              "rgba(0, 128, 128, 0.6)",
+              "rgba(255, 165, 0, 0.6)",
+              "rgba(75, 192, 192, 0.6)",
+              "rgba(153, 102, 255, 0.6)",
+              "rgba(255, 99, 132, 0.6)",
+              "rgba(54, 162, 235, 0.6)"
+            ],
+            borderColor: "rgba(0, 0, 0, 0.1)",
+            borderWidth: 1
+          }]
         },
         options: {
           responsive: true,
           plugins: {
-            legend: { position: "bottom" },
+            legend: { position: "top" },
             title: {
               display: true,
-              text: "Distribución de Desechos por Categoría (kg)",
-              font: { size: 18 },
-            },
-          },
-          scales:
-            tipo === "bar" || tipo === "line"
-              ? {
-                  y: { beginAtZero: true, ticks: { color: "#333" } },
-                  x: { ticks: { color: "#333" } },
-                }
-              : {},
-        },
+              text: `Distribución de desechos (${lugar || "Todos los lugares"} - ${grupo || "Todos los grupos"})`
+            }
+          }
+        }
       });
     }
 
-    // Eventos
-    document.getElementById("pieBtn").addEventListener("click", () => renderChart("pie"));
-    document.getElementById("barBtn").addEventListener("click", () => renderChart("bar"));
-    document.getElementById("radarBtn").addEventListener("click", () => renderChart("radar"));
-    document.getElementById("lineBtn").addEventListener("click", () => renderChart("line"));
-
-    ["filtroLugar", "filtroGrupo", "filtroFecha"].forEach((id) =>
-      document.getElementById(id).addEventListener("change", () => renderChart())
-    );
-
-    // Inicializar
-    cargarFiltros().then(() => renderChart());
+    inicializarFiltros();
+    cargarDatos();
   </script>
 </body>
 </html>
