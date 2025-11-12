@@ -1,189 +1,302 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Indicadores de Desechos - Daule</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Indicadores Desechos - Daule</title>
+
+  <!-- Supabase (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
-    body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #f2f5f9;
-      margin: 0;
-      padding: 0;
-      color: #333;
+    :root{
+      --green:#0f766e;
+      --bg1:#e6fff7;
+      --card:#ffffff;
+      --muted:#6b7280;
     }
-    header {
-      background: #008080;
-      color: #fff;
-      padding: 1.2rem 2rem;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    main {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: #fff;
-      border-radius: 1rem;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    }
-    h2 {
-      text-align: center;
-      color: #008080;
-      margin-bottom: 1rem;
-    }
-    .filtros {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
-    select, button {
-      padding: 0.6rem 1rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    button {
-      background: #008080;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #006666;
-    }
-    canvas {
-      margin-top: 2rem;
-      width: 100%;
-      max-height: 500px;
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial;background:linear-gradient(120deg,var(--bg1),#d9fdf6);color:#111}
+    header{background:var(--green);color:white;padding:20px;text-align:center}
+    main{max-width:1100px;margin:28px auto;padding:18px}
+    .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.06)}
+    .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+    select,input,button{padding:10px 12px;border-radius:8px;border:1px solid #e6eef0;background:white}
+    button{background:var(--green);color:white;border:none;cursor:pointer}
+    .chart-wrap{margin-top:12px}
+    footer{text-align:center;color:var(--muted);font-size:13px;margin:18px 0}
+    .kpis{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .kpi{flex:1;min-width:160px;background:linear-gradient(180deg,#fff,#f7fffb);padding:12px;border-radius:10px;border:1px solid #eef7f4}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid #eef2f6}
+    @media(max-width:720px){.controls{flex-direction:column;align-items:stretch}}
   </style>
 </head>
 <body>
   <header>
-    <h1>Indicadores de Caracterización de Desechos - Daule</h1>
+    <h1>♻️ Indicadores de Desechos — Daule</h1>
+    <div style="opacity:.9;font-size:14px;margin-top:6px">Filtros interactivos y gráficos dinámicos</div>
   </header>
 
   <main>
-    <h2>Visualización de datos</h2>
-    <div class="filtros">
-      <select id="lugarSelect">
-        <option value="">Todos los lugares</option>
-      </select>
-      <select id="grupoSelect">
-        <option value="">Todos los grupos</option>
-      </select>
-      <select id="tipoGrafico">
-        <option value="bar">Barras</option>
-        <option value="pie">Pastel</option>
-        <option value="doughnut">Dona</option>
-        <option value="radar">Radar</option>
-        <option value="polarArea">Área polar</option>
-      </select>
-      <button onclick="cargarDatos()">Actualizar</button>
+    <div class="card">
+      <!-- Controles -->
+      <div class="controls" id="controls">
+        <label>
+          Lugar<br/>
+          <select id="selectLugar"><option value="">Todos</option></select>
+        </label>
+
+        <label>
+          Grupo<br/>
+          <select id="selectGrupo"><option value="">Todos</option></select>
+        </label>
+
+        <label>
+          Fecha (desde)<br/>
+          <input id="fechaDesde" type="date" />
+        </label>
+
+        <label>
+          Fecha (hasta)<br/>
+          <input id="fechaHasta" type="date" />
+        </label>
+
+        <label>
+          Tipo gráfico<br/>
+          <select id="selectTipo">
+            <option value="bar">Barras</option>
+            <option value="pie">Pastel</option>
+            <option value="doughnut">Dona</option>
+            <option value="line">Línea (tendencia)</option>
+            <option value="radar">Radar</option>
+            <option value="polarArea">Polar</option>
+          </select>
+        </label>
+
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <button id="btnActualizar">Actualizar</button>
+          <button id="btnExport" style="background:#ffffff;color:var(--green);border:1px solid var(--green)">Exportar PNG</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpis" id="kpis">
+        <div class="kpi">
+          <div style="font-size:12px;color:var(--muted)">Total (kg)</div>
+          <div id="kpiTotal" style="font-size:20px;font-weight:700">0</div>
+        </div>
+        <div class="kpi">
+          <div style="font-size:12px;color:var(--muted)">Categorías con >0 kg</div>
+          <div id="kpiCount" style="font-size:20px;font-weight:700">0</div>
+        </div>
+        <div class="kpi">
+          <div style="font-size:12px;color:var(--muted)">Última fecha registrada</div>
+          <div id="kpiLast" style="font-size:20px;font-weight:700">-</div>
+        </div>
+      </div>
+
+      <!-- Gráfico -->
+      <div class="chart-wrap">
+        <canvas id="mainChart" height="300"></canvas>
+      </div>
+
+      <!-- Tabla resumen -->
+      <div style="margin-top:18px">
+        <h3 style="margin:0 0 8px 0;color:#0f766e">Tabla resumen (filtrada)</h3>
+        <div class="card" style="padding:12px">
+          <table id="tableResumen">
+            <thead><tr><th>Tipo de desecho</th><th style="text-align:right">Kg</th><th style="text-align:right">% del total</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <canvas id="grafico"></canvas>
+
+    <footer>Fuente: Supabase — tabla <code>caracterizacion_desechos_daule</code></footer>
   </main>
 
   <script>
-    // --- Configuración Supabase ---
+  (async function(){
+    // ---------- CONFIGURACIÓN ----------
     const SUPABASE_URL = "https://dutapywxsiuxboqsjqvf.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1dGFweXd4c2l1eGJvcXNqcXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3MTk1MTUsImV4cCI6MjA2OTI5NTUxNX0.SBIDeV_WAWlyLs-ROD1ibXtqqY5bbbh0gouY8gRB9Y4";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const ctx = document.getElementById("grafico");
+    // ---------- SELECTORES ----------
+    const selectLugar = document.getElementById('selectLugar');
+    const selectGrupo = document.getElementById('selectGrupo');
+    const selectTipo = document.getElementById('selectTipo');
+    const fechaDesde = document.getElementById('fechaDesde');
+    const fechaHasta = document.getElementById('fechaHasta');
+    const btnActualizar = document.getElementById('btnActualizar');
+    const btnExport = document.getElementById('btnExport');
+
+    // KPIs y tabla
+    const kpiTotal = document.getElementById('kpiTotal');
+    const kpiCount = document.getElementById('kpiCount');
+    const kpiLast = document.getElementById('kpiLast');
+    const tbody = document.querySelector('#tableResumen tbody');
+
+    // Chart.js instancia
+    const ctx = document.getElementById('mainChart').getContext('2d');
     let chart;
 
-    async function inicializarFiltros() {
-      const { data } = await supabase.from("caracterizacion_desechos_daule").select("lugar, grupo");
-      if (data) {
-        const lugares = [...new Set(data.map(d => d.lugar))];
-        const grupos = [...new Set(data.map(d => d.grupo))];
+    // Cargar lista de filtros (lugares, grupos, fechas) desde la BD
+    async function inicializarFiltros(){
+      const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, fecha_registro');
+      if(q.error){ console.error(q.error); return; }
+      const rows = q.data || [];
 
-        const lugarSelect = document.getElementById("lugarSelect");
-        const grupoSelect = document.getElementById("grupoSelect");
+      const lugares = [...new Set(rows.map(r=>r.lugar).filter(Boolean))].sort();
+      const grupos = [...new Set(rows.map(r=>r.grupo).filter(Boolean))].sort();
+      const fechas = [...new Set(rows.map(r=> r.fecha_registro ? new Date(r.fecha_registro).toISOString().slice(0,10) : null).filter(Boolean))].sort();
 
-        lugares.forEach(l => {
-          const opt = document.createElement("option");
-          opt.value = l;
-          opt.textContent = l;
-          lugarSelect.appendChild(opt);
-        });
-        grupos.forEach(g => {
-          const opt = document.createElement("option");
-          opt.value = g;
-          opt.textContent = g;
-          grupoSelect.appendChild(opt);
-        });
-      }
+      lugares.forEach(v=> selectLugar.appendChild(Object.assign(document.createElement('option'),{value:v,textContent:v})));
+      grupos.forEach(v=> selectGrupo.appendChild(Object.assign(document.createElement('option'),{value:v,textContent:v})));
+      fechas.forEach(v=> selectFechaOption(v));
+      // helper: put latest fecha as default 'hasta'
+      if(fechas.length) fechaHasta.value = fechas[fechas.length-1];
     }
 
-    async function cargarDatos() {
-      const lugar = document.getElementById("lugarSelect").value;
-      const grupo = document.getElementById("grupoSelect").value;
-      const tipoGrafico = document.getElementById("tipoGrafico").value;
+    function selectFechaOption(valor){
+      const el = document.getElementById('filtroFechaHidden');
+      // not used; keep for potential extension
+      const opt = document.createElement('option');
+      opt.value = valor; opt.textContent = valor;
+    }
 
-      let query = supabase.from("caracterizacion_desechos_daule").select("*");
-      if (lugar) query = query.eq("lugar", lugar);
-      if (grupo) query = query.eq("grupo", grupo);
-
-      const { data, error } = await query;
-      if (error) {
-        alert("Error al cargar datos");
-        console.error(error);
-        return;
+    // Construir query según filtros y traer datos
+    async function obtenerFiltrados(){
+      let q = supabase.from('caracterizacion_desechos_daule').select('*');
+      if(selectLugar.value) q = q.eq('lugar', selectLugar.value);
+      if(selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
+      // Manejo de fechas: si ambas definidas, filtramos por rango fecha_registro entre desde y hasta (inclusive)
+      if(fechaDesde.value && fechaHasta.value){
+        const desde = new Date(fechaDesde.value).toISOString();
+        // add 1 day to include the whole 'hasta' day
+        const hastaDate = new Date(fechaHasta.value);
+        hastaDate.setDate(hastaDate.getDate() + 1);
+        const hasta = hastaDate.toISOString();
+        q = q.gte('fecha_registro', desde).lt('fecha_registro', hasta);
+      } else if(fechaDesde.value){
+        q = q.gte('fecha_registro', new Date(fechaDesde.value).toISOString());
+      } else if(fechaHasta.value){
+        const hastaDate = new Date(fechaHasta.value);
+        hastaDate.setDate(hastaDate.getDate() + 1);
+        q = q.lt('fecha_registro', hastaDate.toISOString());
       }
+      const r = await q;
+      if(r.error){ console.error(r.error); return []; }
+      return r.data || [];
+    }
 
-      if (!data || data.length === 0) {
-        alert("No hay datos disponibles para el filtro seleccionado.");
-        return;
-      }
+    // Procesa filas y calcula totales por columna *_kg
+    function resumenPorCategorias(rows){
+      if(!rows || rows.length===0) return {labels:[],values:[],totalesObj:{},totalSum:0,lastDate:null};
+      const totales = {};
+      rows.forEach(row=>{
+        Object.entries(row).forEach(([k,v])=>{
+          if(k.endsWith('_kg')){
+            const val = parseFloat(v) || 0;
+            totales[k] = (totales[k] || 0) + val;
+          }
+        })
+      });
+      const labels = Object.keys(totales).sort(); // orden alfabético por clave
+      const values = labels.map(l=> totales[l]);
+      const totalSum = values.reduce((a,b)=>a+b,0);
+      // fecha última en el conjunto
+      const lastDate = rows.map(r=> r.fecha_registro ? new Date(r.fecha_registro) : null).filter(Boolean).sort((a,b)=>b-a)[0] || null;
+      return {labels,values,totalesObj:totales,totalSum,lastDate};
+    }
 
-      const categorias = Object.keys(data[0]).filter(k => k.endsWith("_kg"));
-      const totales = categorias.map(cat => 
-        data.reduce((sum, row) => sum + parseFloat(row[cat] || 0), 0)
-      );
-
-      if (chart) chart.destroy();
+    // Render chart con Chart.js
+    function renderChart(tipo, labels, values){
+      const friendlyLabels = labels.map(l=> l.replace(/_/g,' ').replace('kg','').toUpperCase());
+      // colores consistentes (HSL)
+      const colors = friendlyLabels.map((_,i)=> `hsl(${(i*47)%360} 70% 55%)`);
+      if(chart) chart.destroy();
       chart = new Chart(ctx, {
-        type: tipoGrafico,
+        type: tipo === 'line' ? 'line' : tipo,
         data: {
-          labels: categorias.map(c => c.replace(/_/g, " ").replace("kg", "").trim()),
+          labels: friendlyLabels,
           datasets: [{
-            label: "Cantidad (kg)",
-            data: totales,
-            backgroundColor: [
-              "rgba(0, 128, 128, 0.6)",
-              "rgba(255, 165, 0, 0.6)",
-              "rgba(75, 192, 192, 0.6)",
-              "rgba(153, 102, 255, 0.6)",
-              "rgba(255, 99, 132, 0.6)",
-              "rgba(54, 162, 235, 0.6)"
-            ],
-            borderColor: "rgba(0, 0, 0, 0.1)",
+            label: 'Kg',
+            data: values,
+            backgroundColor: colors,
+            borderColor: 'rgba(0,0,0,0.06)',
             borderWidth: 1
           }]
         },
         options: {
-          responsive: true,
-          plugins: {
-            legend: { position: "top" },
-            title: {
-              display: true,
-              text: `Distribución de desechos (${lugar || "Todos los lugares"} - ${grupo || "Todos los grupos"})`
-            }
-          }
+          responsive:true,
+          plugins:{
+            legend:{position:'bottom'},
+            title:{display:true,text:'Distribución de desechos (kg)'}
+          },
+          scales: tipo==='bar' || tipo==='line' ? { y:{beginAtZero:true}} : {}
         }
       });
     }
 
-    inicializarFiltros();
-    cargarDatos();
+    // Rellenar tabla resumen y KPIs
+    function renderResumen(labels, values, totalSum, lastDate){
+      tbody.innerHTML = '';
+      const friendlyLabels = labels.map(l=> l.replace(/_/g,' ').replace('kg','').toUpperCase());
+      friendlyLabels.forEach((lab,i)=>{
+        const v = values[i];
+        if(v <= 0) return;
+        const tr = document.createElement('tr');
+        const pct = totalSum>0 ? ((v/totalSum)*100).toFixed(2)+'%' : '0.00%';
+        tr.innerHTML = `<td>${lab}</td><td style="text-align:right">${v.toFixed(2)}</td><td style="text-align:right">${pct}</td>`;
+        tbody.appendChild(tr);
+      });
+      kpiTotal.textContent = totalSum.toFixed(2);
+      kpiCount.textContent = friendlyLabels.filter((_,i)=> values[i]>0).length;
+      kpiLast.textContent = lastDate ? new Date(lastDate).toLocaleString() : '-';
+    }
+
+    // Acción principal: obtener datos, procesar y renderizar
+    async function actualizar(){
+      btnActualizar.disabled = true;
+      btnActualizar.textContent = 'Cargando...';
+      try{
+        const rows = await obtenerFiltrados();
+        const {labels,values,totalesObj,totalSum,lastDate} = resumenPorCategorias(rows);
+        renderChart(selectTipo.value, labels, values);
+        renderResumen(labels, values, totalSum, lastDate);
+      }catch(err){
+        console.error(err);
+        alert('Error al actualizar. Revisa la consola.');
+      }finally{
+        btnActualizar.disabled = false;
+        btnActualizar.textContent = 'Actualizar';
+      }
+    }
+
+    // Exportar PNG
+    btnExport.addEventListener('click', ()=>{
+      if(!chart){ alert('Gráfico no disponible'); return; }
+      const a = document.createElement('a');
+      a.href = chart.toBase64Image();
+      a.download = 'grafico-indicadores.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+
+    // Listeners
+    btnActualizar.addEventListener('click', actualizar);
+
+    // Inicialización
+    await inicializarFiltros();
+    // Render inicial
+    await actualizar();
+
+  })();
   </script>
 </body>
 </html>
