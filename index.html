@@ -3,33 +3,36 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard Avanzado - Desechos Sólidos Daule</title>
+  <title>Análisis Académico de Desechos Sólidos - Cantón Daule</title>
 
-  <!-- Supabase JS v2 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-
-  <!-- Font Awesome para iconos -->
+  <!-- Supabase (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js con plugins avanzados -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <!-- Iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --primary: #0f766e;
       --primary-light: #14b8a6;
       --primary-dark: #0d5d57;
-      --secondary: #4f46e5;
-      --bg1: #f0fdfa;
-      --bg2: #e6fff7;
+      --secondary: #2d4cc8;
+      --accent: #7c3aed;
+      --bg1: #f8fafc;
+      --bg2: #f0fdfa;
       --card: #ffffff;
-      --muted: #6b7280;
+      --muted: #64748b;
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
       --border: #e2e8f0;
-      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
       --radius: 12px;
+      --header-height: 80px;
     }
     
     * {
@@ -49,9 +52,11 @@
     header {
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
-      padding: 24px 20px;
-      text-align: center;
+      padding: 0 20px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     
     .header-content {
@@ -60,6 +65,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      height: var(--header-height);
     }
     
     .logo {
@@ -69,19 +75,31 @@
     }
     
     .logo i {
-      font-size: 28px;
+      font-size: 32px;
+    }
+    
+    .logo-text {
+      display: flex;
+      flex-direction: column;
     }
     
     h1 {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
       margin: 0;
+      line-height: 1.2;
     }
     
     .subtitle {
       opacity: 0.9;
       font-size: 14px;
-      margin-top: 4px;
+      margin-top: 2px;
+      font-weight: 400;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 12px;
     }
     
     main {
@@ -97,6 +115,12 @@
       box-shadow: var(--shadow);
       margin-bottom: 24px;
       border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
     
     .card-title {
@@ -107,21 +131,20 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
     }
     
     .controls {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
-      flex-wrap: wrap;
-      align-items: flex-end;
       margin-bottom: 20px;
     }
     
     .control-group {
       display: flex;
       flex-direction: column;
-      flex: 1;
-      min-width: 150px;
     }
     
     .control-group label {
@@ -131,17 +154,23 @@
       color: var(--muted);
     }
     
-    select, input {
-      padding: 10px 12px;
+    select {
+      padding: 12px 14px;
       border-radius: 8px;
       border: 1px solid var(--border);
       background: white;
       font-family: inherit;
       font-size: 14px;
       transition: all 0.2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230f766e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      appearance: none;
+      padding-right: 40px;
     }
     
-    select:focus, input:focus {
+    select:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
@@ -158,8 +187,9 @@
       justify-content: center;
       gap: 6px;
       transition: all 0.2s;
-      padding: 10px 16px;
+      padding: 12px 18px;
       border-radius: 8px;
+      font-size: 14px;
     }
     
     button:hover {
@@ -180,23 +210,25 @@
     .action-buttons {
       display: flex;
       gap: 8px;
-      margin-left: auto;
+      margin-top: 16px;
     }
     
     .kpis {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
     
     .kpi {
       background: linear-gradient(135deg, #fff, #f7fffb);
-      padding: 16px;
+      padding: 20px;
       border-radius: 10px;
       border: 1px solid #eef7f4;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
     }
     
     .kpi:hover {
@@ -204,23 +236,24 @@
     }
     
     .kpi-title {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--muted);
       margin-bottom: 8px;
       display: flex;
       align-items: center;
       gap: 6px;
+      font-weight: 500;
     }
     
     .kpi-value {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 700;
       color: var(--primary);
+      margin-bottom: 4px;
     }
     
     .kpi-change {
       font-size: 12px;
-      margin-top: 4px;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -240,10 +273,6 @@
       margin-top: 20px;
     }
     
-    .chart-wrap {
-      margin-top: 12px;
-    }
-    
     .tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
@@ -251,7 +280,7 @@
     }
     
     .tab {
-      padding: 10px 16px;
+      padding: 12px 20px;
       cursor: pointer;
       font-weight: 500;
       color: var(--muted);
@@ -279,7 +308,7 @@
     }
     
     th, td {
-      padding: 12px;
+      padding: 14px 12px;
       text-align: left;
       border-bottom: 1px solid var(--border);
     }
@@ -288,6 +317,7 @@
       font-weight: 600;
       color: var(--muted);
       font-size: 14px;
+      background-color: #f8fafc;
     }
     
     tr:hover {
@@ -304,19 +334,25 @@
     .stat-card {
       background: white;
       border-radius: 10px;
-      padding: 16px;
+      padding: 20px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       border: 1px solid var(--border);
+      transition: transform 0.2s;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
     }
     
     .stat-card h4 {
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 8px;
+      font-weight: 500;
     }
     
     .stat-value {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
       color: var(--primary);
     }
@@ -335,19 +371,25 @@
     .stat-item {
       background: #f8fafc;
       border-radius: 8px;
-      padding: 12px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
+      transition: transform 0.2s;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-2px);
     }
     
     .stat-label {
       font-size: 12px;
       color: var(--muted);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      font-weight: 500;
     }
     
     .stat-number {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
       color: var(--primary);
     }
@@ -358,6 +400,7 @@
       font-size: 13px;
       margin: 24px 0;
       padding: 16px;
+      border-top: 1px solid var(--border);
     }
     
     .loading {
@@ -414,66 +457,55 @@
       background: var(--bg1);
     }
     
-    .progress-bar {
-      height: 6px;
-      background: #e2e8f0;
-      border-radius: 3px;
-      overflow: hidden;
-      margin-top: 0.5rem;
+    .data-source {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: right;
     }
     
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(to right, var(--primary), var(--primary-light));
-      border-radius: 3px;
-      transition: width 0.5s ease;
-    }
-    
-    .badge-max {
-      background: var(--success);
-      color: white;
-      padding: 2px 6px;
+    .methodology {
+      background: #f0f9ff;
+      border-left: 4px solid var(--primary);
+      padding: 16px;
+      margin: 16px 0;
       border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
     }
     
-    .badge-min {
-      background: var(--danger);
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
+    .methodology h4 {
+      color: var(--primary);
+      margin-bottom: 8px;
+      font-size: 14px;
     }
     
-    .insight-card {
-      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-      border: 1px solid #bbf7d0;
+    .methodology p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
     }
     
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
         gap: 12px;
+        height: auto;
+        padding: 16px 0;
       }
       
       .controls {
-        flex-direction: column;
-        align-items: stretch;
+        grid-template-columns: 1fr;
       }
       
       .action-buttons {
-        margin-left: 0;
         justify-content: center;
-      }
-      
-      .control-group {
-        min-width: 100%;
       }
       
       .chart-container {
         height: 400px;
+      }
+      
+      .kpis {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -483,14 +515,14 @@
     <div class="header-content">
       <div class="logo">
         <i class="fas fa-recycle"></i>
-        <div>
-          <h1>Dashboard Avanzado - Desechos Sólidos Daule</h1>
-          <div class="subtitle">Análisis profesional de indicadores de gestión de residuos</div>
+        <div class="logo-text">
+          <h1>Análisis Académico de Desechos Sólidos</h1>
+          <div class="subtitle">Cantón Daule - Investigación Científica</div>
         </div>
       </div>
       <div class="header-actions">
-        <button id="btnHelp" class="secondary" title="Ayuda">
-          <i class="fas fa-question-circle"></i>
+        <button id="btnHelp" class="secondary" title="Metodología">
+          <i class="fas fa-book"></i> Metodología
         </button>
       </div>
     </div>
@@ -501,62 +533,68 @@
     <div class="card">
       <div class="card-title">
         <i class="fas fa-sliders-h"></i>
-        Filtros de Análisis
+        Filtros de Investigación
       </div>
       
       <!-- Controles -->
       <div class="controls" id="controls">
         <div class="control-group">
-          <label for="selectLugar">Lugar</label>
+          <label for="selectLugar">Ubicación Geográfica</label>
           <select id="selectLugar">
-            <option value="">Todos los lugares</option>
+            <option value="">Todas las ubicaciones</option>
           </select>
         </div>
 
         <div class="control-group">
-          <label for="selectGrupo">Grupo</label>
+          <label for="selectGrupo">Grupo de Estudio</label>
           <select id="selectGrupo">
             <option value="">Todos los grupos</option>
           </select>
         </div>
 
         <div class="control-group">
-          <label for="selectTipo">Tipo de visualización</label>
-          <select id="selectTipo">
-            <option value="bar">Barras</option>
-            <option value="line">Línea (tendencia)</option>
-            <option value="pie">Pastel</option>
-            <option value="doughnut">Dona</option>
-            <option value="radar">Radar</option>
-            <option value="polarArea">Polar</option>
+          <label for="selectSubgrupo">Subgrupo</label>
+          <select id="selectSubgrupo">
+            <option value="">Todos los subgrupos</option>
           </select>
         </div>
 
-        <div class="action-buttons">
-          <div style="position: relative;">
-            <button id="btnExport" class="secondary">
-              <i class="fas fa-download"></i> Exportar
-            </button>
-            <div class="export-options" id="exportOptions">
-              <div class="export-option" data-type="png">
-                <i class="fas fa-image"></i> PNG
-              </div>
-              <div class="export-option" data-type="pdf">
-                <i class="fas fa-file-pdf"></i> PDF
-              </div>
-              <div class="export-option" data-type="csv">
-                <i class="fas fa-file-csv"></i> CSV
-              </div>
+        <div class="control-group">
+          <label for="selectCoordinador">Coordinador</label>
+          <select id="selectCoordinador">
+            <option value="">Todos los coordinadores</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <div style="position: relative;">
+          <button id="btnExport" class="secondary">
+            <i class="fas fa-download"></i> Exportar Datos
+          </button>
+          <div class="export-options" id="exportOptions">
+            <div class="export-option" data-type="png">
+              <i class="fas fa-image"></i> Gráfico (PNG)
+            </div>
+            <div class="export-option" data-type="csv">
+              <i class="fas fa-file-csv"></i> Datos (CSV)
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- KPIs -->
+    <!-- KPIs -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-chart-line"></i>
+        Indicadores Clave de Desempeño
+      </div>
+      
       <div class="kpis" id="kpis">
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-weight-hanging"></i> Total de desechos (kg)
+            <i class="fas fa-weight-hanging"></i> Total de Desechos (kg)
           </div>
           <div class="kpi-value" id="kpiTotal">0</div>
           <div class="kpi-change" id="kpiTotalChange">
@@ -565,7 +603,7 @@
         </div>
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-list"></i> Categorías con desechos
+            <i class="fas fa-list"></i> Categorías con Desechos
           </div>
           <div class="kpi-value" id="kpiCount">0</div>
           <div class="kpi-change" id="kpiCountChange">
@@ -574,7 +612,7 @@
         </div>
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-calendar-alt"></i> Última fecha registrada
+            <i class="fas fa-calendar-alt"></i> Última Medición
           </div>
           <div class="kpi-value" id="kpiLast">-</div>
           <div class="kpi-change" id="kpiLastChange">
@@ -583,7 +621,7 @@
         </div>
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-chart-line"></i> Promedio diario (kg)
+            <i class="fas fa-chart-bar"></i> Promedio Diario (kg)
           </div>
           <div class="kpi-value" id="kpiAvg">0</div>
           <div class="kpi-change" id="kpiAvgChange">
@@ -597,31 +635,46 @@
     <div class="card">
       <div class="card-title">
         <i class="fas fa-chart-bar"></i>
-        Visualización de Datos
+        Visualización de Datos de Investigación
       </div>
       
       <div class="tabs">
-        <div class="tab active" data-tab="main-chart">Gráfico Principal</div>
+        <div class="tab active" data-tab="main-chart">Distribución por Categoría</div>
         <div class="tab" data-tab="trend-analysis">Análisis de Tendencia</div>
-        <div class="tab" data-tab="comparison">Comparación</div>
+        <div class="tab" data-tab="comparison">Comparación por Grupos</div>
       </div>
       
       <div class="tab-content active" id="main-chart">
+        <div class="methodology">
+          <h4>Metodología de Medición</h4>
+          <p>Los datos presentados corresponden a mediciones sistemáticas de desechos sólidos categorizados según el protocolo de investigación. Cada categoría representa el peso total en kilogramos registrado durante el período de estudio.</p>
+        </div>
         <div class="chart-container">
           <canvas id="mainChart"></canvas>
         </div>
+        <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
       </div>
       
       <div class="tab-content" id="trend-analysis">
+        <div class="methodology">
+          <h4>Análisis Temporal</h4>
+          <p>Este gráfico muestra la evolución temporal de las diferentes categorías de desechos, permitiendo identificar patrones estacionales y tendencias en la generación de residuos.</p>
+        </div>
         <div class="chart-container">
           <canvas id="trendChart"></canvas>
         </div>
+        <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
       </div>
       
       <div class="tab-content" id="comparison">
+        <div class="methodology">
+          <h4>Análisis Comparativo</h4>
+          <p>Comparación de la composición de desechos entre diferentes grupos de estudio, permitiendo identificar variaciones en los patrones de generación de residuos.</p>
+        </div>
         <div class="chart-container">
           <canvas id="comparisonChart"></canvas>
         </div>
+        <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
       </div>
     </div>
 
@@ -629,48 +682,48 @@
     <div class="card">
       <div class="card-title">
         <i class="fas fa-chart-pie"></i>
-        Estadísticas Básicas Completas
+        Estadísticas Descriptivas
       </div>
       
       <div class="stats-section">
-        <h3 style="color: var(--primary); margin-bottom: 16px;">Resumen General</h3>
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Resumen del Conjunto de Datos</h3>
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-label">Total de registros</div>
+            <div class="stat-label">Total de Registros</div>
             <div class="stat-number" id="statTotalRecords">0</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Período de datos</div>
+            <div class="stat-label">Período de Datos</div>
             <div class="stat-number" id="statDataPeriod">-</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Lugares únicos</div>
+            <div class="stat-label">Ubicaciones Únicas</div>
             <div class="stat-number" id="statUniquePlaces">0</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Grupos únicos</div>
+            <div class="stat-label">Grupos de Estudio</div>
             <div class="stat-number" id="statUniqueGroups">0</div>
           </div>
         </div>
       </div>
       
       <div class="stats-section">
-        <h3 style="color: var(--primary); margin-bottom: 16px;">Estadísticas de Desechos</h3>
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Distribución de Desechos</h3>
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-label">Categoría con mayor cantidad</div>
+            <div class="stat-label">Categoría con Mayor Cantidad</div>
             <div class="stat-number" id="statMaxCategory">-</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Categoría con menor cantidad</div>
+            <div class="stat-label">Categoría con Menor Cantidad</div>
             <div class="stat-number" id="statMinCategory">-</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Promedio por categoría</div>
+            <div class="stat-label">Promedio por Categoría (kg)</div>
             <div class="stat-number" id="statAvgPerCategory">0</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Mediana por categoría</div>
+            <div class="stat-label">Mediana por Categoría (kg)</div>
             <div class="stat-number" id="statMedianPerCategory">0</div>
           </div>
         </div>
@@ -725,21 +778,22 @@
         <table id="tableResumen">
           <thead>
             <tr>
-              <th>Tipo de desecho</th>
-              <th style="text-align:right">Kg</th>
-              <th style="text-align:right">% del total</th>
+              <th>Tipo de Desecho</th>
+              <th style="text-align:right">Peso (kg)</th>
+              <th style="text-align:right">% del Total</th>
               <th style="text-align:right">Tendencia</th>
-              <th style="text-align:right">Proyección</th>
+              <th style="text-align:right">Proyección (kg)</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
+      <div class="data-source">Nota: Las tendencias y proyecciones se calculan comparando con períodos anteriores</div>
     </div>
 
     <footer>
-      <p>Fuente: Supabase — tabla <code>caracterizacion_desechos_daule</code></p>
-      <p style="margin-top: 8px;">Sistema desarrollado para el análisis avanzado de indicadores de desechos - Municipio de Daule</p>
+      <p>Investigación sobre Gestión de Desechos Sólidos - Cantón Daule</p>
+      <p style="margin-top: 8px;">Fuente: Base de datos <code>caracterizacion_desechos_daule</code> | Última actualización: <span id="lastUpdate">-</span></p>
     </footer>
   </main>
 
@@ -753,9 +807,11 @@
     // ---------- SELECTORES ----------
     const selectLugar = document.getElementById('selectLugar');
     const selectGrupo = document.getElementById('selectGrupo');
-    const selectTipo = document.getElementById('selectTipo');
+    const selectSubgrupo = document.getElementById('selectSubgrupo');
+    const selectCoordinador = document.getElementById('selectCoordinador');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
+    const lastUpdate = document.getElementById('lastUpdate');
 
     // KPIs y elementos de estadísticas
     const kpiTotal = document.getElementById('kpiTotal');
@@ -803,6 +859,13 @@
       await cargarTodosLosDatos();
       await actualizar();
       setupEventListeners();
+      
+      // Establecer fecha de última actualización
+      lastUpdate.textContent = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
     }
 
     // Configurar event listeners
@@ -810,7 +873,8 @@
       // Actualización automática al cambiar filtros
       selectLugar.addEventListener('change', actualizar);
       selectGrupo.addEventListener('change', actualizar);
-      selectTipo.addEventListener('change', actualizar);
+      selectSubgrupo.addEventListener('change', actualizar);
+      selectCoordinador.addEventListener('change', actualizar);
       
       // Toggle export options
       btnExport.addEventListener('click', (e) => {
@@ -854,9 +918,9 @@
         });
       });
       
-      // Ayuda
+      // Ayuda/Metodología
       document.getElementById('btnHelp').addEventListener('click', () => {
-        alert('Este panel avanzado le permite analizar los datos de desechos del Municipio de Daule. Los filtros se aplican automáticamente al cambiar cualquier opción. Explore las diferentes visualizaciones y estadísticas disponibles.');
+        alert('Este panel de investigación académica permite analizar datos de desechos sólidos del Cantón Daule. Los filtros se aplican automáticamente. Utilice las diferentes pestañas para explorar diversas visualizaciones y análisis estadísticos.');
       });
     }
 
@@ -870,9 +934,9 @@
       allData = q.data || [];
     }
 
-    // Cargar lista de filtros (lugares, grupos, fechas) desde la BD
+    // Cargar lista de filtros desde la BD
     async function inicializarFiltros() {
-      const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, fecha_registro');
+      const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, subgrupo, coordinador');
       if (q.error) {
         console.error(q.error);
         return;
@@ -881,9 +945,13 @@
 
       const lugares = [...new Set(rows.map(r => r.lugar).filter(Boolean))].sort();
       const grupos = [...new Set(rows.map(r => r.grupo).filter(Boolean))].sort();
+      const subgrupos = [...new Set(rows.map(r => r.subgrupo).filter(Boolean))].sort();
+      const coordinadores = [...new Set(rows.map(r => r.coordinador).filter(Boolean))].sort();
 
       lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+      subgrupos.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+      coordinadores.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
     }
 
     // Construir query según filtros y traer datos
@@ -891,6 +959,8 @@
       let q = supabase.from('caracterizacion_desechos_daule').select('*');
       if (selectLugar.value) q = q.eq('lugar', selectLugar.value);
       if (selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
+      if (selectSubgrupo.value) q = q.eq('subgrupo', selectSubgrupo.value);
+      if (selectCoordinador.value) q = q.eq('coordinador', selectCoordinador.value);
       
       const r = await q;
       if (r.error) {
@@ -907,6 +977,8 @@
       return allData.filter(item => {
         if (selectLugar.value && item.lugar !== selectLugar.value) return false;
         if (selectGrupo.value && item.grupo !== selectGrupo.value) return false;
+        if (selectSubgrupo.value && item.subgrupo !== selectSubgrupo.value) return false;
+        if (selectCoordinador.value && item.coordinador !== selectCoordinador.value) return false;
         return true;
       }).slice(0, Math.floor(allData.length / 2)); // Tomamos la primera mitad como período anterior
     }
@@ -1030,26 +1102,54 @@
     }
 
     // Renderizar gráfico principal
-    function renderChart(tipo, labels, values) {
-      const friendlyLabels = labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+    function renderChart(labels, values) {
+      const friendlyLabels = labels.map(l => {
+        // Mejorar nombres de categorías basados en el documento
+        const nameMap = {
+          'de_jardin_kg': 'Desechos de Jardín',
+          'de_cocina_kg': 'Desechos de Cocina',
+          'aceite_comestible_kg': 'Aceite Comestible',
+          'papel_blanco_kg': 'Papel Blanco',
+          'papel_periodico_kg': 'Papel Periódico',
+          'papel_archivo_kg': 'Papel de Archivo',
+          'carton_kg': 'Cartón',
+          'tetra_brik_kg': 'Tetra Brik',
+          'pet_kg': 'PET',
+          'plastico_mixto_kg': 'Plástico Mixto',
+          'bot_aceite_kg': 'Botellas de Aceite',
+          'bolsas_kg': 'Bolsas Plásticas',
+          'vidrio_blanco_kg': 'Vidrio Blanco',
+          'vidrio_verde_kg': 'Vidrio Verde',
+          'vidrio_otros_kg': 'Otros Vidrios',
+          'latas_ferrosas_kg': 'Latas Ferrosas',
+          'aluminio_kg': 'Aluminio',
+          'acero_kg': 'Acero',
+          'metal_otros_kg': 'Otros Metales',
+          'ropa_kg': 'Ropa y Textiles',
+          'zapatos_neumaticos_kg': 'Zapatos y Neumáticos',
+          'papel_higienico_kg': 'Papel Higiénico',
+          'maderas_kg': 'Maderas',
+          'electronicos_kg': 'Electrónicos'
+        };
+        
+        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
+      });
       
       // Colores consistentes (HSL)
-      const colors = friendlyLabels.map((_, i) => `hsl(${(i * 47) % 360} 70% 55%)`);
+      const colors = friendlyLabels.map((_, i) => `hsl(${(i * 360 / friendlyLabels.length) % 360} 70% 55%)`);
       
       if (mainChart) mainChart.destroy();
       
       mainChart = new Chart(mainCtx, {
-        type: tipo === 'line' ? 'line' : tipo,
+        type: 'bar',
         data: {
           labels: friendlyLabels,
           datasets: [{
-            label: 'Kg',
+            label: 'Peso (kg)',
             data: values,
             backgroundColor: colors,
-            borderColor: tipo === 'line' ? colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')) : 'rgba(0,0,0,0.06)',
-            borderWidth: tipo === 'line' ? 3 : 1,
-            fill: tipo === 'line',
-            tension: tipo === 'line' ? 0.4 : 0
+            borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
+            borderWidth: 1
           }]
         },
         options: {
@@ -1057,18 +1157,11 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom',
-              labels: {
-                usePointStyle: true,
-                padding: 20,
-                font: {
-                  size: 14
-                }
-              }
+              display: false
             },
             title: {
               display: true,
-              text: 'Distribución de desechos (kg)',
+              text: 'Distribución de Desechos Sólidos por Categoría',
               font: {
                 size: 18,
                 weight: 'bold'
@@ -1086,12 +1179,12 @@
               }
             }
           },
-          scales: (tipo === 'bar' || tipo === 'line') ? {
+          scales: {
             y: {
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Kilogramos (kg)',
+                text: 'Peso (kg)',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1106,7 +1199,7 @@
             x: {
               title: {
                 display: true,
-                text: 'Tipos de desechos',
+                text: 'Categorías de Desechos',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1114,11 +1207,13 @@
               },
               ticks: {
                 font: {
-                  size: 12
-                }
+                  size: 11
+                },
+                maxRotation: 45,
+                minRotation: 45
               }
             }
-          } : {}
+          }
         }
       });
     }
@@ -1133,32 +1228,19 @@
         if (!row.fecha_registro) return;
         
         const fecha = new Date(row.fecha_registro).toISOString().slice(0, 10);
-        if (!datosPorFecha[fecha]) datosPorFecha[fecha] = {};
+        if (!datosPorFecha[fecha]) datosPorFecha[fecha] = { total: 0 };
         
         Object.entries(row).forEach(([k, v]) => {
           if (k.endsWith('_kg')) {
             const val = parseFloat(v) || 0;
-            datosPorFecha[fecha][k] = (datosPorFecha[fecha][k] || 0) + val;
+            datosPorFecha[fecha].total += val;
           }
         });
       });
       
       // Preparar datos para el gráfico
       const fechas = Object.keys(datosPorFecha).sort();
-      const categorias = Object.keys(datosPorFecha[fechas[0]] || {}).sort();
-      
-      const datasets = categorias.map((cat, i) => {
-        const color = `hsl(${(i * 47) % 360} 70% 55%)`;
-        return {
-          label: cat.replace(/_/g, ' ').replace('kg', '').toUpperCase(),
-          data: fechas.map(fecha => datosPorFecha[fecha][cat] || 0),
-          borderColor: color,
-          backgroundColor: color.replace('hsl', 'hsla').replace(')', ', 0.1)'),
-          tension: 0.4,
-          fill: true,
-          borderWidth: 2
-        };
-      });
+      const totales = fechas.map(fecha => datosPorFecha[fecha].total);
       
       if (trendChart) trendChart.destroy();
       
@@ -1166,14 +1248,22 @@
         type: 'line',
         data: {
           labels: fechas.map(f => new Date(f).toLocaleDateString()),
-          datasets: datasets
+          datasets: [{
+            label: 'Total de Desechos (kg)',
+            data: totales,
+            borderColor: 'rgba(15, 118, 110, 1)',
+            backgroundColor: 'rgba(15, 118, 110, 0.1)',
+            tension: 0.4,
+            fill: true,
+            borderWidth: 3
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom',
+              position: 'top',
               labels: {
                 font: {
                   size: 12
@@ -1182,7 +1272,7 @@
             },
             title: {
               display: true,
-              text: 'Tendencia de desechos por categoría a lo largo del tiempo',
+              text: 'Evolución Temporal del Total de Desechos',
               font: {
                 size: 16,
                 weight: 'bold'
@@ -1195,7 +1285,7 @@
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Kilogramos (kg)',
+                text: 'Peso Total (kg)',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1205,7 +1295,7 @@
             x: {
               title: {
                 display: true,
-                text: 'Fecha',
+                text: 'Fecha de Medición',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1219,17 +1309,60 @@
 
     // Renderizar comparación
     function renderComparison() {
-      if (!currentData.length || !previousPeriodData.length) return;
+      if (!currentData.length) return;
       
-      const currentSummary = resumenPorCategorias(currentData);
-      const previousSummary = resumenPorCategorias(previousPeriodData);
+      // Agrupar datos por grupo
+      const datosPorGrupo = {};
+      currentData.forEach(row => {
+        const grupo = row.grupo || 'Sin Grupo';
+        if (!datosPorGrupo[grupo]) datosPorGrupo[grupo] = {};
+        
+        Object.entries(row).forEach(([k, v]) => {
+          if (k.endsWith('_kg')) {
+            const val = parseFloat(v) || 0;
+            datosPorGrupo[grupo][k] = (datosPorGrupo[grupo][k] || 0) + val;
+          }
+        });
+      });
       
-      // Combinar categorías de ambos períodos
-      const allLabels = [...new Set([...currentSummary.labels, ...previousSummary.labels])].sort();
-      const currentValues = allLabels.map(label => currentSummary.totalesObj[label] || 0);
-      const previousValues = allLabels.map(label => previousSummary.totalesObj[label] || 0);
+      // Obtener categorías únicas
+      const categorias = [...new Set(
+        Object.values(datosPorGrupo).flatMap(obj => Object.keys(obj))
+      )].sort();
       
-      const friendlyLabels = allLabels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const grupos = Object.keys(datosPorGrupo);
+      
+      // Colores para los grupos
+      const coloresGrupos = grupos.map((_, i) => 
+        `hsl(${(i * 360 / grupos.length) % 360} 70% 55%)`
+      );
+      
+      const datasets = grupos.map((grupo, i) => {
+        return {
+          label: grupo,
+          data: categorias.map(cat => datosPorGrupo[grupo][cat] || 0),
+          backgroundColor: coloresGrupos[i],
+          borderColor: coloresGrupos[i].replace('hsl', 'hsla').replace(')', ', 0.8)'),
+          borderWidth: 1
+        };
+      });
+      
+      const friendlyLabels = categorias.map(l => {
+        const nameMap = {
+          'de_jardin_kg': 'Jardín',
+          'de_cocina_kg': 'Cocina',
+          'aceite_comestible_kg': 'Aceite',
+          'papel_blanco_kg': 'Papel Blanco',
+          'papel_periodico_kg': 'Periódico',
+          'papel_archivo_kg': 'Papel Archivo',
+          'carton_kg': 'Cartón',
+          'tetra_brik_kg': 'Tetra Brik',
+          'pet_kg': 'PET',
+          'plastico_mixto_kg': 'Plástico Mixto'
+        };
+        
+        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
+      });
       
       if (comparisonChart) comparisonChart.destroy();
       
@@ -1237,29 +1370,14 @@
         type: 'bar',
         data: {
           labels: friendlyLabels,
-          datasets: [
-            {
-              label: 'Período actual',
-              data: currentValues,
-              backgroundColor: 'rgba(15, 118, 110, 0.7)',
-              borderColor: 'rgba(15, 118, 110, 1)',
-              borderWidth: 1
-            },
-            {
-              label: 'Período anterior',
-              data: previousValues,
-              backgroundColor: 'rgba(107, 114, 128, 0.7)',
-              borderColor: 'rgba(107, 114, 128, 1)',
-              borderWidth: 1
-            }
-          ]
+          datasets: datasets
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom',
+              position: 'top',
               labels: {
                 font: {
                   size: 12
@@ -1268,7 +1386,7 @@
             },
             title: {
               display: true,
-              text: 'Comparación con período anterior',
+              text: 'Comparación de Desechos por Grupo de Estudio',
               font: {
                 size: 16,
                 weight: 'bold'
@@ -1281,7 +1399,17 @@
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Kilogramos (kg)',
+                text: 'Peso (kg)',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Categorías de Desechos',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1297,7 +1425,36 @@
     function renderResumen(currentSummary, previousSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
-      const friendlyLabels = currentSummary.labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const friendlyLabels = currentSummary.labels.map(l => {
+        const nameMap = {
+          'de_jardin_kg': 'Desechos de Jardín',
+          'de_cocina_kg': 'Desechos de Cocina',
+          'aceite_comestible_kg': 'Aceite Comestible',
+          'papel_blanco_kg': 'Papel Blanco',
+          'papel_periodico_kg': 'Papel Periódico',
+          'papel_archivo_kg': 'Papel de Archivo',
+          'carton_kg': 'Cartón',
+          'tetra_brik_kg': 'Tetra Brik',
+          'pet_kg': 'PET',
+          'plastico_mixto_kg': 'Plástico Mixto',
+          'bot_aceite_kg': 'Botellas de Aceite',
+          'bolsas_kg': 'Bolsas Plásticas',
+          'vidrio_blanco_kg': 'Vidrio Blanco',
+          'vidrio_verde_kg': 'Vidrio Verde',
+          'vidrio_otros_kg': 'Otros Vidrios',
+          'latas_ferrosas_kg': 'Latas Ferrosas',
+          'aluminio_kg': 'Aluminio',
+          'acero_kg': 'Acero',
+          'metal_otros_kg': 'Otros Metales',
+          'ropa_kg': 'Ropa y Textiles',
+          'zapatos_neumaticos_kg': 'Zapatos y Neumáticos',
+          'papel_higienico_kg': 'Papel Higiénico',
+          'maderas_kg': 'Maderas',
+          'electronicos_kg': 'Electrónicos'
+        };
+        
+        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
+      });
       
       // Actualizar estadísticas básicas
       statTotalRecords.textContent = basicStats.totalRecords;
@@ -1341,7 +1498,7 @@
           
           // Proyección simple (asumiendo misma tendencia)
           const proyeccionValor = v * (1 + (cambio / 100));
-          proyeccion = proyeccionValor.toFixed(2) + ' kg';
+          proyeccion = proyeccionValor.toFixed(2);
         }
         
         const tr = document.createElement('tr');
@@ -1362,7 +1519,7 @@
       kpiAvg.textContent = currentSummary.avgPerDay.toFixed(2);
       
       // Calcular cambios porcentuales para KPIs
-      if (previousSummary) {
+      if (previousSummary && previousSummary.totalSum > 0) {
         const totalChange = ((currentSummary.totalSum - previousSummary.totalSum) / previousSummary.totalSum) * 100;
         const countChange = ((kpiCount.textContent - previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) / previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) * 100;
         const avgChange = ((currentSummary.avgPerDay - previousSummary.avgPerDay) / previousSummary.avgPerDay) * 100;
@@ -1380,6 +1537,10 @@
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           kpiLastChange.innerHTML = `<span>Días desde último registro: ${diffDays}</span>`;
         }
+      } else {
+        kpiTotalChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+        kpiCountChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+        kpiAvgChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
       }
     }
     
@@ -1407,22 +1568,46 @@
           }
           const a = document.createElement('a');
           a.href = mainChart.toBase64Image();
-          a.download = 'grafico-indicadores-daule.png';
+          a.download = 'grafico-desechos-daule.png';
           document.body.appendChild(a);
           a.click();
           a.remove();
           break;
           
-        case 'pdf':
-          // Implementación básica de PDF (requeriría más desarrollo)
-          alert('Funcionalidad de exportación PDF en desarrollo');
-          break;
-          
         case 'csv':
           const currentSummary = resumenPorCategorias(currentData);
-          const friendlyLabels = currentSummary.labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+          const friendlyLabels = currentSummary.labels.map(l => {
+            const nameMap = {
+              'de_jardin_kg': 'Desechos de Jardín',
+              'de_cocina_kg': 'Desechos de Cocina',
+              'aceite_comestible_kg': 'Aceite Comestible',
+              'papel_blanco_kg': 'Papel Blanco',
+              'papel_periodico_kg': 'Papel Periódico',
+              'papel_archivo_kg': 'Papel de Archivo',
+              'carton_kg': 'Cartón',
+              'tetra_brik_kg': 'Tetra Brik',
+              'pet_kg': 'PET',
+              'plastico_mixto_kg': 'Plástico Mixto',
+              'bot_aceite_kg': 'Botellas de Aceite',
+              'bolsas_kg': 'Bolsas Plásticas',
+              'vidrio_blanco_kg': 'Vidrio Blanco',
+              'vidrio_verde_kg': 'Vidrio Verde',
+              'vidrio_otros_kg': 'Otros Vidrios',
+              'latas_ferrosas_kg': 'Latas Ferrosas',
+              'aluminio_kg': 'Aluminio',
+              'acero_kg': 'Acero',
+              'metal_otros_kg': 'Otros Metales',
+              'ropa_kg': 'Ropa y Textiles',
+              'zapatos_neumaticos_kg': 'Zapatos y Neumáticos',
+              'papel_higienico_kg': 'Papel Higiénico',
+              'maderas_kg': 'Maderas',
+              'electronicos_kg': 'Electrónicos'
+            };
+            
+            return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
+          });
           
-          let csvContent = "Tipo de desecho,Kg,% del total\n";
+          let csvContent = "Categoría de Desecho,Peso (kg),Porcentaje del Total\n";
           friendlyLabels.forEach((lab, i) => {
             const v = currentSummary.values[i];
             if (v <= 0) return;
@@ -1459,7 +1644,7 @@
         const advancedStats = calcularEstadisticasAvanzadas(currentSummary.values, currentSummary.totalSum);
         
         // Renderizar
-        renderChart(selectTipo.value, currentSummary.labels, currentSummary.values);
+        renderChart(currentSummary.labels, currentSummary.values);
         renderResumen(currentSummary, previousSummary, basicStats, advancedStats);
         
         // Si la pestaña de análisis de tendencia está activa, renderizarla
