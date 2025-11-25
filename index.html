@@ -464,26 +464,6 @@
       text-align: right;
     }
     
-    .methodology {
-      background: #f0f9ff;
-      border-left: 4px solid var(--primary);
-      padding: 16px;
-      margin: 16px 0;
-      border-radius: 4px;
-    }
-    
-    .methodology h4 {
-      color: var(--primary);
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-    
-    .methodology p {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    
     .chart-type-selector {
       display: flex;
       flex-wrap: wrap;
@@ -682,11 +662,6 @@
       </div>
       
       <div class="tab-content active" id="main-chart">
-        <div class="methodology">
-          <h4>Metodología de Medición</h4>
-          <p>Los datos presentados corresponden a mediciones sistemáticas de desechos sólidos categorizados según el protocolo de investigación. Cada categoría representa el peso total en kilogramos registrado durante el período de estudio.</p>
-        </div>
-        
         <!-- Selector de tipo de gráfico -->
         <div class="chart-type-selector">
           <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
@@ -695,9 +670,6 @@
           </div>
           <div class="chart-type-btn" data-type="pie">
             <i class="fas fa-chart-pie"></i> Circular
-          </div>
-          <div class="chart-type-btn" data-type="doughnut">
-            <i class="fas fa-chart-pie"></i> Dona
           </div>
           <div class="chart-type-btn" data-type="line">
             <i class="fas fa-chart-line"></i> Líneas
@@ -708,6 +680,9 @@
           <div class="chart-type-btn" data-type="polarArea">
             <i class="fas fa-sun"></i> Área Polar
           </div>
+          <div class="chart-type-btn" data-type="scatter">
+            <i class="fas fa-braille"></i> Dispersión
+          </div>
         </div>
         
         <div class="chart-container">
@@ -717,10 +692,6 @@
       </div>
       
       <div class="tab-content" id="trend-analysis">
-        <div class="methodology">
-          <h4>Análisis Temporal</h4>
-          <p>Este gráfico muestra la evolución temporal de las diferentes categorías de desechos, permitiendo identificar patrones estacionales y tendencias en la generación de residuos.</p>
-        </div>
         <div class="chart-container">
           <canvas id="trendChart"></canvas>
         </div>
@@ -728,10 +699,6 @@
       </div>
       
       <div class="tab-content" id="comparison">
-        <div class="methodology">
-          <h4>Análisis Comparativo</h4>
-          <p>Comparación de la composición de desechos entre diferentes grupos de estudio, permitiendo identificar variaciones en los patrones de generación de residuos.</p>
-        </div>
         <div class="chart-container">
           <canvas id="comparisonChart"></canvas>
         </div>
@@ -842,14 +809,12 @@
               <th>Tipo de Desecho</th>
               <th style="text-align:right">Peso (kg)</th>
               <th style="text-align:right">% del Total</th>
-              <th style="text-align:right">Tendencia</th>
-              <th style="text-align:right">Proyección (kg)</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
-      <div class="data-source">Nota: Las tendencias y proyecciones se calculan comparando con períodos anteriores</div>
+      <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
     </div>
 
     <footer>
@@ -1236,10 +1201,25 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: chartType === 'pie' || chartType === 'doughnut' || chartType === 'polarArea' ? 'right' : 'top',
+              position: chartType === 'pie' || chartType === 'polarArea' ? 'right' : 'top',
               labels: {
                 font: {
                   size: 12
+                },
+                // Para gráficos circulares, limitar el texto de la leyenda
+                generateLabels: function(chart) {
+                  if (chartType === 'pie' || chartType === 'polarArea') {
+                    const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                    const labels = original.call(this, chart);
+                    // Acortar etiquetas largas
+                    return labels.map(label => {
+                      if (label.text.length > 20) {
+                        label.text = label.text.substring(0, 17) + '...';
+                      }
+                      return label;
+                    });
+                  }
+                  return Chart.defaults.plugins.legend.labels.generateLabels.call(this, chart);
                 }
               }
             },
@@ -1312,9 +1292,24 @@
         },
         pie: {
           // Configuración específica para gráfico circular
-        },
-        doughnut: {
-          // Configuración específica para gráfico de dona
+          plugins: {
+            datalabels: {
+              formatter: (value, ctx) => {
+                let sum = 0;
+                let dataArr = ctx.chart.data.datasets[0].data;
+                dataArr.map(data => {
+                  sum += data;
+                });
+                let percentage = (value*100 / sum).toFixed(2)+"%";
+                return percentage;
+              },
+              color: '#fff',
+              font: {
+                weight: 'bold',
+                size: 12
+              }
+            }
+          }
         },
         radar: {
           scales: {
@@ -1332,6 +1327,25 @@
               beginAtZero: true
             }
           }
+        },
+        scatter: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Peso (kg)',
+                font: { size: 14, weight: 'bold' }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Categorías de Desechos',
+                font: { size: 14, weight: 'bold' }
+              }
+            }
+          }
         }
       };
       
@@ -1345,6 +1359,14 @@
         }
       };
       
+      // Para gráfico de dispersión, necesitamos transformar los datos
+      if (chartType === 'scatter') {
+        finalConfig.data.datasets[0].data = values.map((value, index) => ({
+          x: index,
+          y: value
+        }));
+      }
+      
       mainChart = new Chart(mainCtx, finalConfig);
     }
     
@@ -1353,10 +1375,10 @@
       const names = {
         'bar': 'Gráfico de Barras',
         'pie': 'Gráfico Circular',
-        'doughnut': 'Gráfico de Dona',
         'line': 'Gráfico de Líneas',
         'radar': 'Gráfico Radar',
-        'polarArea': 'Área Polar'
+        'polarArea': 'Área Polar',
+        'scatter': 'Gráfico de Dispersión'
       };
       return names[type] || type;
     }
@@ -1622,35 +1644,18 @@
         statDominant.textContent = '-';
       }
       
-      // Llenar tabla
+      // Llenar tabla (solo con las columnas solicitadas)
       friendlyLabels.forEach((lab, i) => {
         const v = currentSummary.values[i];
         if (v <= 0) return;
         
         const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
         
-        // Calcular tendencia si hay datos del período anterior
-        let tendencia = '-';
-        let proyeccion = '-';
-        
-        if (previousSummary && previousSummary.totalesObj[currentSummary.labels[i]]) {
-          const valorAnterior = previousSummary.totalesObj[currentSummary.labels[i]];
-          const cambio = ((v - valorAnterior) / valorAnterior) * 100;
-          
-          tendencia = cambio.toFixed(2) + '%';
-          
-          // Proyección simple (asumiendo misma tendencia)
-          const proyeccionValor = v * (1 + (cambio / 100));
-          proyeccion = proyeccionValor.toFixed(2);
-        }
-        
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${lab}</td>
           <td style="text-align:right">${v.toFixed(2)}</td>
           <td style="text-align:right">${pct}</td>
-          <td style="text-align:right">${tendencia}</td>
-          <td style="text-align:right">${proyeccion}</td>
         `;
         tbody.appendChild(tr);
       });
