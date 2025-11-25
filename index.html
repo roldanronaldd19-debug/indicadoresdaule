@@ -3,15 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sistema Avanzado de Análisis de Desechos - Daule</title>
+  <title>Sistema de Análisis de Desechos Sólidos - Cantón Daule</title>
 
   <!-- Supabase (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Chart.js con plugins avanzados -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-  <!-- Librería para exportación avanzada -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- Iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -249,6 +247,7 @@
       display: flex;
       border-bottom: 1px solid var(--border);
       margin-bottom: 16px;
+      flex-wrap: wrap;
     }
     
     .tab {
@@ -353,6 +352,62 @@
       color: var(--primary);
     }
     
+    .waste-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    
+    .waste-category {
+      background: white;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      transition: transform 0.2s;
+    }
+    
+    .waste-category:hover {
+      transform: translateY(-2px);
+    }
+    
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .category-name {
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .category-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .category-percentage {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 4px;
+    }
+    
     footer {
       text-align: center;
       color: var(--muted);
@@ -438,6 +493,10 @@
       .chart-container {
         height: 400px;
       }
+      
+      .waste-categories {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -447,8 +506,8 @@
       <div class="logo">
         <i class="fas fa-recycle"></i>
         <div>
-          <h1>Sistema Avanzado de Análisis de Indicadores de Desechos</h1>
-          <div class="subtitle">Municipio de Daule - Panel de control profesional</div>
+          <h1>Sistema de Análisis de Desechos Sólidos</h1>
+          <div class="subtitle">Cantón Daule - Panel de Control Integral</div>
         </div>
       </div>
       <div class="header-actions">
@@ -484,6 +543,20 @@
         </div>
 
         <div class="control-group">
+          <label for="selectSubgrupo">Subgrupo</label>
+          <select id="selectSubgrupo">
+            <option value="">Todos los subgrupos</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="selectCoordinador">Coordinador</label>
+          <select id="selectCoordinador">
+            <option value="">Todos los coordinadores</option>
+          </select>
+        </div>
+
+        <div class="control-group">
           <label for="selectTipo">Tipo de visualización</label>
           <select id="selectTipo">
             <option value="bar">Barras</option>
@@ -491,7 +564,6 @@
             <option value="pie">Pastel</option>
             <option value="doughnut">Dona</option>
             <option value="radar">Radar</option>
-            <option value="polarArea">Polar</option>
           </select>
         </div>
 
@@ -503,9 +575,6 @@
             <div class="export-options" id="exportOptions">
               <div class="export-option" data-type="png">
                 <i class="fas fa-image"></i> PNG
-              </div>
-              <div class="export-option" data-type="pdf">
-                <i class="fas fa-file-pdf"></i> PDF
               </div>
               <div class="export-option" data-type="csv">
                 <i class="fas fa-file-csv"></i> CSV
@@ -567,6 +636,7 @@
         <div class="tab active" data-tab="main-chart">Gráfico Principal</div>
         <div class="tab" data-tab="trend-analysis">Análisis de Tendencia</div>
         <div class="tab" data-tab="comparison">Comparación</div>
+        <div class="tab" data-tab="categories">Vista por Categorías</div>
       </div>
       
       <div class="tab-content active" id="main-chart">
@@ -584,6 +654,12 @@
       <div class="tab-content" id="comparison">
         <div class="chart-container">
           <canvas id="comparisonChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="categories">
+        <div class="waste-categories" id="wasteCategories">
+          <!-- Las categorías se llenarán dinámicamente -->
         </div>
       </div>
     </div>
@@ -702,7 +778,7 @@
 
     <footer>
       <p>Fuente: Supabase — tabla <code>caracterizacion_desechos_daule</code></p>
-      <p style="margin-top: 8px;">Sistema desarrollado para el análisis avanzado de indicadores de desechos - Municipio de Daule</p>
+      <p style="margin-top: 8px;">Sistema desarrollado para el análisis avanzado de desechos sólidos - Cantón Daule</p>
     </footer>
   </main>
 
@@ -716,9 +792,12 @@
     // ---------- SELECTORES ----------
     const selectLugar = document.getElementById('selectLugar');
     const selectGrupo = document.getElementById('selectGrupo');
+    const selectSubgrupo = document.getElementById('selectSubgrupo');
+    const selectCoordinador = document.getElementById('selectCoordinador');
     const selectTipo = document.getElementById('selectTipo');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
+    const wasteCategories = document.getElementById('wasteCategories');
 
     // KPIs y elementos de estadísticas
     const kpiTotal = document.getElementById('kpiTotal');
@@ -760,6 +839,45 @@
     let previousPeriodData = [];
     let allData = [];
 
+    // Categorías de desechos basadas en el documento
+    const wasteTypes = [
+      'de_jardin_kg', 'de_cocina_kg', 'aceite_comestible_kg', 'jarabe_kg', 'tabletas_kg',
+      'papel_blanco_kg', 'papel_periodico_kg', 'papel_archivo_kg', 'carton_kg', 'tetra_brik_kg',
+      'pet_kg', 'plastico_mixto_kg', 'bot_aceite_kg', 'bolsas_kg', 'blanco_kg', 'verde_kg',
+      'otros_vidrio_kg', 'latas_ferrosas_kg', 'aluminio_kg', 'acero_kg', 'otros_metal_kg',
+      'ropa_mantas_kg', 'zapatos_neumaticos_kg', 'papel_higienico_kg', 'madezas_kg', 'telefonos_lamparas_kg'
+    ];
+
+    // Nombres amigables para las categorías
+    const wasteTypeNames = {
+      'de_jardin_kg': 'Desechos de Jardín',
+      'de_cocina_kg': 'Desechos de Cocina',
+      'aceite_comestible_kg': 'Aceite Comestible',
+      'jarabe_kg': 'Jarabe',
+      'tabletas_kg': 'Tabletas',
+      'papel_blanco_kg': 'Papel Blanco',
+      'papel_periodico_kg': 'Papel Periódico',
+      'papel_archivo_kg': 'Papel Archivo',
+      'carton_kg': 'Cartón',
+      'tetra_brik_kg': 'Tetra-brik',
+      'pet_kg': 'PET',
+      'plastico_mixto_kg': 'Plástico Mixto',
+      'bot_aceite_kg': 'Botellas de Aceite',
+      'bolsas_kg': 'Bolsas',
+      'blanco_kg': 'Vidrio Blanco',
+      'verde_kg': 'Vidrio Verde',
+      'otros_vidrio_kg': 'Otros Vidrios',
+      'latas_ferrosas_kg': 'Latas Ferrosas',
+      'aluminio_kg': 'Aluminio',
+      'acero_kg': 'Acero',
+      'otros_metal_kg': 'Otros Metales',
+      'ropa_mantas_kg': 'Ropa y Mantas',
+      'zapatos_neumaticos_kg': 'Zapatos y Neumáticos',
+      'papel_higienico_kg': 'Papel Higiénico',
+      'madezas_kg': 'Maderas',
+      'telefonos_lamparas_kg': 'Teléfonos y Lámparas'
+    };
+
     // Inicializar la aplicación
     async function initApp() {
       await inicializarFiltros();
@@ -773,6 +891,8 @@
       // Actualización automática al cambiar filtros
       selectLugar.addEventListener('change', actualizar);
       selectGrupo.addEventListener('change', actualizar);
+      selectSubgrupo.addEventListener('change', actualizar);
+      selectCoordinador.addEventListener('change', actualizar);
       selectTipo.addEventListener('change', actualizar);
       
       // Toggle export options
@@ -813,13 +933,15 @@
             renderTrendAnalysis();
           } else if (tabId === 'comparison') {
             renderComparison();
+          } else if (tabId === 'categories') {
+            renderWasteCategories();
           }
         });
       });
       
       // Ayuda
       document.getElementById('btnHelp').addEventListener('click', () => {
-        alert('Este panel avanzado le permite analizar los datos de desechos del Municipio de Daule. Los filtros se aplican automáticamente al cambiar cualquier opción. Explore las diferentes visualizaciones y estadísticas disponibles.');
+        alert('Este panel avanzado le permite analizar los datos de desechos sólidos del Cantón Daule. Los filtros se aplican automáticamente al cambiar cualquier opción. Explore las diferentes visualizaciones y estadísticas disponibles.');
       });
     }
 
@@ -833,9 +955,9 @@
       allData = q.data || [];
     }
 
-    // Cargar lista de filtros (lugares, grupos, fechas) desde la BD
+    // Cargar lista de filtros desde la BD
     async function inicializarFiltros() {
-      const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, fecha_registro');
+      const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, subgrupo, coordinador');
       if (q.error) {
         console.error(q.error);
         return;
@@ -844,9 +966,13 @@
 
       const lugares = [...new Set(rows.map(r => r.lugar).filter(Boolean))].sort();
       const grupos = [...new Set(rows.map(r => r.grupo).filter(Boolean))].sort();
+      const subgrupos = [...new Set(rows.map(r => r.subgrupo).filter(Boolean))].sort();
+      const coordinadores = [...new Set(rows.map(r => r.coordinador).filter(Boolean))].sort();
 
       lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+      subgrupos.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+      coordinadores.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
     }
 
     // Construir query según filtros y traer datos
@@ -854,6 +980,8 @@
       let q = supabase.from('caracterizacion_desechos_daule').select('*');
       if (selectLugar.value) q = q.eq('lugar', selectLugar.value);
       if (selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
+      if (selectSubgrupo.value) q = q.eq('subgrupo', selectSubgrupo.value);
+      if (selectCoordinador.value) q = q.eq('coordinador', selectCoordinador.value);
       
       const r = await q;
       if (r.error) {
@@ -870,6 +998,8 @@
       return allData.filter(item => {
         if (selectLugar.value && item.lugar !== selectLugar.value) return false;
         if (selectGrupo.value && item.grupo !== selectGrupo.value) return false;
+        if (selectSubgrupo.value && item.subgrupo !== selectSubgrupo.value) return false;
+        if (selectCoordinador.value && item.coordinador !== selectCoordinador.value) return false;
         return true;
       }).slice(0, Math.floor(allData.length / 2)); // Tomamos la primera mitad como período anterior
     }
@@ -882,11 +1012,9 @@
       const fechasUnicas = new Set();
       
       rows.forEach(row => {
-        Object.entries(row).forEach(([k, v]) => {
-          if (k.endsWith('_kg')) {
-            const val = parseFloat(v) || 0;
-            totales[k] = (totales[k] || 0) + val;
-          }
+        wasteTypes.forEach(type => {
+          const val = parseFloat(row[type]) || 0;
+          totales[type] = (totales[type] || 0) + val;
         });
         
         // Registrar fecha para cálculo de promedio diario
@@ -940,8 +1068,8 @@
         const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
         const minIndex = currentSummary.values.indexOf(Math.min(...currentSummary.values.filter(v => v > 0)));
         
-        maxCategory = currentSummary.labels[maxIndex].replace(/_/g, ' ').replace('kg', '').toUpperCase();
-        minCategory = currentSummary.labels[minIndex].replace(/_/g, ' ').replace('kg', '').toUpperCase();
+        maxCategory = wasteTypeNames[currentSummary.labels[maxIndex]] || currentSummary.labels[maxIndex];
+        minCategory = wasteTypeNames[currentSummary.labels[minIndex]] || currentSummary.labels[minIndex];
         
         avgPerCategory = currentSummary.totalSum / currentSummary.values.length;
         
@@ -994,7 +1122,7 @@
 
     // Renderizar gráfico principal
     function renderChart(tipo, labels, values) {
-      const friendlyLabels = labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const friendlyLabels = labels.map(l => wasteTypeNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
       
       // Colores consistentes (HSL)
       const colors = friendlyLabels.map((_, i) => `hsl(${(i * 47) % 360} 70% 55%)`);
@@ -1098,11 +1226,9 @@
         const fecha = new Date(row.fecha_registro).toISOString().slice(0, 10);
         if (!datosPorFecha[fecha]) datosPorFecha[fecha] = {};
         
-        Object.entries(row).forEach(([k, v]) => {
-          if (k.endsWith('_kg')) {
-            const val = parseFloat(v) || 0;
-            datosPorFecha[fecha][k] = (datosPorFecha[fecha][k] || 0) + val;
-          }
+        wasteTypes.forEach(type => {
+          const val = parseFloat(row[type]) || 0;
+          datosPorFecha[fecha][type] = (datosPorFecha[fecha][type] || 0) + val;
         });
       });
       
@@ -1110,10 +1236,10 @@
       const fechas = Object.keys(datosPorFecha).sort();
       const categorias = Object.keys(datosPorFecha[fechas[0]] || {}).sort();
       
-      const datasets = categorias.map((cat, i) => {
+      const datasets = categorias.slice(0, 8).map((cat, i) => {
         const color = `hsl(${(i * 47) % 360} 70% 55%)`;
         return {
-          label: cat.replace(/_/g, ' ').replace('kg', '').toUpperCase(),
+          label: wasteTypeNames[cat] || cat.replace(/_/g, ' ').replace('kg', '').toUpperCase(),
           data: fechas.map(fecha => datosPorFecha[fecha][cat] || 0),
           borderColor: color,
           backgroundColor: color.replace('hsl', 'hsla').replace(')', ', 0.1)'),
@@ -1192,7 +1318,7 @@
       const currentValues = allLabels.map(label => currentSummary.totalesObj[label] || 0);
       const previousValues = allLabels.map(label => previousSummary.totalesObj[label] || 0);
       
-      const friendlyLabels = allLabels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const friendlyLabels = allLabels.map(l => wasteTypeNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
       
       if (comparisonChart) comparisonChart.destroy();
       
@@ -1256,11 +1382,42 @@
       });
     }
 
+    // Renderizar vista por categorías
+    function renderWasteCategories() {
+      if (!currentData.length) return;
+      
+      const currentSummary = resumenPorCategorias(currentData);
+      wasteCategories.innerHTML = '';
+      
+      currentSummary.labels.forEach((label, i) => {
+        const value = currentSummary.values[i];
+        if (value <= 0) return;
+        
+        const percentage = currentSummary.totalSum > 0 ? (value / currentSummary.totalSum) * 100 : 0;
+        const categoryName = wasteTypeNames[label] || label.replace(/_/g, ' ').replace('kg', '').toUpperCase();
+        
+        const categoryElement = document.createElement('div');
+        categoryElement.className = 'waste-category';
+        categoryElement.innerHTML = `
+          <div class="category-header">
+            <div class="category-name">${categoryName}</div>
+            <div class="category-value">${value.toFixed(2)} kg</div>
+          </div>
+          <div class="category-percentage">${percentage.toFixed(2)}% del total</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${percentage}%"></div>
+          </div>
+        `;
+        
+        wasteCategories.appendChild(categoryElement);
+      });
+    }
+
     // Rellenar tabla resumen y KPIs
     function renderResumen(currentSummary, previousSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
-      const friendlyLabels = currentSummary.labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const friendlyLabels = currentSummary.labels.map(l => wasteTypeNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
       
       // Actualizar estadísticas básicas
       statTotalRecords.textContent = basicStats.totalRecords;
@@ -1370,20 +1527,15 @@
           }
           const a = document.createElement('a');
           a.href = mainChart.toBase64Image();
-          a.download = 'grafico-indicadores-daule.png';
+          a.download = 'grafico-desechos-daule.png';
           document.body.appendChild(a);
           a.click();
           a.remove();
           break;
           
-        case 'pdf':
-          // Implementación básica de PDF (requeriría más desarrollo)
-          alert('Funcionalidad de exportación PDF en desarrollo');
-          break;
-          
         case 'csv':
           const currentSummary = resumenPorCategorias(currentData);
-          const friendlyLabels = currentSummary.labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+          const friendlyLabels = currentSummary.labels.map(l => wasteTypeNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
           
           let csvContent = "Tipo de desecho,Kg,% del total\n";
           friendlyLabels.forEach((lab, i) => {
@@ -1433,6 +1585,11 @@
         // Si la pestaña de comparación está activa, renderizarla
         if (document.querySelector('.tab[data-tab="comparison"]').classList.contains('active')) {
           renderComparison();
+        }
+        
+        // Si la pestaña de categorías está activa, renderizarla
+        if (document.querySelector('.tab[data-tab="categories"]').classList.contains('active')) {
+          renderWasteCategories();
         }
       } catch (err) {
         console.error(err);
