@@ -3,119 +3,551 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Indicadores Desechos - Daule</title>
+  <title>Dashboard de Indicadores de Desechos - Daule</title>
 
   <!-- Supabase (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Chart.js -->
+  <!-- Chart.js con plugins -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <!-- Luxon para manejo de fechas -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <!-- Font Awesome para iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    :root{
-      --green:#0f766e;
-      --bg1:#e6fff7;
-      --card:#ffffff;
-      --muted:#6b7280;
+    :root {
+      --primary: #0f766e;
+      --primary-light: #14b8a6;
+      --primary-dark: #115e59;
+      --secondary: #4f46e5;
+      --bg1: #f0fdfa;
+      --bg2: #e6fff7;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --radius: 12px;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial;background:linear-gradient(120deg,var(--bg1),#d9fdf6);color:#111}
-    header{background:var(--green);color:white;padding:20px;text-align:center}
-    main{max-width:1100px;margin:28px auto;padding:18px}
-    .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.06)}
-    .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
-    select,input,button{padding:10px 12px;border-radius:8px;border:1px solid #e6eef0;background:white}
-    button{background:var(--green);color:white;border:none;cursor:pointer}
-    .chart-wrap{margin-top:12px}
-    footer{text-align:center;color:var(--muted);font-size:13px;margin:18px 0}
-    .kpis{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-    .kpi{flex:1;min-width:160px;background:linear-gradient(180deg,#fff,#f7fffb);padding:12px;border-radius:10px;border:1px solid #eef7f4}
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{padding:8px;text-align:left;border-bottom:1px solid #eef2f6}
-    @media(max-width:720px){.controls{flex-direction:column;align-items:stretch}}
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 24px 20px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+      font-size: 16px;
+      margin-top: 6px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    select, input {
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+    }
+
+    button {
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg1);
+      transform: translateY(-2px);
+    }
+
+    .btn-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi {
+      background: linear-gradient(135deg, #fff, #f7fffb);
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid #eef7f4;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .kpi:hover {
+      transform: translateY(-5px);
+    }
+
+    .kpi-title {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .kpi-trend {
+      font-size: 14px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .trend-up {
+      color: var(--success);
+    }
+
+    .trend-down {
+      color: var(--danger);
+    }
+
+    .trend-neutral {
+      color: var(--muted);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 400px;
+      margin-top: 24px;
+    }
+
+    .chart-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .chart-btn {
+      padding: 8px 12px;
+      font-size: 13px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chart-btn:hover {
+      background: var(--bg1);
+      border-color: var(--primary);
+    }
+
+    .chart-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--bg1);
+    }
+
+    tr:hover {
+      background: var(--bg1);
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin: 24px 0;
+      padding: 20px;
+    }
+
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      color: var(--muted);
+    }
+
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(15, 118, 110, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s linear infinite;
+      margin-right: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .btn-actions {
+        margin-left: 0;
+        justify-content: stretch;
+      }
+      
+      .btn-actions button {
+        flex: 1;
+      }
+      
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+      
+      .chart-container {
+        height: 300px;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>♻️ Indicadores de Desechos — Daule</h1>
-    <div style="opacity:.9;font-size:14px;margin-top:6px">Filtros interactivos y gráficos dinámicos</div>
+    <div class="header-content">
+      <h1><i class="fas fa-recycle"></i> Dashboard de Indicadores de Desechos — Daule</h1>
+      <div class="subtitle">Análisis avanzado y visualización interactiva de datos de desechos</div>
+    </div>
   </header>
 
   <main>
+    <!-- Panel de control -->
     <div class="card">
-      <!-- Controles -->
-      <div class="controls" id="controls">
-        <label>
-          Lugar<br/>
-          <select id="selectLugar"><option value="">Todos</option></select>
-        </label>
+      <h2 class="card-title"><i class="fas fa-sliders-h"></i> Panel de Control</h2>
+      
+      <div class="controls">
+        <div class="control-group">
+          <label for="selectLugar"><i class="fas fa-map-marker-alt"></i> Lugar</label>
+          <select id="selectLugar">
+            <option value="">Todos los lugares</option>
+          </select>
+        </div>
 
-        <label>
-          Grupo<br/>
-          <select id="selectGrupo"><option value="">Todos</option></select>
-        </label>
+        <div class="control-group">
+          <label for="selectGrupo"><i class="fas fa-users"></i> Grupo</label>
+          <select id="selectGrupo">
+            <option value="">Todos los grupos</option>
+          </select>
+        </div>
 
-        <label>
-          Fecha (desde)<br/>
+        <div class="control-group">
+          <label for="fechaDesde"><i class="fas fa-calendar-alt"></i> Fecha desde</label>
           <input id="fechaDesde" type="date" />
-        </label>
+        </div>
 
-        <label>
-          Fecha (hasta)<br/>
+        <div class="control-group">
+          <label for="fechaHasta"><i class="fas fa-calendar-alt"></i> Fecha hasta</label>
           <input id="fechaHasta" type="date" />
-        </label>
+        </div>
 
-        <label>
-          Tipo gráfico<br/>
+        <div class="control-group">
+          <label for="selectTipo"><i class="fas fa-chart-bar"></i> Tipo de visualización</label>
           <select id="selectTipo">
             <option value="bar">Barras</option>
+            <option value="line">Línea (tendencia)</option>
             <option value="pie">Pastel</option>
             <option value="doughnut">Dona</option>
-            <option value="line">Línea (tendencia)</option>
             <option value="radar">Radar</option>
             <option value="polarArea">Polar</option>
           </select>
-        </label>
+        </div>
 
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-          <button id="btnActualizar">Actualizar</button>
-          <button id="btnExport" style="background:#ffffff;color:var(--green);border:1px solid var(--green)">Exportar PNG</button>
+        <div class="btn-actions">
+          <button id="btnActualizar" class="btn-primary">
+            <i class="fas fa-sync-alt"></i> Actualizar
+          </button>
+          <button id="btnExport" class="btn-secondary">
+            <i class="fas fa-download"></i> Exportar
+          </button>
         </div>
       </div>
 
       <!-- KPIs -->
       <div class="kpis" id="kpis">
         <div class="kpi">
-          <div style="font-size:12px;color:var(--muted)">Total (kg)</div>
-          <div id="kpiTotal" style="font-size:20px;font-weight:700">0</div>
+          <div class="kpi-title"><i class="fas fa-weight-hanging"></i> Total de desechos (kg)</div>
+          <div id="kpiTotal" class="kpi-value">0</div>
+          <div id="kpiTotalTrend" class="kpi-trend trend-neutral">-</div>
         </div>
         <div class="kpi">
-          <div style="font-size:12px;color:var(--muted)">Categorías con >0 kg</div>
-          <div id="kpiCount" style="font-size:20px;font-weight:700">0</div>
+          <div class="kpi-title"><i class="fas fa-list"></i> Categorías activas</div>
+          <div id="kpiCount" class="kpi-value">0</div>
+          <div id="kpiCountTrend" class="kpi-trend trend-neutral">-</div>
         </div>
         <div class="kpi">
-          <div style="font-size:12px;color:var(--muted)">Última fecha registrada</div>
-          <div id="kpiLast" style="font-size:20px;font-weight:700">-</div>
+          <div class="kpi-title"><i class="fas fa-calendar-check"></i> Última fecha</div>
+          <div id="kpiLast" class="kpi-value">-</div>
+          <div id="kpiLastTrend" class="kpi-trend trend-neutral">-</div>
         </div>
-      </div>
-
-      <!-- Gráfico -->
-      <div class="chart-wrap">
-        <canvas id="mainChart" height="300"></canvas>
-      </div>
-
-      <!-- Tabla resumen -->
-      <div style="margin-top:18px">
-        <h3 style="margin:0 0 8px 0;color:#0f766e">Tabla resumen (filtrada)</h3>
-        <div class="card" style="padding:12px">
-          <table id="tableResumen">
-            <thead><tr><th>Tipo de desecho</th><th style="text-align:right">Kg</th><th style="text-align:right">% del total</th></tr></thead>
-            <tbody></tbody>
-          </table>
+        <div class="kpi">
+          <div class="kpi-title"><i class="fas fa-chart-line"></i> Tendencia mensual</div>
+          <div id="kpiTrend" class="kpi-value">-</div>
+          <div id="kpiTrendValue" class="kpi-trend trend-neutral">-</div>
         </div>
       </div>
     </div>
 
-    <footer>Fuente: Supabase — tabla <code>caracterizacion_desechos_daule</code></footer>
+    <!-- Visualización de datos -->
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-chart-area"></i> Visualización de Datos</h2>
+      
+      <div class="tabs">
+        <div class="tab active" data-tab="chart">Gráfico</div>
+        <div class="tab" data-tab="table">Tabla</div>
+        <div class="tab" data-tab="analysis">Análisis</div>
+      </div>
+      
+      <div class="tab-content active" id="chart-tab">
+        <div class="chart-container">
+          <canvas id="mainChart"></canvas>
+        </div>
+        
+        <div class="chart-actions">
+          <button class="chart-btn active" data-type="bar">Barras</button>
+          <button class="chart-btn" data-type="line">Línea</button>
+          <button class="chart-btn" data-type="pie">Pastel</button>
+          <button class="chart-btn" data-type="doughnut">Dona</button>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="table-tab">
+        <div class="card" style="padding: 12px; margin-top: 0;">
+          <table id="tableResumen">
+            <thead>
+              <tr>
+                <th>Tipo de desecho</th>
+                <th style="text-align:right">Kg</th>
+                <th style="text-align:right">% del total</th>
+                <th style="width: 120px;">Proporción</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="analysis-tab">
+        <div class="card" style="padding: 12px; margin-top: 0;">
+          <h3 style="margin-bottom: 16px; color: var(--primary);">Análisis de Datos</h3>
+          <div id="analysisContent">
+            <p>Cargando análisis...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Información adicional -->
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-info-circle"></i> Información del Sistema</h2>
+      <p>Este dashboard proporciona análisis avanzado de los datos de desechos recopilados en Daule. Utiliza visualizaciones interactivas para facilitar la comprensión de patrones y tendencias.</p>
+      <p style="margin-top: 12px;"><strong>Fuente de datos:</strong> Supabase — tabla <code>caracterizacion_desechos_daule</code></p>
+    </div>
+
+    <footer>
+      <p>Dashboard de Indicadores de Desechos - Daule &copy; 2023</p>
+      <p style="margin-top: 8px; font-size: 12px;">Desarrollado con tecnologías modernas para análisis de datos</p>
+    </footer>
   </main>
 
   <script>
@@ -138,17 +570,25 @@
     const kpiTotal = document.getElementById('kpiTotal');
     const kpiCount = document.getElementById('kpiCount');
     const kpiLast = document.getElementById('kpiLast');
+    const kpiTrend = document.getElementById('kpiTrend');
     const tbody = document.querySelector('#tableResumen tbody');
+    const analysisContent = document.getElementById('analysisContent');
 
     // Chart.js instancia
     const ctx = document.getElementById('mainChart').getContext('2d');
     let chart;
+
+    // Variables globales para datos
+    let allData = [];
+    let currentData = [];
+    let previousPeriodData = [];
 
     // Cargar lista de filtros (lugares, grupos, fechas) desde la BD
     async function inicializarFiltros(){
       const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, fecha_registro');
       if(q.error){ console.error(q.error); return; }
       const rows = q.data || [];
+      allData = rows;
 
       const lugares = [...new Set(rows.map(r=>r.lugar).filter(Boolean))].sort();
       const grupos = [...new Set(rows.map(r=>r.grupo).filter(Boolean))].sort();
@@ -156,16 +596,16 @@
 
       lugares.forEach(v=> selectLugar.appendChild(Object.assign(document.createElement('option'),{value:v,textContent:v})));
       grupos.forEach(v=> selectGrupo.appendChild(Object.assign(document.createElement('option'),{value:v,textContent:v})));
-      fechas.forEach(v=> selectFechaOption(v));
-      // helper: put latest fecha as default 'hasta'
-      if(fechas.length) fechaHasta.value = fechas[fechas.length-1];
-    }
-
-    function selectFechaOption(valor){
-      const el = document.getElementById('filtroFechaHidden');
-      // not used; keep for potential extension
-      const opt = document.createElement('option');
-      opt.value = valor; opt.textContent = valor;
+      
+      // Establecer fechas por defecto (últimos 30 días)
+      if(fechas.length) {
+        const lastDate = new Date(fechas[fechas.length-1]);
+        const firstDate = new Date(lastDate);
+        firstDate.setDate(firstDate.getDate() - 30);
+        
+        fechaDesde.value = firstDate.toISOString().slice(0,10);
+        fechaHasta.value = lastDate.toISOString().slice(0,10);
+      }
     }
 
     // Construir query según filtros y traer datos
@@ -173,6 +613,7 @@
       let q = supabase.from('caracterizacion_desechos_daule').select('*');
       if(selectLugar.value) q = q.eq('lugar', selectLugar.value);
       if(selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
+      
       // Manejo de fechas: si ambas definidas, filtramos por rango fecha_registro entre desde y hasta (inclusive)
       if(fechaDesde.value && fechaHasta.value){
         const desde = new Date(fechaDesde.value).toISOString();
@@ -188,6 +629,33 @@
         hastaDate.setDate(hastaDate.getDate() + 1);
         q = q.lt('fecha_registro', hastaDate.toISOString());
       }
+      
+      const r = await q;
+      if(r.error){ console.error(r.error); return []; }
+      return r.data || [];
+    }
+
+    // Obtener datos del período anterior para comparación
+    async function obtenerDatosPeriodoAnterior() {
+      if (!fechaDesde.value || !fechaHasta.value) return [];
+      
+      const desde = new Date(fechaDesde.value);
+      const hasta = new Date(fechaHasta.value);
+      const diffTime = Math.abs(hasta - desde);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      const prevDesde = new Date(desde);
+      prevDesde.setDate(prevDesde.getDate() - diffDays - 1);
+      
+      const prevHasta = new Date(desde);
+      prevHasta.setDate(prevHasta.getDate() - 1);
+      
+      let q = supabase.from('caracterizacion_desechos_daule').select('*');
+      if(selectLugar.value) q = q.eq('lugar', selectLugar.value);
+      if(selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
+      
+      q = q.gte('fecha_registro', prevDesde.toISOString()).lt('fecha_registro', prevHasta.toISOString());
+      
       const r = await q;
       if(r.error){ console.error(r.error); return []; }
       return r.data || [];
@@ -219,61 +687,209 @@
       // colores consistentes (HSL)
       const colors = friendlyLabels.map((_,i)=> `hsl(${(i*47)%360} 70% 55%)`);
       if(chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: tipo === 'line' ? 'line' : tipo,
+      
+      const config = {
+        type: tipo,
         data: {
           labels: friendlyLabels,
           datasets: [{
             label: 'Kg',
             data: values,
             backgroundColor: colors,
-            borderColor: 'rgba(0,0,0,0.06)',
-            borderWidth: 1
+            borderColor: tipo === 'line' || tipo === 'radar' ? colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 1)')) : 'rgba(255, 255, 255, 0.8)',
+            borderWidth: tipo === 'line' || tipo === 'radar' ? 3 : 1,
+            fill: tipo === 'line' ? true : false,
+            tension: tipo === 'line' ? 0.4 : 0
           }]
         },
         options: {
-          responsive:true,
-          plugins:{
-            legend:{position:'bottom'},
-            title:{display:true,text:'Distribución de desechos (kg)'}
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                usePointStyle: true
+              }
+            },
+            title: {
+              display: true,
+              text: 'Distribución de desechos (kg)',
+              font: {
+                size: 16
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y.toFixed(2) + ' kg';
+                  }
+                  return label;
+                }
+              }
+            }
           },
-          scales: tipo==='bar' || tipo==='line' ? { y:{beginAtZero:true}} : {}
+          scales: (tipo==='bar' || tipo==='line') ? { 
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Kilogramos (kg)'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Tipos de desechos'
+              }
+            }
+          } : {}
         }
-      });
+      };
+      
+      chart = new Chart(ctx, config);
     }
 
     // Rellenar tabla resumen y KPIs
-    function renderResumen(labels, values, totalSum, lastDate){
+    function renderResumen(labels, values, totalSum, lastDate, previousData = null){
       tbody.innerHTML = '';
       const friendlyLabels = labels.map(l=> l.replace(/_/g,' ').replace('kg','').toUpperCase());
+      
       friendlyLabels.forEach((lab,i)=>{
         const v = values[i];
         if(v <= 0) return;
-        const tr = document.createElement('tr');
         const pct = totalSum>0 ? ((v/totalSum)*100).toFixed(2)+'%' : '0.00%';
-        tr.innerHTML = `<td>${lab}</td><td style="text-align:right">${v.toFixed(2)}</td><td style="text-align:right">${pct}</td>`;
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${lab}</td>
+          <td style="text-align:right">${v.toFixed(2)}</td>
+          <td style="text-align:right">${pct}</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${pct}"></div>
+            </div>
+          </td>
+        `;
         tbody.appendChild(tr);
       });
+      
+      // Actualizar KPIs
       kpiTotal.textContent = totalSum.toFixed(2);
       kpiCount.textContent = friendlyLabels.filter((_,i)=> values[i]>0).length;
-      kpiLast.textContent = lastDate ? new Date(lastDate).toLocaleString() : '-';
+      kpiLast.textContent = lastDate ? new Date(lastDate).toLocaleDateString() : '-';
+      
+      // Calcular tendencias si hay datos anteriores
+      if (previousData && previousData.totalSum > 0) {
+        const trend = ((totalSum - previousData.totalSum) / previousData.totalSum * 100).toFixed(1);
+        kpiTrend.textContent = `${trend}%`;
+        
+        const trendElement = document.getElementById('kpiTrendValue');
+        if (trend > 0) {
+          trendElement.className = 'kpi-trend trend-up';
+          trendElement.innerHTML = `<i class="fas fa-arrow-up"></i> ${trend}% vs período anterior`;
+        } else if (trend < 0) {
+          trendElement.className = 'kpi-trend trend-down';
+          trendElement.innerHTML = `<i class="fas fa-arrow-down"></i> ${Math.abs(trend)}% vs período anterior`;
+        } else {
+          trendElement.className = 'kpi-trend trend-neutral';
+          trendElement.innerHTML = `Sin cambio vs período anterior`;
+        }
+      } else {
+        kpiTrend.textContent = '-';
+        document.getElementById('kpiTrendValue').className = 'kpi-trend trend-neutral';
+        document.getElementById('kpiTrendValue').textContent = 'Sin datos comparativos';
+      }
+    }
+
+    // Generar análisis de datos
+    function generarAnalisis(labels, values, totalSum, lastDate) {
+      if (labels.length === 0) {
+        analysisContent.innerHTML = '<p>No hay datos disponibles para el análisis.</p>';
+        return;
+      }
+      
+      // Encontrar el tipo de desecho con mayor cantidad
+      const maxIndex = values.indexOf(Math.max(...values));
+      const maxWaste = labels[maxIndex].replace(/_/g,' ').replace('kg','').toUpperCase();
+      const maxValue = values[maxIndex];
+      const maxPercentage = ((maxValue / totalSum) * 100).toFixed(2);
+      
+      // Encontrar el tipo de desecho con menor cantidad (excluyendo ceros)
+      const nonZeroValues = values.filter(v => v > 0);
+      const nonZeroLabels = labels.filter((_, i) => values[i] > 0);
+      const minIndex = nonZeroValues.indexOf(Math.min(...nonZeroValues));
+      const minWaste = nonZeroLabels[minIndex].replace(/_/g,' ').replace('kg','').toUpperCase();
+      const minValue = nonZeroValues[minIndex];
+      const minPercentage = ((minValue / totalSum) * 100).toFixed(2);
+      
+      // Calcular diversidad (número de categorías con datos)
+      const diversity = nonZeroLabels.length;
+      
+      analysisContent.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+          <div class="card" style="padding: 16px;">
+            <h4 style="color: var(--primary); margin-bottom: 8px;">Resumen Principal</h4>
+            <p>El tipo de desecho más significativo es <strong>${maxWaste}</strong>, representando el <strong>${maxPercentage}%</strong> del total con ${maxValue.toFixed(2)} kg.</p>
+          </div>
+          
+          <div class="card" style="padding: 16px;">
+            <h4 style="color: var(--primary); margin-bottom: 8px;">Diversidad de Desechos</h4>
+            <p>Se han identificado <strong>${diversity}</strong> categorías diferentes de desechos con cantidades mayores a cero.</p>
+            <p>La categoría con menor presencia es <strong>${minWaste}</strong> con ${minValue.toFixed(2)} kg (${minPercentage}%).</p>
+          </div>
+          
+          <div class="card" style="padding: 16px;">
+            <h4 style="color: var(--primary); margin-bottom: 8px;">Distribución</h4>
+            <p>La distribución de desechos muestra una concentración significativa en algunas categorías principales.</p>
+            <p>Las 3 categorías principales representan aproximadamente el ${((values.slice().sort((a,b) => b-a).slice(0,3).reduce((a,b) => a+b, 0) / totalSum) * 100).toFixed(1)}% del total.</p>
+          </div>
+          
+          <div class="card" style="padding: 16px;">
+            <h4 style="color: var(--primary); margin-bottom: 8px;">Recomendaciones</h4>
+            <ul style="padding-left: 20px;">
+              <li>Enfocar esfuerzos de reciclaje en ${maxWaste} por ser el desecho más abundante.</li>
+              <li>Evaluar oportunidades de reducción en las categorías principales.</li>
+              <li>Considerar estrategias específicas para las categorías menos representadas.</li>
+            </ul>
+          </div>
+        </div>
+      `;
     }
 
     // Acción principal: obtener datos, procesar y renderizar
     async function actualizar(){
       btnActualizar.disabled = true;
-      btnActualizar.textContent = 'Cargando...';
+      btnActualizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+      
       try{
-        const rows = await obtenerFiltrados();
+        // Obtener datos actuales y del período anterior
+        const [rows, prevRows] = await Promise.all([
+          obtenerFiltrados(),
+          obtenerDatosPeriodoAnterior()
+        ]);
+        
+        currentData = rows;
+        previousPeriodData = prevRows;
+        
         const {labels,values,totalesObj,totalSum,lastDate} = resumenPorCategorias(rows);
+        const prevSummary = resumenPorCategorias(prevRows);
+        
         renderChart(selectTipo.value, labels, values);
-        renderResumen(labels, values, totalSum, lastDate);
+        renderResumen(labels, values, totalSum, lastDate, prevSummary);
+        generarAnalisis(labels, values, totalSum, lastDate);
       }catch(err){
         console.error(err);
         alert('Error al actualizar. Revisa la consola.');
       }finally{
         btnActualizar.disabled = false;
-        btnActualizar.textContent = 'Actualizar';
+        btnActualizar.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar';
       }
     }
 
@@ -282,14 +898,36 @@
       if(!chart){ alert('Gráfico no disponible'); return; }
       const a = document.createElement('a');
       a.href = chart.toBase64Image();
-      a.download = 'grafico-indicadores.png';
+      a.download = `grafico-desechos-${new Date().toISOString().slice(0,10)}.png`;
       document.body.appendChild(a);
       a.click();
       a.remove();
     });
 
+    // Cambiar tipo de gráfico desde botones
+    document.querySelectorAll('.chart-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectTipo.value = this.dataset.type;
+        actualizar();
+      });
+    });
+
+    // Sistema de pestañas
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        this.classList.add('active');
+        document.getElementById(`${this.dataset.tab}-tab`).classList.add('active');
+      });
+    });
+
     // Listeners
     btnActualizar.addEventListener('click', actualizar);
+    selectTipo.addEventListener('change', actualizar);
 
     // Inicialización
     await inicializarFiltros();
