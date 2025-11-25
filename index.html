@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sistema de Análisis de Desechos Sólidos - Cantón Daule</title>
+  <title>Sistema Avanzado de Análisis de Desechos Sólidos - Daule</title>
 
   <!-- Supabase (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -120,7 +120,7 @@
       display: flex;
       flex-direction: column;
       flex: 1;
-      min-width: 150px;
+      min-width: 180px;
     }
     
     .control-group label {
@@ -184,7 +184,7 @@
     
     .kpis {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
@@ -247,7 +247,6 @@
       display: flex;
       border-bottom: 1px solid var(--border);
       margin-bottom: 16px;
-      flex-wrap: wrap;
     }
     
     .tab {
@@ -352,62 +351,6 @@
       color: var(--primary);
     }
     
-    .waste-categories {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-      margin-top: 20px;
-    }
-    
-    .waste-category {
-      background: white;
-      border-radius: 10px;
-      padding: 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--border);
-      transition: transform 0.2s;
-    }
-    
-    .waste-category:hover {
-      transform: translateY(-2px);
-    }
-    
-    .category-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    
-    .category-name {
-      font-weight: 600;
-      color: var(--primary);
-    }
-    
-    .category-value {
-      font-size: 20px;
-      font-weight: 700;
-    }
-    
-    .category-percentage {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    
-    .progress-bar {
-      height: 8px;
-      background: #e5e7eb;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: var(--primary);
-      border-radius: 4px;
-    }
-    
     footer {
       text-align: center;
       color: var(--muted);
@@ -470,6 +413,43 @@
       background: var(--bg1);
     }
     
+    .category-group {
+      margin-bottom: 24px;
+    }
+    
+    .category-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .category-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+    }
+    
+    .category-item {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .category-name {
+      font-weight: 500;
+    }
+    
+    .category-value {
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -494,7 +474,7 @@
         height: 400px;
       }
       
-      .waste-categories {
+      .category-items {
         grid-template-columns: 1fr;
       }
     }
@@ -506,7 +486,7 @@
       <div class="logo">
         <i class="fas fa-recycle"></i>
         <div>
-          <h1>Sistema de Análisis de Desechos Sólidos</h1>
+          <h1>Sistema Avanzado de Análisis de Desechos Sólidos</h1>
           <div class="subtitle">Cantón Daule - Panel de Control Integral</div>
         </div>
       </div>
@@ -557,13 +537,13 @@
         </div>
 
         <div class="control-group">
-          <label for="selectTipo">Tipo de visualización</label>
+          <label for="selectTipo">Tipo de Visualización</label>
           <select id="selectTipo">
-            <option value="bar">Barras</option>
-            <option value="line">Línea (tendencia)</option>
+            <option value="bar">Barras Verticales</option>
+            <option value="horizontalBar">Barras Horizontales</option>
+            <option value="line">Línea (Tendencia)</option>
             <option value="pie">Pastel</option>
             <option value="doughnut">Dona</option>
-            <option value="radar">Radar</option>
           </select>
         </div>
 
@@ -588,7 +568,7 @@
       <div class="kpis" id="kpis">
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-weight-hanging"></i> Total de desechos (kg)
+            <i class="fas fa-weight-hanging"></i> Total de Desechos (kg)
           </div>
           <div class="kpi-value" id="kpiTotal">0</div>
           <div class="kpi-change" id="kpiTotalChange">
@@ -597,7 +577,7 @@
         </div>
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-list"></i> Categorías con desechos
+            <i class="fas fa-list"></i> Categorías con Desechos
           </div>
           <div class="kpi-value" id="kpiCount">0</div>
           <div class="kpi-change" id="kpiCountChange">
@@ -606,7 +586,7 @@
         </div>
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-calendar-alt"></i> Última fecha registrada
+            <i class="fas fa-calendar-alt"></i> Última Fecha Registrada
           </div>
           <div class="kpi-value" id="kpiLast">-</div>
           <div class="kpi-change" id="kpiLastChange">
@@ -615,7 +595,7 @@
         </div>
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-chart-line"></i> Promedio diario (kg)
+            <i class="fas fa-chart-line"></i> Promedio Diario (kg)
           </div>
           <div class="kpi-value" id="kpiAvg">0</div>
           <div class="kpi-change" id="kpiAvgChange">
@@ -634,9 +614,8 @@
       
       <div class="tabs">
         <div class="tab active" data-tab="main-chart">Gráfico Principal</div>
-        <div class="tab" data-tab="trend-analysis">Análisis de Tendencia</div>
+        <div class="tab" data-tab="category-breakdown">Desglose por Categorías</div>
         <div class="tab" data-tab="comparison">Comparación</div>
-        <div class="tab" data-tab="categories">Vista por Categorías</div>
       </div>
       
       <div class="tab-content active" id="main-chart">
@@ -645,21 +624,46 @@
         </div>
       </div>
       
-      <div class="tab-content" id="trend-analysis">
-        <div class="chart-container">
-          <canvas id="trendChart"></canvas>
+      <div class="tab-content" id="category-breakdown">
+        <div class="category-group">
+          <div class="category-title">Desechos Orgánicos</div>
+          <div class="category-items" id="organic-waste">
+            <!-- Se llenará dinámicamente -->
+          </div>
+        </div>
+        
+        <div class="category-group">
+          <div class="category-title">Papel y Cartón</div>
+          <div class="category-items" id="paper-waste">
+            <!-- Se llenará dinámicamente -->
+          </div>
+        </div>
+        
+        <div class="category-group">
+          <div class="category-title">Plásticos</div>
+          <div class="category-items" id="plastic-waste">
+            <!-- Se llenará dinámicamente -->
+          </div>
+        </div>
+        
+        <div class="category-group">
+          <div class="category-title">Vidrio y Metales</div>
+          <div class="category-items" id="glass-metal-waste">
+            <!-- Se llenará dinámicamente -->
+          </div>
+        </div>
+        
+        <div class="category-group">
+          <div class="category-title">Otros Desechos</div>
+          <div class="category-items" id="other-waste">
+            <!-- Se llenará dinámicamente -->
+          </div>
         </div>
       </div>
       
       <div class="tab-content" id="comparison">
         <div class="chart-container">
           <canvas id="comparisonChart"></canvas>
-        </div>
-      </div>
-      
-      <div class="tab-content" id="categories">
-        <div class="waste-categories" id="wasteCategories">
-          <!-- Las categorías se llenarán dinámicamente -->
         </div>
       </div>
     </div>
@@ -797,7 +801,6 @@
     const selectTipo = document.getElementById('selectTipo');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
-    const wasteCategories = document.getElementById('wasteCategories');
 
     // KPIs y elementos de estadísticas
     const kpiTotal = document.getElementById('kpiTotal');
@@ -830,9 +833,8 @@
 
     // Charts
     const mainCtx = document.getElementById('mainChart').getContext('2d');
-    const trendCtx = document.getElementById('trendChart').getContext('2d');
     const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
-    let mainChart, trendChart, comparisonChart;
+    let mainChart, comparisonChart;
 
     // Variables globales para datos
     let currentData = [];
@@ -840,42 +842,42 @@
     let allData = [];
 
     // Categorías de desechos basadas en el documento
-    const wasteTypes = [
-      'de_jardin_kg', 'de_cocina_kg', 'aceite_comestible_kg', 'jarabe_kg', 'tabletas_kg',
-      'papel_blanco_kg', 'papel_periodico_kg', 'papel_archivo_kg', 'carton_kg', 'tetra_brik_kg',
-      'pet_kg', 'plastico_mixto_kg', 'bot_aceite_kg', 'bolsas_kg', 'blanco_kg', 'verde_kg',
-      'otros_vidrio_kg', 'latas_ferrosas_kg', 'aluminio_kg', 'acero_kg', 'otros_metal_kg',
-      'ropa_mantas_kg', 'zapatos_neumaticos_kg', 'papel_higienico_kg', 'madezas_kg', 'telefonos_lamparas_kg'
-    ];
+    const wasteCategories = {
+      organic: ['de_jardin_kg', 'de_cocina_kg', 'aceite_comestible_kg'],
+      paper: ['papel_blanco_kg', 'papel_periodico_kg', 'papel_archivo_kg', 'carton_kg', 'papel_higienico_kg'],
+      plastic: ['tetra_brik_kg', 'pet_kg', 'plastico_mixto_kg', 'bot_aceite_kg', 'bolsas_kg'],
+      glassMetal: ['vidrio_blanco_kg', 'vidrio_verde_kg', 'vidrio_otros_kg', 'latas_ferrosas_kg', 'aluminio_kg', 'acero_kg', 'metal_otros_kg'],
+      other: ['ropa_mantas_kg', 'zapatos_neumaticos_kg', 'madera_kg', 'electronicos_kg', 'jarabe_kg', 'tabletas_kg']
+    };
 
     // Nombres amigables para las categorías
-    const wasteTypeNames = {
-      'de_jardin_kg': 'Desechos de Jardín',
-      'de_cocina_kg': 'Desechos de Cocina',
-      'aceite_comestible_kg': 'Aceite Comestible',
-      'jarabe_kg': 'Jarabe',
-      'tabletas_kg': 'Tabletas',
-      'papel_blanco_kg': 'Papel Blanco',
-      'papel_periodico_kg': 'Papel Periódico',
-      'papel_archivo_kg': 'Papel Archivo',
-      'carton_kg': 'Cartón',
-      'tetra_brik_kg': 'Tetra-brik',
-      'pet_kg': 'PET',
-      'plastico_mixto_kg': 'Plástico Mixto',
-      'bot_aceite_kg': 'Botellas de Aceite',
-      'bolsas_kg': 'Bolsas',
-      'blanco_kg': 'Vidrio Blanco',
-      'verde_kg': 'Vidrio Verde',
-      'otros_vidrio_kg': 'Otros Vidrios',
-      'latas_ferrosas_kg': 'Latas Ferrosas',
-      'aluminio_kg': 'Aluminio',
-      'acero_kg': 'Acero',
-      'otros_metal_kg': 'Otros Metales',
-      'ropa_mantas_kg': 'Ropa y Mantas',
-      'zapatos_neumaticos_kg': 'Zapatos y Neumáticos',
-      'papel_higienico_kg': 'Papel Higiénico',
-      'madezas_kg': 'Maderas',
-      'telefonos_lamparas_kg': 'Teléfonos y Lámparas'
+    const friendlyNames = {
+      de_jardin_kg: 'Desechos de Jardín',
+      de_cocina_kg: 'Desechos de Cocina',
+      aceite_comestible_kg: 'Aceite Comestible',
+      papel_blanco_kg: 'Papel Blanco',
+      papel_periodico_kg: 'Papel Periódico',
+      papel_archivo_kg: 'Papel Archivo',
+      carton_kg: 'Cartón',
+      papel_higienico_kg: 'Papel Higiénico',
+      tetra_brik_kg: 'Tetra Brik',
+      pet_kg: 'PET',
+      plastico_mixto_kg: 'Plástico Mixto',
+      bot_aceite_kg: 'Botellas de Aceite',
+      bolsas_kg: 'Bolsas Plásticas',
+      vidrio_blanco_kg: 'Vidrio Blanco',
+      vidrio_verde_kg: 'Vidrio Verde',
+      vidrio_otros_kg: 'Otros Vidrios',
+      latas_ferrosas_kg: 'Latas Ferrosas',
+      aluminio_kg: 'Aluminio',
+      acero_kg: 'Acero',
+      metal_otros_kg: 'Otros Metales',
+      ropa_mantas_kg: 'Ropa y Mantas',
+      zapatos_neumaticos_kg: 'Zapatos y Neumáticos',
+      madera_kg: 'Maderas',
+      electronicos_kg: 'Electrónicos',
+      jarabe_kg: 'Jarabe',
+      tabletas_kg: 'Tabletas'
     };
 
     // Inicializar la aplicación
@@ -928,13 +930,11 @@
           tab.classList.add('active');
           document.getElementById(tabId).classList.add('active');
           
-          // Renderizar gráficos específicos si es necesario
-          if (tabId === 'trend-analysis') {
-            renderTrendAnalysis();
+          // Renderizar contenido específico si es necesario
+          if (tabId === 'category-breakdown') {
+            renderCategoryBreakdown();
           } else if (tabId === 'comparison') {
             renderComparison();
-          } else if (tabId === 'categories') {
-            renderWasteCategories();
           }
         });
       });
@@ -1012,9 +1012,11 @@
       const fechasUnicas = new Set();
       
       rows.forEach(row => {
-        wasteTypes.forEach(type => {
-          const val = parseFloat(row[type]) || 0;
-          totales[type] = (totales[type] || 0) + val;
+        Object.entries(row).forEach(([k, v]) => {
+          if (k.endsWith('_kg')) {
+            const val = parseFloat(v) || 0;
+            totales[k] = (totales[k] || 0) + val;
+          }
         });
         
         // Registrar fecha para cálculo de promedio diario
@@ -1068,8 +1070,8 @@
         const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
         const minIndex = currentSummary.values.indexOf(Math.min(...currentSummary.values.filter(v => v > 0)));
         
-        maxCategory = wasteTypeNames[currentSummary.labels[maxIndex]] || currentSummary.labels[maxIndex];
-        minCategory = wasteTypeNames[currentSummary.labels[minIndex]] || currentSummary.labels[minIndex];
+        maxCategory = friendlyNames[currentSummary.labels[maxIndex]] || currentSummary.labels[maxIndex];
+        minCategory = friendlyNames[currentSummary.labels[minIndex]] || currentSummary.labels[minIndex];
         
         avgPerCategory = currentSummary.totalSum / currentSummary.values.length;
         
@@ -1122,15 +1124,21 @@
 
     // Renderizar gráfico principal
     function renderChart(tipo, labels, values) {
-      const friendlyLabels = labels.map(l => wasteTypeNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const friendlyLabels = labels.map(l => friendlyNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
       
       // Colores consistentes (HSL)
       const colors = friendlyLabels.map((_, i) => `hsl(${(i * 47) % 360} 70% 55%)`);
       
       if (mainChart) mainChart.destroy();
       
+      // Determinar el tipo de gráfico
+      let chartType = tipo;
+      if (tipo === 'horizontalBar') {
+        chartType = 'bar';
+      }
+      
       mainChart = new Chart(mainCtx, {
-        type: tipo === 'line' ? 'line' : tipo,
+        type: chartType,
         data: {
           labels: friendlyLabels,
           datasets: [{
@@ -1146,6 +1154,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          indexAxis: tipo === 'horizontalBar' ? 'y' : 'x',
           plugins: {
             legend: {
               position: 'bottom',
@@ -1159,7 +1168,7 @@
             },
             title: {
               display: true,
-              text: 'Distribución de desechos (kg)',
+              text: 'Distribución de Desechos Sólidos (kg)',
               font: {
                 size: 18,
                 weight: 'bold'
@@ -1177,7 +1186,7 @@
               }
             }
           },
-          scales: (tipo === 'bar' || tipo === 'line') ? {
+          scales: (tipo === 'bar' || tipo === 'line' || tipo === 'horizontalBar') ? {
             y: {
               beginAtZero: true,
               title: {
@@ -1197,7 +1206,7 @@
             x: {
               title: {
                 display: true,
-                text: 'Tipos de desechos',
+                text: 'Tipos de Desechos',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1214,96 +1223,44 @@
       });
     }
 
-    // Renderizar análisis de tendencia
-    function renderTrendAnalysis() {
+    // Renderizar desglose por categorías
+    function renderCategoryBreakdown() {
       if (!currentData.length) return;
       
-      // Agrupar datos por fecha
-      const datosPorFecha = {};
-      currentData.forEach(row => {
-        if (!row.fecha_registro) return;
+      const currentSummary = resumenPorCategorias(currentData);
+      
+      // Función para renderizar una categoría
+      function renderCategory(categoryElementId, categoryKeys) {
+        const container = document.getElementById(categoryElementId);
+        container.innerHTML = '';
         
-        const fecha = new Date(row.fecha_registro).toISOString().slice(0, 10);
-        if (!datosPorFecha[fecha]) datosPorFecha[fecha] = {};
-        
-        wasteTypes.forEach(type => {
-          const val = parseFloat(row[type]) || 0;
-          datosPorFecha[fecha][type] = (datosPorFecha[fecha][type] || 0) + val;
-        });
-      });
-      
-      // Preparar datos para el gráfico
-      const fechas = Object.keys(datosPorFecha).sort();
-      const categorias = Object.keys(datosPorFecha[fechas[0]] || {}).sort();
-      
-      const datasets = categorias.slice(0, 8).map((cat, i) => {
-        const color = `hsl(${(i * 47) % 360} 70% 55%)`;
-        return {
-          label: wasteTypeNames[cat] || cat.replace(/_/g, ' ').replace('kg', '').toUpperCase(),
-          data: fechas.map(fecha => datosPorFecha[fecha][cat] || 0),
-          borderColor: color,
-          backgroundColor: color.replace('hsl', 'hsla').replace(')', ', 0.1)'),
-          tension: 0.4,
-          fill: true,
-          borderWidth: 2
-        };
-      });
-      
-      if (trendChart) trendChart.destroy();
-      
-      trendChart = new Chart(trendCtx, {
-        type: 'line',
-        data: {
-          labels: fechas.map(f => new Date(f).toLocaleDateString()),
-          datasets: datasets
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                font: {
-                  size: 12
-                }
-              }
-            },
-            title: {
-              display: true,
-              text: 'Tendencia de desechos por categoría a lo largo del tiempo',
-              font: {
-                size: 16,
-                weight: 'bold'
-              },
-              padding: 20
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Kilogramos (kg)',
-                font: {
-                  size: 14,
-                  weight: 'bold'
-                }
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Fecha',
-                font: {
-                  size: 14,
-                  weight: 'bold'
-                }
-              }
-            }
+        categoryKeys.forEach(key => {
+          if (currentSummary.totalesObj[key] && currentSummary.totalesObj[key] > 0) {
+            const item = document.createElement('div');
+            item.className = 'category-item';
+            item.innerHTML = `
+              <div class="category-name">${friendlyNames[key] || key}</div>
+              <div class="category-value">${currentSummary.totalesObj[key].toFixed(2)} kg</div>
+            `;
+            container.appendChild(item);
           }
+        });
+        
+        // Si no hay elementos, mostrar mensaje
+        if (container.children.length === 0) {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.className = 'category-item';
+          emptyMsg.innerHTML = '<div class="category-name">No hay datos para esta categoría</div>';
+          container.appendChild(emptyMsg);
         }
-      });
+      }
+      
+      // Renderizar todas las categorías
+      renderCategory('organic-waste', wasteCategories.organic);
+      renderCategory('paper-waste', wasteCategories.paper);
+      renderCategory('plastic-waste', wasteCategories.plastic);
+      renderCategory('glass-metal-waste', wasteCategories.glassMetal);
+      renderCategory('other-waste', wasteCategories.other);
     }
 
     // Renderizar comparación
@@ -1318,7 +1275,7 @@
       const currentValues = allLabels.map(label => currentSummary.totalesObj[label] || 0);
       const previousValues = allLabels.map(label => previousSummary.totalesObj[label] || 0);
       
-      const friendlyLabels = allLabels.map(l => wasteTypeNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const friendlyLabels = allLabels.map(l => friendlyNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
       
       if (comparisonChart) comparisonChart.destroy();
       
@@ -1357,7 +1314,7 @@
             },
             title: {
               display: true,
-              text: 'Comparación con período anterior',
+              text: 'Comparación con Período Anterior',
               font: {
                 size: 16,
                 weight: 'bold'
@@ -1382,42 +1339,11 @@
       });
     }
 
-    // Renderizar vista por categorías
-    function renderWasteCategories() {
-      if (!currentData.length) return;
-      
-      const currentSummary = resumenPorCategorias(currentData);
-      wasteCategories.innerHTML = '';
-      
-      currentSummary.labels.forEach((label, i) => {
-        const value = currentSummary.values[i];
-        if (value <= 0) return;
-        
-        const percentage = currentSummary.totalSum > 0 ? (value / currentSummary.totalSum) * 100 : 0;
-        const categoryName = wasteTypeNames[label] || label.replace(/_/g, ' ').replace('kg', '').toUpperCase();
-        
-        const categoryElement = document.createElement('div');
-        categoryElement.className = 'waste-category';
-        categoryElement.innerHTML = `
-          <div class="category-header">
-            <div class="category-name">${categoryName}</div>
-            <div class="category-value">${value.toFixed(2)} kg</div>
-          </div>
-          <div class="category-percentage">${percentage.toFixed(2)}% del total</div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${percentage}%"></div>
-          </div>
-        `;
-        
-        wasteCategories.appendChild(categoryElement);
-      });
-    }
-
     // Rellenar tabla resumen y KPIs
     function renderResumen(currentSummary, previousSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
-      const friendlyLabels = currentSummary.labels.map(l => wasteTypeNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const friendlyLabels = currentSummary.labels.map(l => friendlyNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
       
       // Actualizar estadísticas básicas
       statTotalRecords.textContent = basicStats.totalRecords;
@@ -1437,7 +1363,8 @@
       // Encontrar categoría dominante
       if (currentSummary.values.length > 0) {
         const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
-        statDominant.textContent = friendlyLabels[maxIndex] + ` (${((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1)}%)`;
+        const dominantName = friendlyNames[currentSummary.labels[maxIndex]] || friendlyLabels[maxIndex];
+        statDominant.textContent = dominantName + ` (${((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1)}%)`;
       } else {
         statDominant.textContent = '-';
       }
@@ -1535,7 +1462,7 @@
           
         case 'csv':
           const currentSummary = resumenPorCategorias(currentData);
-          const friendlyLabels = currentSummary.labels.map(l => wasteTypeNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+          const friendlyLabels = currentSummary.labels.map(l => friendlyNames[l] || l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
           
           let csvContent = "Tipo de desecho,Kg,% del total\n";
           friendlyLabels.forEach((lab, i) => {
@@ -1577,19 +1504,14 @@
         renderChart(selectTipo.value, currentSummary.labels, currentSummary.values);
         renderResumen(currentSummary, previousSummary, basicStats, advancedStats);
         
-        // Si la pestaña de análisis de tendencia está activa, renderizarla
-        if (document.querySelector('.tab[data-tab="trend-analysis"]').classList.contains('active')) {
-          renderTrendAnalysis();
+        // Si la pestaña de desglose por categorías está activa, renderizarla
+        if (document.querySelector('.tab[data-tab="category-breakdown"]').classList.contains('active')) {
+          renderCategoryBreakdown();
         }
         
         // Si la pestaña de comparación está activa, renderizarla
         if (document.querySelector('.tab[data-tab="comparison"]').classList.contains('active')) {
           renderComparison();
-        }
-        
-        // Si la pestaña de categorías está activa, renderizarla
-        if (document.querySelector('.tab[data-tab="categories"]').classList.contains('active')) {
-          renderWasteCategories();
         }
       } catch (err) {
         console.error(err);
