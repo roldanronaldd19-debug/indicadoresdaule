@@ -10,7 +10,6 @@
   <!-- Chart.js con plugins avanzados -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-trendline"></script>
   <!-- Librería para exportación avanzada -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -471,9 +470,6 @@
         </div>
 
         <div class="action-buttons">
-          <button id="btnActualizar">
-            <i class="fas fa-sync-alt"></i> Actualizar
-          </button>
           <div style="position: relative;">
             <button id="btnExport" class="secondary">
               <i class="fas fa-download"></i> Exportar
@@ -650,7 +646,6 @@
     const selectTipo = document.getElementById('selectTipo');
     const fechaDesde = document.getElementById('fechaDesde');
     const fechaHasta = document.getElementById('fechaHasta');
-    const btnActualizar = document.getElementById('btnActualizar');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
 
@@ -694,7 +689,12 @@
 
     // Configurar event listeners
     function setupEventListeners() {
-      btnActualizar.addEventListener('click', actualizar);
+      // Actualización automática al cambiar filtros
+      selectLugar.addEventListener('change', actualizar);
+      selectGrupo.addEventListener('change', actualizar);
+      fechaDesde.addEventListener('change', actualizar);
+      fechaHasta.addEventListener('change', actualizar);
+      selectTipo.addEventListener('change', actualizar);
       
       // Toggle export options
       btnExport.addEventListener('click', (e) => {
@@ -1255,10 +1255,10 @@
 
     // Acción principal: obtener datos, procesar y renderizar
     async function actualizar() {
-      btnActualizar.disabled = true;
-      btnActualizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
-      
       try {
+        // Mostrar indicador de carga
+        document.body.style.cursor = 'wait';
+        
         // Obtener datos del período actual y anterior
         currentData = await obtenerFiltrados();
         previousPeriodData = await obtenerDatosPeriodoAnterior();
@@ -1284,8 +1284,7 @@
         console.error(err);
         alert('Error al actualizar. Revisa la consola para más detalles.');
       } finally {
-        btnActualizar.disabled = false;
-        btnActualizar.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar';
+        document.body.style.cursor = 'default';
       }
     }
 
