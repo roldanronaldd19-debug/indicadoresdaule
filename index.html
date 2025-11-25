@@ -3,23 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard de Indicadores de Desechos - Daule</title>
+  <title>Sistema de Análisis de Indicadores de Desechos - Daule</title>
 
   <!-- Supabase (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Chart.js con plugins -->
+  <!-- Chart.js con plugins avanzados -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-  <!-- Luxon para manejo de fechas -->
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
-  <!-- Font Awesome para iconos -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-trendline"></script>
+  <!-- Librería para exportación avanzada -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     :root {
       --primary: #0f766e;
       --primary-light: #14b8a6;
-      --primary-dark: #115e59;
+      --primary-dark: #0d5d57;
       --secondary: #4f46e5;
       --bg1: #f0fdfa;
       --bg2: #e6fff7;
@@ -29,376 +31,377 @@
       --warning: #f59e0b;
       --danger: #ef4444;
       --border: #e2e8f0;
-      --text: #1e293b;
       --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
       --radius: 12px;
     }
-
+    
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
+    
     body {
       font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg1), var(--bg2));
-      color: var(--text);
+      color: #1e293b;
       line-height: 1.6;
       min-height: 100vh;
     }
-
+    
     header {
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       padding: 24px 20px;
-      box-shadow: var(--shadow);
-      position: relative;
-      overflow: hidden;
+      text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
-
-    header::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    }
-
+    
     .header-content {
-      position: relative;
-      z-index: 1;
       max-width: 1100px;
       margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
+    
+    .logo {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-
+    
+    .logo i {
+      font-size: 28px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+    }
+    
     .subtitle {
       opacity: 0.9;
-      font-size: 16px;
-      margin-top: 6px;
+      font-size: 14px;
+      margin-top: 4px;
     }
-
+    
     main {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 32px auto;
       padding: 0 20px;
     }
-
+    
     .card {
       background: var(--card);
       border-radius: var(--radius);
       padding: 24px;
       box-shadow: var(--shadow);
       margin-bottom: 24px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid var(--border);
     }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
+    
     .card-title {
-      font-size: 20px;
-      font-weight: 600;
       color: var(--primary);
+      font-size: 18px;
+      font-weight: 600;
       margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
-
+    
     .controls {
       display: flex;
       gap: 16px;
       flex-wrap: wrap;
       align-items: flex-end;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
-
+    
     .control-group {
       display: flex;
       flex-direction: column;
       flex: 1;
       min-width: 150px;
     }
-
-    label {
+    
+    .control-group label {
       font-size: 14px;
       font-weight: 500;
       margin-bottom: 6px;
-      color: var(--text);
+      color: var(--muted);
     }
-
-    select, input {
-      padding: 12px 14px;
+    
+    select, input, button {
+      padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid var(--border);
       background: white;
+      font-family: inherit;
       font-size: 14px;
       transition: all 0.2s;
     }
-
+    
     select:focus, input:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
     }
-
+    
     button {
-      padding: 12px 20px;
-      border-radius: 8px;
-      border: none;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-primary {
       background: var(--primary);
       color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
     }
-
-    .btn-primary:hover {
+    
+    button:hover {
       background: var(--primary-dark);
-      transform: translateY(-2px);
+      transform: translateY(-1px);
     }
-
-    .btn-secondary {
+    
+    button.secondary {
       background: white;
       color: var(--primary);
       border: 1px solid var(--primary);
     }
-
-    .btn-secondary:hover {
+    
+    button.secondary:hover {
       background: var(--bg1);
-      transform: translateY(-2px);
     }
-
-    .btn-actions {
-      margin-left: auto;
+    
+    .action-buttons {
       display: flex;
-      gap: 12px;
-      align-items: center;
+      gap: 8px;
+      margin-left: auto;
     }
-
+    
     .kpis {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
-
+    
     .kpi {
       background: linear-gradient(135deg, #fff, #f7fffb);
-      padding: 20px;
-      border-radius: var(--radius);
+      padding: 16px;
+      border-radius: 10px;
       border: 1px solid #eef7f4;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      transition: transform 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
     }
-
+    
     .kpi:hover {
-      transform: translateY(-5px);
+      transform: translateY(-2px);
     }
-
+    
     .kpi-title {
-      font-size: 14px;
+      font-size: 12px;
       color: var(--muted);
       margin-bottom: 8px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
-
+    
     .kpi-value {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 700;
       color: var(--primary);
     }
-
-    .kpi-trend {
-      font-size: 14px;
+    
+    .kpi-change {
+      font-size: 12px;
       margin-top: 4px;
       display: flex;
       align-items: center;
       gap: 4px;
     }
-
-    .trend-up {
+    
+    .positive {
       color: var(--success);
     }
-
-    .trend-down {
+    
+    .negative {
       color: var(--danger);
     }
-
-    .trend-neutral {
-      color: var(--muted);
-    }
-
+    
     .chart-container {
       position: relative;
       height: 400px;
-      margin-top: 24px;
+      margin-top: 20px;
     }
-
-    .chart-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      margin-top: 16px;
+    
+    .chart-wrap {
+      margin-top: 12px;
     }
-
-    .chart-btn {
-      padding: 8px 12px;
-      font-size: 13px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .chart-btn:hover {
-      background: var(--bg1);
-      border-color: var(--primary);
-    }
-
-    .chart-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
+    
     .tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
-
+    
     .tab {
-      padding: 12px 20px;
+      padding: 10px 16px;
       cursor: pointer;
       font-weight: 500;
-      border-bottom: 3px solid transparent;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
       transition: all 0.2s;
     }
-
+    
     .tab.active {
       color: var(--primary);
-      border-bottom-color: var(--primary);
+      border-bottom: 2px solid var(--primary);
     }
-
+    
     .tab-content {
       display: none;
     }
-
+    
     .tab-content.active {
       display: block;
     }
-
+    
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 12px;
     }
-
+    
     th, td {
       padding: 12px;
       text-align: left;
       border-bottom: 1px solid var(--border);
     }
-
+    
     th {
       font-weight: 600;
-      color: var(--primary);
-      background: var(--bg1);
+      color: var(--muted);
+      font-size: 14px;
     }
-
+    
     tr:hover {
-      background: var(--bg1);
+      background-color: #f8fafc;
     }
-
-    .progress-bar {
-      height: 6px;
-      background: #e2e8f0;
-      border-radius: 3px;
-      overflow: hidden;
-      margin-top: 4px;
+    
+    .statistical-insights {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
     }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--primary);
-      border-radius: 3px;
+    
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
     }
-
+    
+    .stat-card h4 {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
     footer {
       text-align: center;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       margin: 24px 0;
-      padding: 20px;
+      padding: 16px;
     }
-
+    
     .loading {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 40px;
-      color: var(--muted);
+      height: 200px;
+      flex-direction: column;
+      gap: 12px;
     }
-
-    .loading-spinner {
-      width: 24px;
-      height: 24px;
-      border: 3px solid rgba(15, 118, 110, 0.2);
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(15, 118, 110, 0.2);
+      border-left: 4px solid var(--primary);
       border-radius: 50%;
-      border-top-color: var(--primary);
       animation: spin 1s linear infinite;
-      margin-right: 12px;
     }
-
+    
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-
+    
+    .export-options {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 40px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 8px;
+      z-index: 10;
+      min-width: 150px;
+    }
+    
+    .export-options.show {
+      display: block;
+    }
+    
+    .export-option {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .export-option:hover {
+      background: var(--bg1);
+    }
+    
     @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
       .controls {
         flex-direction: column;
         align-items: stretch;
       }
       
-      .btn-actions {
+      .action-buttons {
         margin-left: 0;
-        justify-content: stretch;
+        justify-content: center;
       }
       
-      .btn-actions button {
-        flex: 1;
-      }
-      
-      .kpis {
-        grid-template-columns: 1fr;
-      }
-      
-      .chart-container {
-        height: 300px;
+      .control-group {
+        min-width: 100%;
       }
     }
   </style>
@@ -406,43 +409,57 @@
 <body>
   <header>
     <div class="header-content">
-      <h1><i class="fas fa-recycle"></i> Dashboard de Indicadores de Desechos — Daule</h1>
-      <div class="subtitle">Análisis avanzado y visualización interactiva de datos de desechos</div>
+      <div class="logo">
+        <i class="fas fa-recycle"></i>
+        <div>
+          <h1>Sistema de Análisis de Indicadores de Desechos</h1>
+          <div class="subtitle">Municipio de Daule - Panel de control interactivo</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnHelp" class="secondary" title="Ayuda">
+          <i class="fas fa-question-circle"></i>
+        </button>
+      </div>
     </div>
   </header>
 
   <main>
-    <!-- Panel de control -->
+    <!-- Panel de control principal -->
     <div class="card">
-      <h2 class="card-title"><i class="fas fa-sliders-h"></i> Panel de Control</h2>
+      <div class="card-title">
+        <i class="fas fa-sliders-h"></i>
+        Filtros y Controles
+      </div>
       
-      <div class="controls">
+      <!-- Controles -->
+      <div class="controls" id="controls">
         <div class="control-group">
-          <label for="selectLugar"><i class="fas fa-map-marker-alt"></i> Lugar</label>
+          <label for="selectLugar">Lugar</label>
           <select id="selectLugar">
             <option value="">Todos los lugares</option>
           </select>
         </div>
 
         <div class="control-group">
-          <label for="selectGrupo"><i class="fas fa-users"></i> Grupo</label>
+          <label for="selectGrupo">Grupo</label>
           <select id="selectGrupo">
             <option value="">Todos los grupos</option>
           </select>
         </div>
 
         <div class="control-group">
-          <label for="fechaDesde"><i class="fas fa-calendar-alt"></i> Fecha desde</label>
+          <label for="fechaDesde">Fecha desde</label>
           <input id="fechaDesde" type="date" />
         </div>
 
         <div class="control-group">
-          <label for="fechaHasta"><i class="fas fa-calendar-alt"></i> Fecha hasta</label>
+          <label for="fechaHasta">Fecha hasta</label>
           <input id="fechaHasta" type="date" />
         </div>
 
         <div class="control-group">
-          <label for="selectTipo"><i class="fas fa-chart-bar"></i> Tipo de visualización</label>
+          <label for="selectTipo">Tipo de visualización</label>
           <select id="selectTipo">
             <option value="bar">Barras</option>
             <option value="line">Línea (tendencia)</option>
@@ -453,100 +470,170 @@
           </select>
         </div>
 
-        <div class="btn-actions">
-          <button id="btnActualizar" class="btn-primary">
+        <div class="action-buttons">
+          <button id="btnActualizar">
             <i class="fas fa-sync-alt"></i> Actualizar
           </button>
-          <button id="btnExport" class="btn-secondary">
-            <i class="fas fa-download"></i> Exportar
-          </button>
+          <div style="position: relative;">
+            <button id="btnExport" class="secondary">
+              <i class="fas fa-download"></i> Exportar
+            </button>
+            <div class="export-options" id="exportOptions">
+              <div class="export-option" data-type="png">
+                <i class="fas fa-image"></i> PNG
+              </div>
+              <div class="export-option" data-type="pdf">
+                <i class="fas fa-file-pdf"></i> PDF
+              </div>
+              <div class="export-option" data-type="csv">
+                <i class="fas fa-file-csv"></i> CSV
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- KPIs -->
       <div class="kpis" id="kpis">
         <div class="kpi">
-          <div class="kpi-title"><i class="fas fa-weight-hanging"></i> Total de desechos (kg)</div>
-          <div id="kpiTotal" class="kpi-value">0</div>
-          <div id="kpiTotalTrend" class="kpi-trend trend-neutral">-</div>
+          <div class="kpi-title">
+            <i class="fas fa-weight-hanging"></i> Total de desechos (kg)
+          </div>
+          <div class="kpi-value" id="kpiTotal">0</div>
+          <div class="kpi-change" id="kpiTotalChange">
+            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
+          </div>
         </div>
         <div class="kpi">
-          <div class="kpi-title"><i class="fas fa-list"></i> Categorías activas</div>
-          <div id="kpiCount" class="kpi-value">0</div>
-          <div id="kpiCountTrend" class="kpi-trend trend-neutral">-</div>
+          <div class="kpi-title">
+            <i class="fas fa-list"></i> Categorías con desechos
+          </div>
+          <div class="kpi-value" id="kpiCount">0</div>
+          <div class="kpi-change" id="kpiCountChange">
+            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
+          </div>
         </div>
         <div class="kpi">
-          <div class="kpi-title"><i class="fas fa-calendar-check"></i> Última fecha</div>
-          <div id="kpiLast" class="kpi-value">-</div>
-          <div id="kpiLastTrend" class="kpi-trend trend-neutral">-</div>
+          <div class="kpi-title">
+            <i class="fas fa-calendar-alt"></i> Última fecha registrada
+          </div>
+          <div class="kpi-value" id="kpiLast">-</div>
+          <div class="kpi-change" id="kpiLastChange">
+            <span>Días desde último registro: 0</span>
+          </div>
         </div>
         <div class="kpi">
-          <div class="kpi-title"><i class="fas fa-chart-line"></i> Tendencia mensual</div>
-          <div id="kpiTrend" class="kpi-value">-</div>
-          <div id="kpiTrendValue" class="kpi-trend trend-neutral">-</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Visualización de datos -->
-    <div class="card">
-      <h2 class="card-title"><i class="fas fa-chart-area"></i> Visualización de Datos</h2>
-      
-      <div class="tabs">
-        <div class="tab active" data-tab="chart">Gráfico</div>
-        <div class="tab" data-tab="table">Tabla</div>
-        <div class="tab" data-tab="analysis">Análisis</div>
-      </div>
-      
-      <div class="tab-content active" id="chart-tab">
-        <div class="chart-container">
-          <canvas id="mainChart"></canvas>
-        </div>
-        
-        <div class="chart-actions">
-          <button class="chart-btn active" data-type="bar">Barras</button>
-          <button class="chart-btn" data-type="line">Línea</button>
-          <button class="chart-btn" data-type="pie">Pastel</button>
-          <button class="chart-btn" data-type="doughnut">Dona</button>
-        </div>
-      </div>
-      
-      <div class="tab-content" id="table-tab">
-        <div class="card" style="padding: 12px; margin-top: 0;">
-          <table id="tableResumen">
-            <thead>
-              <tr>
-                <th>Tipo de desecho</th>
-                <th style="text-align:right">Kg</th>
-                <th style="text-align:right">% del total</th>
-                <th style="width: 120px;">Proporción</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-      
-      <div class="tab-content" id="analysis-tab">
-        <div class="card" style="padding: 12px; margin-top: 0;">
-          <h3 style="margin-bottom: 16px; color: var(--primary);">Análisis de Datos</h3>
-          <div id="analysisContent">
-            <p>Cargando análisis...</p>
+          <div class="kpi-title">
+            <i class="fas fa-chart-line"></i> Promedio diario (kg)
+          </div>
+          <div class="kpi-value" id="kpiAvg">0</div>
+          <div class="kpi-change" id="kpiAvgChange">
+            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
           </div>
         </div>
       </div>
     </div>
-    
-    <!-- Información adicional -->
+
+    <!-- Gráficos y visualizaciones -->
     <div class="card">
-      <h2 class="card-title"><i class="fas fa-info-circle"></i> Información del Sistema</h2>
-      <p>Este dashboard proporciona análisis avanzado de los datos de desechos recopilados en Daule. Utiliza visualizaciones interactivas para facilitar la comprensión de patrones y tendencias.</p>
-      <p style="margin-top: 12px;"><strong>Fuente de datos:</strong> Supabase — tabla <code>caracterizacion_desechos_daule</code></p>
+      <div class="card-title">
+        <i class="fas fa-chart-bar"></i>
+        Visualización de Datos
+      </div>
+      
+      <div class="tabs">
+        <div class="tab active" data-tab="main-chart">Gráfico Principal</div>
+        <div class="tab" data-tab="trend-analysis">Análisis de Tendencia</div>
+        <div class="tab" data-tab="comparison">Comparación</div>
+      </div>
+      
+      <div class="tab-content active" id="main-chart">
+        <div class="chart-container">
+          <canvas id="mainChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="trend-analysis">
+        <div class="chart-container">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="comparison">
+        <div class="chart-container">
+          <canvas id="comparisonChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas avanzadas -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-chart-pie"></i>
+        Estadísticas Avanzadas
+      </div>
+      
+      <div class="statistical-insights">
+        <div class="stat-card">
+          <h4>Desviación Estándar</h4>
+          <div class="stat-value" id="statStdDev">0</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            Variabilidad de los datos
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <h4>Coeficiente de Variación</h4>
+          <div class="stat-value" id="statCV">0%</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            Dispersión relativa de los datos
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <h4>Índice de Gini</h4>
+          <div class="stat-value" id="statGini">0</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            Desigualdad en la distribución
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <h4>Categoría Dominante</h4>
+          <div class="stat-value" id="statDominant">-</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            Mayor porcentaje del total
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla resumen -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-table"></i>
+        Tabla Resumen Detallada
+      </div>
+      
+      <div class="table-responsive">
+        <table id="tableResumen">
+          <thead>
+            <tr>
+              <th>Tipo de desecho</th>
+              <th style="text-align:right">Kg</th>
+              <th style="text-align:right">% del total</th>
+              <th style="text-align:right">Tendencia</th>
+              <th style="text-align:right">Proyección</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <footer>
-      <p>Dashboard de Indicadores de Desechos - Daule &copy; 2023</p>
-      <p style="margin-top: 8px; font-size: 12px;">Desarrollado con tecnologías modernas para análisis de datos</p>
+      <p>Fuente: Supabase — tabla <code>caracterizacion_desechos_daule</code></p>
+      <p style="margin-top: 8px;">Sistema desarrollado para el análisis de indicadores de desechos - Municipio de Daule</p>
     </footer>
   </main>
 
@@ -565,73 +652,161 @@
     const fechaHasta = document.getElementById('fechaHasta');
     const btnActualizar = document.getElementById('btnActualizar');
     const btnExport = document.getElementById('btnExport');
+    const exportOptions = document.getElementById('exportOptions');
 
-    // KPIs y tabla
+    // KPIs y elementos de estadísticas
     const kpiTotal = document.getElementById('kpiTotal');
     const kpiCount = document.getElementById('kpiCount');
     const kpiLast = document.getElementById('kpiLast');
-    const kpiTrend = document.getElementById('kpiTrend');
-    const tbody = document.querySelector('#tableResumen tbody');
-    const analysisContent = document.getElementById('analysisContent');
+    const kpiAvg = document.getElementById('kpiAvg');
+    const kpiTotalChange = document.getElementById('kpiTotalChange');
+    const kpiCountChange = document.getElementById('kpiCountChange');
+    const kpiLastChange = document.getElementById('kpiLastChange');
+    const kpiAvgChange = document.getElementById('kpiAvgChange');
+    
+    // Elementos de estadísticas avanzadas
+    const statStdDev = document.getElementById('statStdDev');
+    const statCV = document.getElementById('statCV');
+    const statGini = document.getElementById('statGini');
+    const statDominant = document.getElementById('statDominant');
 
-    // Chart.js instancia
-    const ctx = document.getElementById('mainChart').getContext('2d');
-    let chart;
+    // Tabla
+    const tbody = document.querySelector('#tableResumen tbody');
+
+    // Charts
+    const mainCtx = document.getElementById('mainChart').getContext('2d');
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+    let mainChart, trendChart, comparisonChart;
 
     // Variables globales para datos
-    let allData = [];
     let currentData = [];
     let previousPeriodData = [];
+    let allData = [];
+
+    // Inicializar la aplicación
+    async function initApp() {
+      await inicializarFiltros();
+      await cargarTodosLosDatos();
+      await actualizar();
+      setupEventListeners();
+    }
+
+    // Configurar event listeners
+    function setupEventListeners() {
+      btnActualizar.addEventListener('click', actualizar);
+      
+      // Toggle export options
+      btnExport.addEventListener('click', (e) => {
+        e.stopPropagation();
+        exportOptions.classList.toggle('show');
+      });
+      
+      // Cerrar export options al hacer clic fuera
+      document.addEventListener('click', () => {
+        exportOptions.classList.remove('show');
+      });
+      
+      // Manejar opciones de exportación
+      document.querySelectorAll('.export-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const type = e.currentTarget.getAttribute('data-type');
+          exportarDatos(type);
+          exportOptions.classList.remove('show');
+        });
+      });
+      
+      // Manejar pestañas
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.getAttribute('data-tab');
+          
+          // Actualizar pestañas activas
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          
+          tab.classList.add('active');
+          document.getElementById(tabId).classList.add('active');
+          
+          // Renderizar gráficos específicos si es necesario
+          if (tabId === 'trend-analysis') {
+            renderTrendAnalysis();
+          } else if (tabId === 'comparison') {
+            renderComparison();
+          }
+        });
+      });
+      
+      // Ayuda
+      document.getElementById('btnHelp').addEventListener('click', () => {
+        alert('Este panel le permite analizar los datos de desechos del Municipio de Daule. Use los filtros para segmentar la información y explore las diferentes visualizaciones disponibles.');
+      });
+    }
+
+    // Cargar todos los datos para análisis comparativos
+    async function cargarTodosLosDatos() {
+      const q = await supabase.from('caracterizacion_desechos_daule').select('*');
+      if (q.error) {
+        console.error(q.error);
+        return;
+      }
+      allData = q.data || [];
+    }
 
     // Cargar lista de filtros (lugares, grupos, fechas) desde la BD
-    async function inicializarFiltros(){
+    async function inicializarFiltros() {
       const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, fecha_registro');
-      if(q.error){ console.error(q.error); return; }
+      if (q.error) {
+        console.error(q.error);
+        return;
+      }
       const rows = q.data || [];
-      allData = rows;
 
-      const lugares = [...new Set(rows.map(r=>r.lugar).filter(Boolean))].sort();
-      const grupos = [...new Set(rows.map(r=>r.grupo).filter(Boolean))].sort();
-      const fechas = [...new Set(rows.map(r=> r.fecha_registro ? new Date(r.fecha_registro).toISOString().slice(0,10) : null).filter(Boolean))].sort();
+      const lugares = [...new Set(rows.map(r => r.lugar).filter(Boolean))].sort();
+      const grupos = [...new Set(rows.map(r => r.grupo).filter(Boolean))].sort();
+      const fechas = [...new Set(rows.map(r => r.fecha_registro ? new Date(r.fecha_registro).toISOString().slice(0, 10) : null).filter(Boolean))].sort();
 
-      lugares.forEach(v=> selectLugar.appendChild(Object.assign(document.createElement('option'),{value:v,textContent:v})));
-      grupos.forEach(v=> selectGrupo.appendChild(Object.assign(document.createElement('option'),{value:v,textContent:v})));
-      
+      lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+      grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+
       // Establecer fechas por defecto (últimos 30 días)
-      if(fechas.length) {
-        const lastDate = new Date(fechas[fechas.length-1]);
-        const firstDate = new Date(lastDate);
-        firstDate.setDate(firstDate.getDate() - 30);
+      if (fechas.length) {
+        const hoy = new Date();
+        const hace30Dias = new Date();
+        hace30Dias.setDate(hoy.getDate() - 30);
         
-        fechaDesde.value = firstDate.toISOString().slice(0,10);
-        fechaHasta.value = lastDate.toISOString().slice(0,10);
+        fechaDesde.value = hace30Dias.toISOString().slice(0, 10);
+        fechaHasta.value = hoy.toISOString().slice(0, 10);
       }
     }
 
     // Construir query según filtros y traer datos
-    async function obtenerFiltrados(){
+    async function obtenerFiltrados() {
       let q = supabase.from('caracterizacion_desechos_daule').select('*');
-      if(selectLugar.value) q = q.eq('lugar', selectLugar.value);
-      if(selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
+      if (selectLugar.value) q = q.eq('lugar', selectLugar.value);
+      if (selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
       
-      // Manejo de fechas: si ambas definidas, filtramos por rango fecha_registro entre desde y hasta (inclusive)
-      if(fechaDesde.value && fechaHasta.value){
+      // Manejo de fechas
+      if (fechaDesde.value && fechaHasta.value) {
         const desde = new Date(fechaDesde.value).toISOString();
-        // add 1 day to include the whole 'hasta' day
         const hastaDate = new Date(fechaHasta.value);
         hastaDate.setDate(hastaDate.getDate() + 1);
         const hasta = hastaDate.toISOString();
         q = q.gte('fecha_registro', desde).lt('fecha_registro', hasta);
-      } else if(fechaDesde.value){
+      } else if (fechaDesde.value) {
         q = q.gte('fecha_registro', new Date(fechaDesde.value).toISOString());
-      } else if(fechaHasta.value){
+      } else if (fechaHasta.value) {
         const hastaDate = new Date(fechaHasta.value);
         hastaDate.setDate(hastaDate.getDate() + 1);
         q = q.lt('fecha_registro', hastaDate.toISOString());
       }
       
       const r = await q;
-      if(r.error){ console.error(r.error); return []; }
+      if (r.error) {
+        console.error(r.error);
+        return [];
+      }
       return r.data || [];
     }
 
@@ -651,54 +826,104 @@
       prevHasta.setDate(prevHasta.getDate() - 1);
       
       let q = supabase.from('caracterizacion_desechos_daule').select('*');
-      if(selectLugar.value) q = q.eq('lugar', selectLugar.value);
-      if(selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
+      if (selectLugar.value) q = q.eq('lugar', selectLugar.value);
+      if (selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
       
       q = q.gte('fecha_registro', prevDesde.toISOString()).lt('fecha_registro', prevHasta.toISOString());
       
       const r = await q;
-      if(r.error){ console.error(r.error); return []; }
+      if (r.error) {
+        console.error(r.error);
+        return [];
+      }
       return r.data || [];
     }
 
     // Procesa filas y calcula totales por columna *_kg
-    function resumenPorCategorias(rows){
-      if(!rows || rows.length===0) return {labels:[],values:[],totalesObj:{},totalSum:0,lastDate:null};
+    function resumenPorCategorias(rows) {
+      if (!rows || rows.length === 0) return { labels: [], values: [], totalesObj: {}, totalSum: 0, lastDate: null, avgPerDay: 0 };
+      
       const totales = {};
-      rows.forEach(row=>{
-        Object.entries(row).forEach(([k,v])=>{
-          if(k.endsWith('_kg')){
+      const fechasUnicas = new Set();
+      
+      rows.forEach(row => {
+        Object.entries(row).forEach(([k, v]) => {
+          if (k.endsWith('_kg')) {
             const val = parseFloat(v) || 0;
             totales[k] = (totales[k] || 0) + val;
           }
-        })
+        });
+        
+        // Registrar fecha para cálculo de promedio diario
+        if (row.fecha_registro) {
+          const fecha = new Date(row.fecha_registro).toISOString().slice(0, 10);
+          fechasUnicas.add(fecha);
+        }
       });
-      const labels = Object.keys(totales).sort(); // orden alfabético por clave
-      const values = labels.map(l=> totales[l]);
-      const totalSum = values.reduce((a,b)=>a+b,0);
-      // fecha última en el conjunto
-      const lastDate = rows.map(r=> r.fecha_registro ? new Date(r.fecha_registro) : null).filter(Boolean).sort((a,b)=>b-a)[0] || null;
-      return {labels,values,totalesObj:totales,totalSum,lastDate};
+      
+      const labels = Object.keys(totales).sort();
+      const values = labels.map(l => totales[l]);
+      const totalSum = values.reduce((a, b) => a + b, 0);
+      
+      // Fecha última en el conjunto
+      const lastDate = rows.map(r => r.fecha_registro ? new Date(r.fecha_registro) : null)
+        .filter(Boolean)
+        .sort((a, b) => b - a)[0] || null;
+      
+      // Promedio diario
+      const numDias = fechasUnicas.size || 1;
+      const avgPerDay = totalSum / numDias;
+      
+      return { labels, values, totalesObj: totales, totalSum, lastDate, avgPerDay, numDias };
     }
 
-    // Render chart con Chart.js
-    function renderChart(tipo, labels, values){
-      const friendlyLabels = labels.map(l=> l.replace(/_/g,' ').replace('kg','').toUpperCase());
-      // colores consistentes (HSL)
-      const colors = friendlyLabels.map((_,i)=> `hsl(${(i*47)%360} 70% 55%)`);
-      if(chart) chart.destroy();
+    // Calcular estadísticas avanzadas
+    function calcularEstadisticas(values, totalSum) {
+      if (values.length === 0) return {};
       
-      const config = {
-        type: tipo,
+      // Desviación estándar
+      const mean = totalSum / values.length;
+      const squaredDiffs = values.map(value => Math.pow(value - mean, 2));
+      const avgSquaredDiff = squaredDiffs.reduce((sum, value) => sum + value, 0) / values.length;
+      const stdDev = Math.sqrt(avgSquaredDiff);
+      
+      // Coeficiente de variación
+      const cv = totalSum > 0 ? (stdDev / mean) * 100 : 0;
+      
+      // Índice de Gini (simplificado para este contexto)
+      const sortedValues = [...values].sort((a, b) => a - b);
+      const n = sortedValues.length;
+      let giniSum = 0;
+      
+      for (let i = 0; i < n; i++) {
+        giniSum += (i + 1) * sortedValues[i];
+      }
+      
+      const gini = totalSum > 0 ? (2 * giniSum) / (n * totalSum) - (n + 1) / n : 0;
+      
+      return { stdDev, cv, gini };
+    }
+
+    // Renderizar gráfico principal
+    function renderChart(tipo, labels, values) {
+      const friendlyLabels = labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      
+      // Colores consistentes (HSL)
+      const colors = friendlyLabels.map((_, i) => `hsl(${(i * 47) % 360} 70% 55%)`);
+      
+      if (mainChart) mainChart.destroy();
+      
+      mainChart = new Chart(mainCtx, {
+        type: tipo === 'line' ? 'line' : tipo,
         data: {
           labels: friendlyLabels,
           datasets: [{
             label: 'Kg',
             data: values,
             backgroundColor: colors,
-            borderColor: tipo === 'line' || tipo === 'radar' ? colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 1)')) : 'rgba(255, 255, 255, 0.8)',
-            borderWidth: tipo === 'line' || tipo === 'radar' ? 3 : 1,
-            fill: tipo === 'line' ? true : false,
+            borderColor: tipo === 'line' ? colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')) : 'rgba(0,0,0,0.06)',
+            borderWidth: tipo === 'line' ? 3 : 1,
+            fill: tipo === 'line',
             tension: tipo === 'line' ? 0.4 : 0
           }]
         },
@@ -709,8 +934,8 @@
             legend: {
               position: 'bottom',
               labels: {
-                padding: 20,
-                usePointStyle: true
+                usePointStyle: true,
+                padding: 20
               }
             },
             title: {
@@ -724,18 +949,14 @@
               callbacks: {
                 label: function(context) {
                   let label = context.dataset.label || '';
-                  if (label) {
-                    label += ': ';
-                  }
-                  if (context.parsed.y !== null) {
-                    label += context.parsed.y.toFixed(2) + ' kg';
-                  }
+                  if (label) label += ': ';
+                  label += context.parsed.y.toFixed(2) + ' kg';
                   return label;
                 }
               }
             }
           },
-          scales: (tipo==='bar' || tipo==='line') ? { 
+          scales: (tipo === 'bar' || tipo === 'line') ? {
             y: {
               beginAtZero: true,
               title: {
@@ -751,188 +972,325 @@
             }
           } : {}
         }
-      };
+      });
+    }
+
+    // Renderizar análisis de tendencia
+    function renderTrendAnalysis() {
+      if (!currentData.length) return;
       
-      chart = new Chart(ctx, config);
+      // Agrupar datos por fecha
+      const datosPorFecha = {};
+      currentData.forEach(row => {
+        if (!row.fecha_registro) return;
+        
+        const fecha = new Date(row.fecha_registro).toISOString().slice(0, 10);
+        if (!datosPorFecha[fecha]) datosPorFecha[fecha] = {};
+        
+        Object.entries(row).forEach(([k, v]) => {
+          if (k.endsWith('_kg')) {
+            const val = parseFloat(v) || 0;
+            datosPorFecha[fecha][k] = (datosPorFecha[fecha][k] || 0) + val;
+          }
+        });
+      });
+      
+      // Preparar datos para el gráfico
+      const fechas = Object.keys(datosPorFecha).sort();
+      const categorias = Object.keys(datosPorFecha[fechas[0]] || {}).sort();
+      
+      const datasets = categorias.map((cat, i) => {
+        const color = `hsl(${(i * 47) % 360} 70% 55%)`;
+        return {
+          label: cat.replace(/_/g, ' ').replace('kg', '').toUpperCase(),
+          data: fechas.map(fecha => datosPorFecha[fecha][cat] || 0),
+          borderColor: color,
+          backgroundColor: color.replace('hsl', 'hsla').replace(')', ', 0.1)'),
+          tension: 0.4,
+          fill: true
+        };
+      });
+      
+      if (trendChart) trendChart.destroy();
+      
+      trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: fechas.map(f => new Date(f).toLocaleDateString()),
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            title: {
+              display: true,
+              text: 'Tendencia de desechos por categoría a lo largo del tiempo'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Kilogramos (kg)'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Fecha'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Renderizar comparación
+    function renderComparison() {
+      if (!currentData.length || !previousPeriodData.length) return;
+      
+      const currentSummary = resumenPorCategorias(currentData);
+      const previousSummary = resumenPorCategorias(previousPeriodData);
+      
+      // Combinar categorías de ambos períodos
+      const allLabels = [...new Set([...currentSummary.labels, ...previousSummary.labels])].sort();
+      const currentValues = allLabels.map(label => currentSummary.totalesObj[label] || 0);
+      const previousValues = allLabels.map(label => previousSummary.totalesObj[label] || 0);
+      
+      const friendlyLabels = allLabels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      
+      if (comparisonChart) comparisonChart.destroy();
+      
+      comparisonChart = new Chart(comparisonCtx, {
+        type: 'bar',
+        data: {
+          labels: friendlyLabels,
+          datasets: [
+            {
+              label: 'Período actual',
+              data: currentValues,
+              backgroundColor: 'rgba(15, 118, 110, 0.7)',
+              borderColor: 'rgba(15, 118, 110, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Período anterior',
+              data: previousValues,
+              backgroundColor: 'rgba(107, 114, 128, 0.7)',
+              borderColor: 'rgba(107, 114, 128, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            title: {
+              display: true,
+              text: 'Comparación con período anterior'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Kilogramos (kg)'
+              }
+            }
+          }
+        }
+      });
     }
 
     // Rellenar tabla resumen y KPIs
-    function renderResumen(labels, values, totalSum, lastDate, previousData = null){
+    function renderResumen(currentSummary, previousSummary) {
       tbody.innerHTML = '';
-      const friendlyLabels = labels.map(l=> l.replace(/_/g,' ').replace('kg','').toUpperCase());
       
-      friendlyLabels.forEach((lab,i)=>{
-        const v = values[i];
-        if(v <= 0) return;
-        const pct = totalSum>0 ? ((v/totalSum)*100).toFixed(2)+'%' : '0.00%';
+      const friendlyLabels = currentSummary.labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
+      const { stdDev, cv, gini } = calcularEstadisticas(currentSummary.values, currentSummary.totalSum);
+      
+      // Actualizar estadísticas avanzadas
+      statStdDev.textContent = stdDev.toFixed(2);
+      statCV.textContent = cv.toFixed(2) + '%';
+      statGini.textContent = gini.toFixed(3);
+      
+      // Encontrar categoría dominante
+      if (currentSummary.values.length > 0) {
+        const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
+        statDominant.textContent = friendlyLabels[maxIndex] + ` (${((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1)}%)`;
+      } else {
+        statDominant.textContent = '-';
+      }
+      
+      // Llenar tabla
+      friendlyLabels.forEach((lab, i) => {
+        const v = currentSummary.values[i];
+        if (v <= 0) return;
+        
+        const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
+        
+        // Calcular tendencia si hay datos del período anterior
+        let tendencia = '-';
+        let proyeccion = '-';
+        
+        if (previousSummary && previousSummary.totalesObj[currentSummary.labels[i]]) {
+          const valorAnterior = previousSummary.totalesObj[currentSummary.labels[i]];
+          const cambio = ((v - valorAnterior) / valorAnterior) * 100;
+          
+          tendencia = cambio.toFixed(2) + '%';
+          
+          // Proyección simple (asumiendo misma tendencia)
+          const proyeccionValor = v * (1 + (cambio / 100));
+          proyeccion = proyeccionValor.toFixed(2) + ' kg';
+        }
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${lab}</td>
           <td style="text-align:right">${v.toFixed(2)}</td>
           <td style="text-align:right">${pct}</td>
-          <td>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${pct}"></div>
-            </div>
-          </td>
+          <td style="text-align:right">${tendencia}</td>
+          <td style="text-align:right">${proyeccion}</td>
         `;
         tbody.appendChild(tr);
       });
       
       // Actualizar KPIs
-      kpiTotal.textContent = totalSum.toFixed(2);
-      kpiCount.textContent = friendlyLabels.filter((_,i)=> values[i]>0).length;
-      kpiLast.textContent = lastDate ? new Date(lastDate).toLocaleDateString() : '-';
+      kpiTotal.textContent = currentSummary.totalSum.toFixed(2);
+      kpiCount.textContent = friendlyLabels.filter((_, i) => currentSummary.values[i] > 0).length;
+      kpiLast.textContent = currentSummary.lastDate ? new Date(currentSummary.lastDate).toLocaleDateString() : '-';
+      kpiAvg.textContent = currentSummary.avgPerDay.toFixed(2);
       
-      // Calcular tendencias si hay datos anteriores
-      if (previousData && previousData.totalSum > 0) {
-        const trend = ((totalSum - previousData.totalSum) / previousData.totalSum * 100).toFixed(1);
-        kpiTrend.textContent = `${trend}%`;
+      // Calcular cambios porcentuales para KPIs
+      if (previousSummary) {
+        const totalChange = ((currentSummary.totalSum - previousSummary.totalSum) / previousSummary.totalSum) * 100;
+        const countChange = ((kpiCount.textContent - previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) / previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) * 100;
+        const avgChange = ((currentSummary.avgPerDay - previousSummary.avgPerDay) / previousSummary.avgPerDay) * 100;
         
-        const trendElement = document.getElementById('kpiTrendValue');
-        if (trend > 0) {
-          trendElement.className = 'kpi-trend trend-up';
-          trendElement.innerHTML = `<i class="fas fa-arrow-up"></i> ${trend}% vs período anterior`;
-        } else if (trend < 0) {
-          trendElement.className = 'kpi-trend trend-down';
-          trendElement.innerHTML = `<i class="fas fa-arrow-down"></i> ${Math.abs(trend)}% vs período anterior`;
-        } else {
-          trendElement.className = 'kpi-trend trend-neutral';
-          trendElement.innerHTML = `Sin cambio vs período anterior`;
+        // Actualizar elementos de cambio
+        actualizarElementoCambio(kpiTotalChange, totalChange);
+        actualizarElementoCambio(kpiCountChange, countChange);
+        actualizarElementoCambio(kpiAvgChange, avgChange);
+        
+        // Días desde último registro
+        if (currentSummary.lastDate) {
+          const hoy = new Date();
+          const ultimaFecha = new Date(currentSummary.lastDate);
+          const diffTime = Math.abs(hoy - ultimaFecha);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          kpiLastChange.innerHTML = `<span>Días desde último registro: ${diffDays}</span>`;
         }
-      } else {
-        kpiTrend.textContent = '-';
-        document.getElementById('kpiTrendValue').className = 'kpi-trend trend-neutral';
-        document.getElementById('kpiTrendValue').textContent = 'Sin datos comparativos';
       }
     }
+    
+    // Helper para actualizar elementos de cambio
+    function actualizarElementoCambio(element, cambio) {
+      const icon = cambio > 0 ? 'fa-arrow-up' : (cambio < 0 ? 'fa-arrow-down' : 'fa-minus');
+      const className = cambio > 0 ? 'positive' : (cambio < 0 ? 'negative' : '');
+      
+      element.innerHTML = `<i class="fas ${icon}"></i> <span>${Math.abs(cambio).toFixed(2)}% vs período anterior</span>`;
+      element.className = `kpi-change ${className}`;
+    }
 
-    // Generar análisis de datos
-    function generarAnalisis(labels, values, totalSum, lastDate) {
-      if (labels.length === 0) {
-        analysisContent.innerHTML = '<p>No hay datos disponibles para el análisis.</p>';
+    // Exportar datos
+    function exportarDatos(tipo) {
+      if (!currentData.length) {
+        alert('No hay datos para exportar');
         return;
       }
       
-      // Encontrar el tipo de desecho con mayor cantidad
-      const maxIndex = values.indexOf(Math.max(...values));
-      const maxWaste = labels[maxIndex].replace(/_/g,' ').replace('kg','').toUpperCase();
-      const maxValue = values[maxIndex];
-      const maxPercentage = ((maxValue / totalSum) * 100).toFixed(2);
-      
-      // Encontrar el tipo de desecho con menor cantidad (excluyendo ceros)
-      const nonZeroValues = values.filter(v => v > 0);
-      const nonZeroLabels = labels.filter((_, i) => values[i] > 0);
-      const minIndex = nonZeroValues.indexOf(Math.min(...nonZeroValues));
-      const minWaste = nonZeroLabels[minIndex].replace(/_/g,' ').replace('kg','').toUpperCase();
-      const minValue = nonZeroValues[minIndex];
-      const minPercentage = ((minValue / totalSum) * 100).toFixed(2);
-      
-      // Calcular diversidad (número de categorías con datos)
-      const diversity = nonZeroLabels.length;
-      
-      analysisContent.innerHTML = `
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
-          <div class="card" style="padding: 16px;">
-            <h4 style="color: var(--primary); margin-bottom: 8px;">Resumen Principal</h4>
-            <p>El tipo de desecho más significativo es <strong>${maxWaste}</strong>, representando el <strong>${maxPercentage}%</strong> del total con ${maxValue.toFixed(2)} kg.</p>
-          </div>
+      switch (tipo) {
+        case 'png':
+          if (!mainChart) {
+            alert('Gráfico no disponible');
+            return;
+          }
+          const a = document.createElement('a');
+          a.href = mainChart.toBase64Image();
+          a.download = 'grafico-indicadores-daule.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          break;
           
-          <div class="card" style="padding: 16px;">
-            <h4 style="color: var(--primary); margin-bottom: 8px;">Diversidad de Desechos</h4>
-            <p>Se han identificado <strong>${diversity}</strong> categorías diferentes de desechos con cantidades mayores a cero.</p>
-            <p>La categoría con menor presencia es <strong>${minWaste}</strong> con ${minValue.toFixed(2)} kg (${minPercentage}%).</p>
-          </div>
+        case 'pdf':
+          // Implementación básica de PDF (requeriría más desarrollo)
+          alert('Funcionalidad de exportación PDF en desarrollo');
+          break;
           
-          <div class="card" style="padding: 16px;">
-            <h4 style="color: var(--primary); margin-bottom: 8px;">Distribución</h4>
-            <p>La distribución de desechos muestra una concentración significativa en algunas categorías principales.</p>
-            <p>Las 3 categorías principales representan aproximadamente el ${((values.slice().sort((a,b) => b-a).slice(0,3).reduce((a,b) => a+b, 0) / totalSum) * 100).toFixed(1)}% del total.</p>
-          </div>
+        case 'csv':
+          const currentSummary = resumenPorCategorias(currentData);
+          const friendlyLabels = currentSummary.labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
           
-          <div class="card" style="padding: 16px;">
-            <h4 style="color: var(--primary); margin-bottom: 8px;">Recomendaciones</h4>
-            <ul style="padding-left: 20px;">
-              <li>Enfocar esfuerzos de reciclaje en ${maxWaste} por ser el desecho más abundante.</li>
-              <li>Evaluar oportunidades de reducción en las categorías principales.</li>
-              <li>Considerar estrategias específicas para las categorías menos representadas.</li>
-            </ul>
-          </div>
-        </div>
-      `;
+          let csvContent = "Tipo de desecho,Kg,% del total\n";
+          friendlyLabels.forEach((lab, i) => {
+            const v = currentSummary.values[i];
+            if (v <= 0) return;
+            const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) : '0.00';
+            csvContent += `"${lab}",${v.toFixed(2)},${pct}%\n`;
+          });
+          
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.setAttribute('href', url);
+          link.setAttribute('download', 'datos-desechos-daule.csv');
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          break;
+      }
     }
 
     // Acción principal: obtener datos, procesar y renderizar
-    async function actualizar(){
+    async function actualizar() {
       btnActualizar.disabled = true;
       btnActualizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
       
-      try{
-        // Obtener datos actuales y del período anterior
-        const [rows, prevRows] = await Promise.all([
-          obtenerFiltrados(),
-          obtenerDatosPeriodoAnterior()
-        ]);
+      try {
+        // Obtener datos del período actual y anterior
+        currentData = await obtenerFiltrados();
+        previousPeriodData = await obtenerDatosPeriodoAnterior();
         
-        currentData = rows;
-        previousPeriodData = prevRows;
+        // Procesar datos
+        const currentSummary = resumenPorCategorias(currentData);
+        const previousSummary = resumenPorCategorias(previousPeriodData);
         
-        const {labels,values,totalesObj,totalSum,lastDate} = resumenPorCategorias(rows);
-        const prevSummary = resumenPorCategorias(prevRows);
+        // Renderizar
+        renderChart(selectTipo.value, currentSummary.labels, currentSummary.values);
+        renderResumen(currentSummary, previousSummary);
         
-        renderChart(selectTipo.value, labels, values);
-        renderResumen(labels, values, totalSum, lastDate, prevSummary);
-        generarAnalisis(labels, values, totalSum, lastDate);
-      }catch(err){
+        // Si la pestaña de análisis de tendencia está activa, renderizarla
+        if (document.querySelector('.tab[data-tab="trend-analysis"]').classList.contains('active')) {
+          renderTrendAnalysis();
+        }
+        
+        // Si la pestaña de comparación está activa, renderizarla
+        if (document.querySelector('.tab[data-tab="comparison"]').classList.contains('active')) {
+          renderComparison();
+        }
+      } catch (err) {
         console.error(err);
-        alert('Error al actualizar. Revisa la consola.');
-      }finally{
+        alert('Error al actualizar. Revisa la consola para más detalles.');
+      } finally {
         btnActualizar.disabled = false;
         btnActualizar.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar';
       }
     }
 
-    // Exportar PNG
-    btnExport.addEventListener('click', ()=>{
-      if(!chart){ alert('Gráfico no disponible'); return; }
-      const a = document.createElement('a');
-      a.href = chart.toBase64Image();
-      a.download = `grafico-desechos-${new Date().toISOString().slice(0,10)}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    });
-
-    // Cambiar tipo de gráfico desde botones
-    document.querySelectorAll('.chart-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        selectTipo.value = this.dataset.type;
-        actualizar();
-      });
-    });
-
-    // Sistema de pestañas
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        
-        this.classList.add('active');
-        document.getElementById(`${this.dataset.tab}-tab`).classList.add('active');
-      });
-    });
-
-    // Listeners
-    btnActualizar.addEventListener('click', actualizar);
-    selectTipo.addEventListener('change', actualizar);
-
     // Inicialización
-    await inicializarFiltros();
-    // Render inicial
-    await actualizar();
+    await initApp();
 
   })();
   </script>
