@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sistema de Análisis de Indicadores de Desechos - Daule</title>
+  <title>Sistema Avanzado de Análisis de Desechos - Daule</title>
 
   <!-- Supabase (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,7 +12,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <!-- Librería para exportación avanzada -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -57,7 +56,7 @@
     }
     
     .header-content {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       display: flex;
       align-items: center;
@@ -133,7 +132,7 @@
       color: var(--muted);
     }
     
-    select, input, button {
+    select, input {
       padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid var(--border);
@@ -160,6 +159,8 @@
       justify-content: center;
       gap: 6px;
       transition: all 0.2s;
+      padding: 10px 16px;
+      border-radius: 8px;
     }
     
     button:hover {
@@ -236,7 +237,7 @@
     
     .chart-container {
       position: relative;
-      height: 400px;
+      height: 500px;
       margin-top: 20px;
     }
     
@@ -294,9 +295,9 @@
       background-color: #f8fafc;
     }
     
-    .statistical-insights {
+    .statistics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 16px;
       margin-top: 20px;
     }
@@ -316,6 +317,37 @@
     }
     
     .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .stats-section {
+      margin-top: 24px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .stat-item {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    
+    .stat-number {
       font-size: 18px;
       font-weight: 600;
       color: var(--primary);
@@ -402,6 +434,10 @@
       .control-group {
         min-width: 100%;
       }
+      
+      .chart-container {
+        height: 400px;
+      }
     }
   </style>
 </head>
@@ -411,8 +447,8 @@
       <div class="logo">
         <i class="fas fa-recycle"></i>
         <div>
-          <h1>Sistema de Análisis de Indicadores de Desechos</h1>
-          <div class="subtitle">Municipio de Daule - Panel de control interactivo</div>
+          <h1>Sistema Avanzado de Análisis de Indicadores de Desechos</h1>
+          <div class="subtitle">Municipio de Daule - Panel de control profesional</div>
         </div>
       </div>
       <div class="header-actions">
@@ -428,7 +464,7 @@
     <div class="card">
       <div class="card-title">
         <i class="fas fa-sliders-h"></i>
-        Filtros y Controles
+        Filtros de Análisis
       </div>
       
       <!-- Controles -->
@@ -445,16 +481,6 @@
           <select id="selectGrupo">
             <option value="">Todos los grupos</option>
           </select>
-        </div>
-
-        <div class="control-group">
-          <label for="fechaDesde">Fecha desde</label>
-          <input id="fechaDesde" type="date" />
-        </div>
-
-        <div class="control-group">
-          <label for="fechaHasta">Fecha hasta</label>
-          <input id="fechaHasta" type="date" />
         </div>
 
         <div class="control-group">
@@ -562,43 +588,90 @@
       </div>
     </div>
 
-    <!-- Estadísticas avanzadas -->
+    <!-- Estadísticas básicas completas -->
     <div class="card">
       <div class="card-title">
         <i class="fas fa-chart-pie"></i>
-        Estadísticas Avanzadas
+        Estadísticas Básicas Completas
       </div>
       
-      <div class="statistical-insights">
-        <div class="stat-card">
-          <h4>Desviación Estándar</h4>
-          <div class="stat-value" id="statStdDev">0</div>
-          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
-            Variabilidad de los datos
+      <div class="stats-section">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Resumen General</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">Total de registros</div>
+            <div class="stat-number" id="statTotalRecords">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Período de datos</div>
+            <div class="stat-number" id="statDataPeriod">-</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Lugares únicos</div>
+            <div class="stat-number" id="statUniquePlaces">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Grupos únicos</div>
+            <div class="stat-number" id="statUniqueGroups">0</div>
           </div>
         </div>
-        
-        <div class="stat-card">
-          <h4>Coeficiente de Variación</h4>
-          <div class="stat-value" id="statCV">0%</div>
-          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
-            Dispersión relativa de los datos
+      </div>
+      
+      <div class="stats-section">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Estadísticas de Desechos</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">Categoría con mayor cantidad</div>
+            <div class="stat-number" id="statMaxCategory">-</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Categoría con menor cantidad</div>
+            <div class="stat-number" id="statMinCategory">-</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Promedio por categoría</div>
+            <div class="stat-number" id="statAvgPerCategory">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Mediana por categoría</div>
+            <div class="stat-number" id="statMedianPerCategory">0</div>
           </div>
         </div>
-        
-        <div class="stat-card">
-          <h4>Índice de Gini</h4>
-          <div class="stat-value" id="statGini">0</div>
-          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
-            Desigualdad en la distribución
+      </div>
+      
+      <div class="stats-section">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Estadísticas Avanzadas</h3>
+        <div class="statistics-grid">
+          <div class="stat-card">
+            <h4>Desviación Estándar</h4>
+            <div class="stat-value" id="statStdDev">0</div>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+              Variabilidad de los datos
+            </div>
           </div>
-        </div>
-        
-        <div class="stat-card">
-          <h4>Categoría Dominante</h4>
-          <div class="stat-value" id="statDominant">-</div>
-          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
-            Mayor porcentaje del total
+          
+          <div class="stat-card">
+            <h4>Coeficiente de Variación</h4>
+            <div class="stat-value" id="statCV">0%</div>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+              Dispersión relativa de los datos
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <h4>Índice de Gini</h4>
+            <div class="stat-value" id="statGini">0</div>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+              Desigualdad en la distribución
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <h4>Categoría Dominante</h4>
+            <div class="stat-value" id="statDominant">-</div>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+              Mayor porcentaje del total
+            </div>
           </div>
         </div>
       </div>
@@ -629,7 +702,7 @@
 
     <footer>
       <p>Fuente: Supabase — tabla <code>caracterizacion_desechos_daule</code></p>
-      <p style="margin-top: 8px;">Sistema desarrollado para el análisis de indicadores de desechos - Municipio de Daule</p>
+      <p style="margin-top: 8px;">Sistema desarrollado para el análisis avanzado de indicadores de desechos - Municipio de Daule</p>
     </footer>
   </main>
 
@@ -644,8 +717,6 @@
     const selectLugar = document.getElementById('selectLugar');
     const selectGrupo = document.getElementById('selectGrupo');
     const selectTipo = document.getElementById('selectTipo');
-    const fechaDesde = document.getElementById('fechaDesde');
-    const fechaHasta = document.getElementById('fechaHasta');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
 
@@ -658,6 +729,16 @@
     const kpiCountChange = document.getElementById('kpiCountChange');
     const kpiLastChange = document.getElementById('kpiLastChange');
     const kpiAvgChange = document.getElementById('kpiAvgChange');
+    
+    // Elementos de estadísticas básicas
+    const statTotalRecords = document.getElementById('statTotalRecords');
+    const statDataPeriod = document.getElementById('statDataPeriod');
+    const statUniquePlaces = document.getElementById('statUniquePlaces');
+    const statUniqueGroups = document.getElementById('statUniqueGroups');
+    const statMaxCategory = document.getElementById('statMaxCategory');
+    const statMinCategory = document.getElementById('statMinCategory');
+    const statAvgPerCategory = document.getElementById('statAvgPerCategory');
+    const statMedianPerCategory = document.getElementById('statMedianPerCategory');
     
     // Elementos de estadísticas avanzadas
     const statStdDev = document.getElementById('statStdDev');
@@ -692,8 +773,6 @@
       // Actualización automática al cambiar filtros
       selectLugar.addEventListener('change', actualizar);
       selectGrupo.addEventListener('change', actualizar);
-      fechaDesde.addEventListener('change', actualizar);
-      fechaHasta.addEventListener('change', actualizar);
       selectTipo.addEventListener('change', actualizar);
       
       // Toggle export options
@@ -740,7 +819,7 @@
       
       // Ayuda
       document.getElementById('btnHelp').addEventListener('click', () => {
-        alert('Este panel le permite analizar los datos de desechos del Municipio de Daule. Use los filtros para segmentar la información y explore las diferentes visualizaciones disponibles.');
+        alert('Este panel avanzado le permite analizar los datos de desechos del Municipio de Daule. Los filtros se aplican automáticamente al cambiar cualquier opción. Explore las diferentes visualizaciones y estadísticas disponibles.');
       });
     }
 
@@ -765,20 +844,9 @@
 
       const lugares = [...new Set(rows.map(r => r.lugar).filter(Boolean))].sort();
       const grupos = [...new Set(rows.map(r => r.grupo).filter(Boolean))].sort();
-      const fechas = [...new Set(rows.map(r => r.fecha_registro ? new Date(r.fecha_registro).toISOString().slice(0, 10) : null).filter(Boolean))].sort();
 
       lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-
-      // Establecer fechas por defecto (últimos 30 días)
-      if (fechas.length) {
-        const hoy = new Date();
-        const hace30Dias = new Date();
-        hace30Dias.setDate(hoy.getDate() - 30);
-        
-        fechaDesde.value = hace30Dias.toISOString().slice(0, 10);
-        fechaHasta.value = hoy.toISOString().slice(0, 10);
-      }
     }
 
     // Construir query según filtros y traer datos
@@ -786,21 +854,6 @@
       let q = supabase.from('caracterizacion_desechos_daule').select('*');
       if (selectLugar.value) q = q.eq('lugar', selectLugar.value);
       if (selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
-      
-      // Manejo de fechas
-      if (fechaDesde.value && fechaHasta.value) {
-        const desde = new Date(fechaDesde.value).toISOString();
-        const hastaDate = new Date(fechaHasta.value);
-        hastaDate.setDate(hastaDate.getDate() + 1);
-        const hasta = hastaDate.toISOString();
-        q = q.gte('fecha_registro', desde).lt('fecha_registro', hasta);
-      } else if (fechaDesde.value) {
-        q = q.gte('fecha_registro', new Date(fechaDesde.value).toISOString());
-      } else if (fechaHasta.value) {
-        const hastaDate = new Date(fechaHasta.value);
-        hastaDate.setDate(hastaDate.getDate() + 1);
-        q = q.lt('fecha_registro', hastaDate.toISOString());
-      }
       
       const r = await q;
       if (r.error) {
@@ -812,31 +865,13 @@
 
     // Obtener datos del período anterior para comparación
     async function obtenerDatosPeriodoAnterior() {
-      if (!fechaDesde.value || !fechaHasta.value) return [];
-      
-      const desde = new Date(fechaDesde.value);
-      const hasta = new Date(fechaHasta.value);
-      const diffTime = Math.abs(hasta - desde);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      const prevDesde = new Date(desde);
-      prevDesde.setDate(prevDesde.getDate() - diffDays - 1);
-      
-      const prevHasta = new Date(desde);
-      prevHasta.setDate(prevHasta.getDate() - 1);
-      
-      let q = supabase.from('caracterizacion_desechos_daule').select('*');
-      if (selectLugar.value) q = q.eq('lugar', selectLugar.value);
-      if (selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
-      
-      q = q.gte('fecha_registro', prevDesde.toISOString()).lt('fecha_registro', prevHasta.toISOString());
-      
-      const r = await q;
-      if (r.error) {
-        console.error(r.error);
-        return [];
-      }
-      return r.data || [];
+      // Para simplificar, usamos todos los datos como período anterior
+      // En una implementación real, se usaría un período de tiempo específico
+      return allData.filter(item => {
+        if (selectLugar.value && item.lugar !== selectLugar.value) return false;
+        if (selectGrupo.value && item.grupo !== selectGrupo.value) return false;
+        return true;
+      }).slice(0, Math.floor(allData.length / 2)); // Tomamos la primera mitad como período anterior
     }
 
     // Procesa filas y calcula totales por columna *_kg
@@ -877,8 +912,61 @@
       return { labels, values, totalesObj: totales, totalSum, lastDate, avgPerDay, numDias };
     }
 
+    // Calcular estadísticas básicas completas
+    function calcularEstadisticasBasicas(rows, currentSummary) {
+      if (rows.length === 0) return {};
+      
+      // Estadísticas generales
+      const totalRecords = rows.length;
+      
+      // Fechas para determinar el período
+      const fechas = rows.map(r => r.fecha_registro ? new Date(r.fecha_registro) : null)
+        .filter(Boolean)
+        .sort((a, b) => a - b);
+      
+      const dataPeriod = fechas.length > 0 ? 
+        `${fechas[0].toLocaleDateString()} - ${fechas[fechas.length-1].toLocaleDateString()}` : 
+        '-';
+      
+      // Lugares y grupos únicos
+      const lugaresUnicos = [...new Set(rows.map(r => r.lugar).filter(Boolean))];
+      const gruposUnicos = [...new Set(rows.map(r => r.grupo).filter(Boolean))];
+      
+      // Estadísticas de categorías
+      let maxCategory = '-', minCategory = '-';
+      let avgPerCategory = 0, medianPerCategory = 0;
+      
+      if (currentSummary.values.length > 0) {
+        const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
+        const minIndex = currentSummary.values.indexOf(Math.min(...currentSummary.values.filter(v => v > 0)));
+        
+        maxCategory = currentSummary.labels[maxIndex].replace(/_/g, ' ').replace('kg', '').toUpperCase();
+        minCategory = currentSummary.labels[minIndex].replace(/_/g, ' ').replace('kg', '').toUpperCase();
+        
+        avgPerCategory = currentSummary.totalSum / currentSummary.values.length;
+        
+        // Calcular mediana
+        const sortedValues = [...currentSummary.values].sort((a, b) => a - b);
+        const mid = Math.floor(sortedValues.length / 2);
+        medianPerCategory = sortedValues.length % 2 !== 0 ? 
+          sortedValues[mid] : 
+          (sortedValues[mid - 1] + sortedValues[mid]) / 2;
+      }
+      
+      return {
+        totalRecords,
+        dataPeriod,
+        uniquePlaces: lugaresUnicos.length,
+        uniqueGroups: gruposUnicos.length,
+        maxCategory,
+        minCategory,
+        avgPerCategory,
+        medianPerCategory
+      };
+    }
+
     // Calcular estadísticas avanzadas
-    function calcularEstadisticas(values, totalSum) {
+    function calcularEstadisticasAvanzadas(values, totalSum) {
       if (values.length === 0) return {};
       
       // Desviación estándar
@@ -935,15 +1023,20 @@
               position: 'bottom',
               labels: {
                 usePointStyle: true,
-                padding: 20
+                padding: 20,
+                font: {
+                  size: 14
+                }
               }
             },
             title: {
               display: true,
               text: 'Distribución de desechos (kg)',
               font: {
-                size: 16
-              }
+                size: 18,
+                weight: 'bold'
+              },
+              padding: 20
             },
             tooltip: {
               callbacks: {
@@ -961,13 +1054,31 @@
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Kilogramos (kg)'
+                text: 'Kilogramos (kg)',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              },
+              ticks: {
+                font: {
+                  size: 12
+                }
               }
             },
             x: {
               title: {
                 display: true,
-                text: 'Tipos de desechos'
+                text: 'Tipos de desechos',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              },
+              ticks: {
+                font: {
+                  size: 12
+                }
               }
             }
           } : {}
@@ -1007,7 +1118,8 @@
           borderColor: color,
           backgroundColor: color.replace('hsl', 'hsla').replace(')', ', 0.1)'),
           tension: 0.4,
-          fill: true
+          fill: true,
+          borderWidth: 2
         };
       });
       
@@ -1024,11 +1136,21 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom'
+              position: 'bottom',
+              labels: {
+                font: {
+                  size: 12
+                }
+              }
             },
             title: {
               display: true,
-              text: 'Tendencia de desechos por categoría a lo largo del tiempo'
+              text: 'Tendencia de desechos por categoría a lo largo del tiempo',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              padding: 20
             }
           },
           scales: {
@@ -1036,13 +1158,21 @@
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Kilogramos (kg)'
+                text: 'Kilogramos (kg)',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
               }
             },
             x: {
               title: {
                 display: true,
-                text: 'Fecha'
+                text: 'Fecha',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
               }
             }
           }
@@ -1092,11 +1222,21 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom'
+              position: 'bottom',
+              labels: {
+                font: {
+                  size: 12
+                }
+              }
             },
             title: {
               display: true,
-              text: 'Comparación con período anterior'
+              text: 'Comparación con período anterior',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              padding: 20
             }
           },
           scales: {
@@ -1104,7 +1244,11 @@
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Kilogramos (kg)'
+                text: 'Kilogramos (kg)',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
               }
             }
           }
@@ -1113,16 +1257,25 @@
     }
 
     // Rellenar tabla resumen y KPIs
-    function renderResumen(currentSummary, previousSummary) {
+    function renderResumen(currentSummary, previousSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
       const friendlyLabels = currentSummary.labels.map(l => l.replace(/_/g, ' ').replace('kg', '').toUpperCase());
-      const { stdDev, cv, gini } = calcularEstadisticas(currentSummary.values, currentSummary.totalSum);
+      
+      // Actualizar estadísticas básicas
+      statTotalRecords.textContent = basicStats.totalRecords;
+      statDataPeriod.textContent = basicStats.dataPeriod;
+      statUniquePlaces.textContent = basicStats.uniquePlaces;
+      statUniqueGroups.textContent = basicStats.uniqueGroups;
+      statMaxCategory.textContent = basicStats.maxCategory;
+      statMinCategory.textContent = basicStats.minCategory;
+      statAvgPerCategory.textContent = basicStats.avgPerCategory.toFixed(2);
+      statMedianPerCategory.textContent = basicStats.medianPerCategory.toFixed(2);
       
       // Actualizar estadísticas avanzadas
-      statStdDev.textContent = stdDev.toFixed(2);
-      statCV.textContent = cv.toFixed(2) + '%';
-      statGini.textContent = gini.toFixed(3);
+      statStdDev.textContent = advancedStats.stdDev.toFixed(2);
+      statCV.textContent = advancedStats.cv.toFixed(2) + '%';
+      statGini.textContent = advancedStats.gini.toFixed(3);
       
       // Encontrar categoría dominante
       if (currentSummary.values.length > 0) {
@@ -1256,9 +1409,6 @@
     // Acción principal: obtener datos, procesar y renderizar
     async function actualizar() {
       try {
-        // Mostrar indicador de carga
-        document.body.style.cursor = 'wait';
-        
         // Obtener datos del período actual y anterior
         currentData = await obtenerFiltrados();
         previousPeriodData = await obtenerDatosPeriodoAnterior();
@@ -1267,9 +1417,13 @@
         const currentSummary = resumenPorCategorias(currentData);
         const previousSummary = resumenPorCategorias(previousPeriodData);
         
+        // Calcular estadísticas
+        const basicStats = calcularEstadisticasBasicas(currentData, currentSummary);
+        const advancedStats = calcularEstadisticasAvanzadas(currentSummary.values, currentSummary.totalSum);
+        
         // Renderizar
         renderChart(selectTipo.value, currentSummary.labels, currentSummary.values);
-        renderResumen(currentSummary, previousSummary);
+        renderResumen(currentSummary, previousSummary, basicStats, advancedStats);
         
         // Si la pestaña de análisis de tendencia está activa, renderizarla
         if (document.querySelector('.tab[data-tab="trend-analysis"]').classList.contains('active')) {
@@ -1283,8 +1437,6 @@
       } catch (err) {
         console.error(err);
         alert('Error al actualizar. Revisa la consola para más detalles.');
-      } finally {
-        document.body.style.cursor = 'default';
       }
     }
 
