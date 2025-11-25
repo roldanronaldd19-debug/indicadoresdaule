@@ -484,6 +484,39 @@
       line-height: 1.5;
     }
     
+    .chart-type-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+    
+    .chart-type-btn {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .chart-type-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .chart-type-btn:hover:not(.active) {
+      background: var(--bg1);
+      border-color: var(--primary-light);
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -506,6 +539,10 @@
       
       .kpis {
         grid-template-columns: 1fr;
+      }
+      
+      .chart-type-selector {
+        justify-content: center;
       }
     }
   </style>
@@ -649,6 +686,30 @@
           <h4>Metodología de Medición</h4>
           <p>Los datos presentados corresponden a mediciones sistemáticas de desechos sólidos categorizados según el protocolo de investigación. Cada categoría representa el peso total en kilogramos registrado durante el período de estudio.</p>
         </div>
+        
+        <!-- Selector de tipo de gráfico -->
+        <div class="chart-type-selector">
+          <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
+          <div class="chart-type-btn active" data-type="bar">
+            <i class="fas fa-chart-bar"></i> Barras
+          </div>
+          <div class="chart-type-btn" data-type="pie">
+            <i class="fas fa-chart-pie"></i> Circular
+          </div>
+          <div class="chart-type-btn" data-type="doughnut">
+            <i class="fas fa-chart-pie"></i> Dona
+          </div>
+          <div class="chart-type-btn" data-type="line">
+            <i class="fas fa-chart-line"></i> Líneas
+          </div>
+          <div class="chart-type-btn" data-type="radar">
+            <i class="fas fa-bullseye"></i> Radar
+          </div>
+          <div class="chart-type-btn" data-type="polarArea">
+            <i class="fas fa-sun"></i> Área Polar
+          </div>
+        </div>
+        
         <div class="chart-container">
           <canvas id="mainChart"></canvas>
         </div>
@@ -852,6 +913,7 @@
     let currentData = [];
     let previousPeriodData = [];
     let allData = [];
+    let currentChartType = 'bar';
 
     // Inicializar la aplicación
     async function initApp() {
@@ -875,6 +937,23 @@
       selectGrupo.addEventListener('change', actualizar);
       selectSubgrupo.addEventListener('change', actualizar);
       selectCoordinador.addEventListener('change', actualizar);
+      
+      // Selector de tipo de gráfico
+      document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Remover clase activa de todos los botones
+          document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+          // Agregar clase activa al botón clickeado
+          this.classList.add('active');
+          // Actualizar tipo de gráfico
+          currentChartType = this.getAttribute('data-type');
+          // Re-renderizar el gráfico
+          if (currentData.length > 0) {
+            const currentSummary = resumenPorCategorias(currentData);
+            renderChart(currentSummary.labels, currentSummary.values, currentChartType);
+          }
+        });
+      });
       
       // Toggle export options
       btnExport.addEventListener('click', (e) => {
@@ -1101,8 +1180,8 @@
       return { stdDev, cv, gini };
     }
 
-    // Renderizar gráfico principal
-    function renderChart(labels, values) {
+    // Renderizar gráfico principal con tipo seleccionado
+    function renderChart(labels, values, chartType) {
       const friendlyLabels = labels.map(l => {
         // Mejorar nombres de categorías basados en el documento
         const nameMap = {
@@ -1140,8 +1219,8 @@
       
       if (mainChart) mainChart.destroy();
       
-      mainChart = new Chart(mainCtx, {
-        type: 'bar',
+      // Configuración base para todos los gráficos
+      const baseConfig = {
         data: {
           labels: friendlyLabels,
           datasets: [{
@@ -1149,7 +1228,7 @@
             data: values,
             backgroundColor: colors,
             borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-            borderWidth: 1
+            borderWidth: chartType === 'line' ? 2 : 1
           }]
         },
         options: {
@@ -1157,13 +1236,18 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false
+              position: chartType === 'pie' || chartType === 'doughnut' || chartType === 'polarArea' ? 'right' : 'top',
+              labels: {
+                font: {
+                  size: 12
+                }
+              }
             },
             title: {
               display: true,
-              text: 'Distribución de Desechos Sólidos por Categoría',
+              text: `Distribución de Desechos Sólidos por Categoría - ${getChartTypeName(chartType)}`,
               font: {
-                size: 18,
+                size: 16,
                 weight: 'bold'
               },
               padding: 20
@@ -1173,49 +1257,108 @@
                 label: function(context) {
                   let label = context.dataset.label || '';
                   if (label) label += ': ';
-                  label += context.parsed.y.toFixed(2) + ' kg';
+                  label += context.parsed !== undefined ? context.parsed.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
                   return label;
                 }
               }
             }
-          },
+          }
+        }
+      };
+      
+      // Configuraciones específicas por tipo de gráfico
+      const typeSpecificConfigs = {
+        bar: {
           scales: {
             y: {
               beginAtZero: true,
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: {
-                  size: 14,
-                  weight: 'bold'
-                }
-              },
-              ticks: {
-                font: {
-                  size: 12
-                }
+                font: { size: 14, weight: 'bold' }
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: {
-                  size: 14,
-                  weight: 'bold'
-                }
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
-                font: {
-                  size: 11
-                },
                 maxRotation: 45,
                 minRotation: 45
               }
             }
           }
+        },
+        line: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Peso (kg)',
+                font: { size: 14, weight: 'bold' }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Categorías de Desechos',
+                font: { size: 14, weight: 'bold' }
+              }
+            }
+          }
+        },
+        pie: {
+          // Configuración específica para gráfico circular
+        },
+        doughnut: {
+          // Configuración específica para gráfico de dona
+        },
+        radar: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              ticks: {
+                display: false
+              }
+            }
+          }
+        },
+        polarArea: {
+          scales: {
+            r: {
+              beginAtZero: true
+            }
+          }
         }
-      });
+      };
+      
+      // Combinar configuración base con configuración específica del tipo
+      const finalConfig = {
+        type: chartType,
+        data: baseConfig.data,
+        options: {
+          ...baseConfig.options,
+          ...(typeSpecificConfigs[chartType] || {})
+        }
+      };
+      
+      mainChart = new Chart(mainCtx, finalConfig);
+    }
+    
+    // Obtener nombre legible del tipo de gráfico
+    function getChartTypeName(type) {
+      const names = {
+        'bar': 'Gráfico de Barras',
+        'pie': 'Gráfico Circular',
+        'doughnut': 'Gráfico de Dona',
+        'line': 'Gráfico de Líneas',
+        'radar': 'Gráfico Radar',
+        'polarArea': 'Área Polar'
+      };
+      return names[type] || type;
     }
 
     // Renderizar análisis de tendencia
@@ -1644,7 +1787,7 @@
         const advancedStats = calcularEstadisticasAvanzadas(currentSummary.values, currentSummary.totalSum);
         
         // Renderizar
-        renderChart(currentSummary.labels, currentSummary.values);
+        renderChart(currentSummary.labels, currentSummary.values, currentChartType);
         renderResumen(currentSummary, previousSummary, basicStats, advancedStats);
         
         // Si la pestaña de análisis de tendencia está activa, renderizarla
