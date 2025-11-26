@@ -533,13 +533,13 @@
       <div class="logo">
         <i class="fas fa-recycle"></i>
         <div class="logo-text">
-          <h1>Análisis Académico de Desechos Sólidos</h1>
-          <div class="subtitle">Cantón Daule - Investigación Científica</div>
+          <h1>Análisis de Desechos Sólidos</h1>
+          <div class="subtitle">Cantón Daule - Panel de Indicadores</div>
         </div>
       </div>
       <div class="header-actions">
-        <button id="btnHelp" class="secondary" title="Metodología">
-          <i class="fas fa-book"></i> Metodología
+        <button id="btnHelp" class="secondary" title="Ayuda">
+          <i class="fas fa-question-circle"></i> Ayuda
         </button>
       </div>
     </div>
@@ -550,7 +550,7 @@
     <div class="card">
       <div class="card-title">
         <i class="fas fa-sliders-h"></i>
-        Filtros de Investigación
+        Filtros de Análisis
       </div>
       
       <!-- Controles -->
@@ -629,19 +629,19 @@
         </div>
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-calendar-alt"></i> Última Medición
+            <i class="fas fa-percentage"></i> Categoría Dominante
           </div>
-          <div class="kpi-value" id="kpiLast">-</div>
-          <div class="kpi-change" id="kpiLastChange">
-            <span>Días desde último registro: 0</span>
+          <div class="kpi-value" id="kpiDominant">-</div>
+          <div class="kpi-change" id="kpiDominantChange">
+            <span>% del total</span>
           </div>
         </div>
         <div class="kpi">
           <div class="kpi-title">
-            <i class="fas fa-chart-bar"></i> Promedio Diario (kg)
+            <i class="fas fa-balance-scale"></i> Promedio por Categoría (kg)
           </div>
-          <div class="kpi-value" id="kpiAvg">0</div>
-          <div class="kpi-change" id="kpiAvgChange">
+          <div class="kpi-value" id="kpiAvgCategory">0</div>
+          <div class="kpi-change" id="kpiAvgCategoryChange">
             <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
           </div>
         </div>
@@ -652,7 +652,7 @@
     <div class="card">
       <div class="card-title">
         <i class="fas fa-chart-bar"></i>
-        Visualización de Datos de Investigación
+        Visualización de Datos
       </div>
       
       <div class="tabs">
@@ -676,25 +676,17 @@
           <div class="chart-type-btn" data-type="radar">
             <i class="fas fa-bullseye"></i> Radar
           </div>
-          <div class="chart-type-btn" data-type="polarArea">
-            <i class="fas fa-sun"></i> Área Polar
-          </div>
-          <div class="chart-type-btn" data-type="scatter">
-            <i class="fas fa-braille"></i> Dispersión
-          </div>
         </div>
         
         <div class="chart-container">
           <canvas id="mainChart"></canvas>
         </div>
-        <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
       </div>
       
       <div class="tab-content" id="comparison">
         <div class="chart-container">
           <canvas id="comparisonChart"></canvas>
         </div>
-        <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
       </div>
     </div>
 
@@ -713,16 +705,16 @@
             <div class="stat-number" id="statTotalRecords">0</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Período de Datos</div>
-            <div class="stat-number" id="statDataPeriod">-</div>
-          </div>
-          <div class="stat-item">
             <div class="stat-label">Ubicaciones Únicas</div>
             <div class="stat-number" id="statUniquePlaces">0</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">Grupos de Estudio</div>
             <div class="stat-number" id="statUniqueGroups">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Coordinadores</div>
+            <div class="stat-number" id="statUniqueCoordinators">0</div>
           </div>
         </div>
       </div>
@@ -777,10 +769,10 @@
           </div>
           
           <div class="stat-card">
-            <h4>Categoría Dominante</h4>
-            <div class="stat-value" id="statDominant">-</div>
+            <h4>Total General (kg)</h4>
+            <div class="stat-value" id="statTotalKg">0</div>
             <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
-              Mayor porcentaje del total
+              Suma de todos los desechos
             </div>
           </div>
         </div>
@@ -806,12 +798,10 @@
           <tbody></tbody>
         </table>
       </div>
-      <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
     </div>
 
     <footer>
-      <p>Investigación sobre Gestión de Desechos Sólidos - Cantón Daule</p>
-      <p style="margin-top: 8px;">Fuente: Base de datos <code>caracterizacion_desechos_daule</code> | Última actualización: <span id="lastUpdate">-</span></p>
+      <p>Fuente: Base de datos <code>caracterizacion_desechos_daule</code> | Última actualización: 25 de noviembre de 2025</p>
     </footer>
   </main>
 
@@ -829,23 +819,22 @@
     const selectCoordinador = document.getElementById('selectCoordinador');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
-    const lastUpdate = document.getElementById('lastUpdate');
 
     // KPIs y elementos de estadísticas
     const kpiTotal = document.getElementById('kpiTotal');
     const kpiCount = document.getElementById('kpiCount');
-    const kpiLast = document.getElementById('kpiLast');
-    const kpiAvg = document.getElementById('kpiAvg');
+    const kpiDominant = document.getElementById('kpiDominant');
+    const kpiAvgCategory = document.getElementById('kpiAvgCategory');
     const kpiTotalChange = document.getElementById('kpiTotalChange');
     const kpiCountChange = document.getElementById('kpiCountChange');
-    const kpiLastChange = document.getElementById('kpiLastChange');
-    const kpiAvgChange = document.getElementById('kpiAvgChange');
+    const kpiDominantChange = document.getElementById('kpiDominantChange');
+    const kpiAvgCategoryChange = document.getElementById('kpiAvgCategoryChange');
     
     // Elementos de estadísticas básicas
     const statTotalRecords = document.getElementById('statTotalRecords');
-    const statDataPeriod = document.getElementById('statDataPeriod');
     const statUniquePlaces = document.getElementById('statUniquePlaces');
     const statUniqueGroups = document.getElementById('statUniqueGroups');
+    const statUniqueCoordinators = document.getElementById('statUniqueCoordinators');
     const statMaxCategory = document.getElementById('statMaxCategory');
     const statMinCategory = document.getElementById('statMinCategory');
     const statAvgPerCategory = document.getElementById('statAvgPerCategory');
@@ -855,7 +844,7 @@
     const statStdDev = document.getElementById('statStdDev');
     const statCV = document.getElementById('statCV');
     const statGini = document.getElementById('statGini');
-    const statDominant = document.getElementById('statDominant');
+    const statTotalKg = document.getElementById('statTotalKg');
 
     // Tabla
     const tbody = document.querySelector('#tableResumen tbody');
@@ -877,13 +866,6 @@
       await cargarTodosLosDatos();
       await actualizar();
       setupEventListeners();
-      
-      // Establecer fecha de última actualización
-      lastUpdate.textContent = new Date().toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
     }
 
     // Configurar event listeners
@@ -951,9 +933,9 @@
         });
       });
       
-      // Ayuda/Metodología
+      // Ayuda
       document.getElementById('btnHelp').addEventListener('click', () => {
-        alert('Este panel de investigación académica permite analizar datos de desechos sólidos del Cantón Daule. Los filtros se aplican automáticamente. Utilice las diferentes pestañas para explorar diversas visualizaciones y análisis estadísticos.');
+        alert('Este panel permite analizar datos de desechos sólidos del Cantón Daule. Los filtros se aplican automáticamente. Utilice las diferentes pestañas para explorar diversas visualizaciones y análisis estadísticos.');
       });
     }
 
@@ -1061,18 +1043,10 @@
       // Estadísticas generales
       const totalRecords = rows.length;
       
-      // Fechas para determinar el período
-      const fechas = rows.map(r => r.fecha_registro ? new Date(r.fecha_registro) : null)
-        .filter(Boolean)
-        .sort((a, b) => a - b);
-      
-      const dataPeriod = fechas.length > 0 ? 
-        `${fechas[0].toLocaleDateString()} - ${fechas[fechas.length-1].toLocaleDateString()}` : 
-        '-';
-      
-      // Lugares y grupos únicos
+      // Lugares, grupos y coordinadores únicos
       const lugaresUnicos = [...new Set(rows.map(r => r.lugar).filter(Boolean))];
       const gruposUnicos = [...new Set(rows.map(r => r.grupo).filter(Boolean))];
+      const coordinadoresUnicos = [...new Set(rows.map(r => r.coordinador).filter(Boolean))];
       
       // Estadísticas de categorías
       let maxCategory = '-', minCategory = '-';
@@ -1097,9 +1071,9 @@
       
       return {
         totalRecords,
-        dataPeriod,
         uniquePlaces: lugaresUnicos.length,
         uniqueGroups: gruposUnicos.length,
+        uniqueCoordinators: coordinadoresUnicos.length,
         maxCategory,
         minCategory,
         avgPerCategory,
@@ -1131,7 +1105,7 @@
       
       const gini = totalSum > 0 ? (2 * giniSum) / (n * totalSum) - (n + 1) / n : 0;
       
-      return { stdDev, cv, gini };
+      return { stdDev, cv, gini, totalSum };
     }
 
     // Renderizar gráfico principal con tipo seleccionado
@@ -1197,7 +1171,7 @@
                 },
                 // Para gráficos circulares, limitar el texto de la leyenda
                 generateLabels: function(chart) {
-                  if (chartType === 'pie' || chartType === 'polarArea') {
+                  if (chartType === 'pie') {
                     const original = Chart.defaults.plugins.legend.labels.generateLabels;
                     const labels = original.call(this, chart);
                     // Acortar etiquetas largas
@@ -1309,32 +1283,6 @@
               }
             }
           }
-        },
-        polarArea: {
-          scales: {
-            r: {
-              beginAtZero: true
-            }
-          }
-        },
-        scatter: {
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' }
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' }
-              }
-            }
-          }
         }
       };
       
@@ -1348,14 +1296,6 @@
         }
       };
       
-      // Para gráfico de dispersión, necesitamos transformar los datos
-      if (chartType === 'scatter') {
-        finalConfig.data.datasets[0].data = values.map((value, index) => ({
-          x: index,
-          y: value
-        }));
-      }
-      
       mainChart = new Chart(mainCtx, finalConfig);
     }
     
@@ -1365,9 +1305,7 @@
         'bar': 'Gráfico de Barras',
         'pie': 'Gráfico Circular',
         'line': 'Gráfico de Líneas',
-        'radar': 'Gráfico Radar',
-        'polarArea': 'Área Polar',
-        'scatter': 'Gráfico de Dispersión'
+        'radar': 'Gráfico Radar'
       };
       return names[type] || type;
     }
@@ -1523,9 +1461,9 @@
       
       // Actualizar estadísticas básicas
       statTotalRecords.textContent = basicStats.totalRecords;
-      statDataPeriod.textContent = basicStats.dataPeriod;
       statUniquePlaces.textContent = basicStats.uniquePlaces;
       statUniqueGroups.textContent = basicStats.uniqueGroups;
+      statUniqueCoordinators.textContent = basicStats.uniqueCoordinators;
       statMaxCategory.textContent = basicStats.maxCategory;
       statMinCategory.textContent = basicStats.minCategory;
       statAvgPerCategory.textContent = basicStats.avgPerCategory.toFixed(2);
@@ -1535,13 +1473,15 @@
       statStdDev.textContent = advancedStats.stdDev.toFixed(2);
       statCV.textContent = advancedStats.cv.toFixed(2) + '%';
       statGini.textContent = advancedStats.gini.toFixed(3);
+      statTotalKg.textContent = advancedStats.totalSum.toFixed(2);
       
-      // Encontrar categoría dominante
+      // Encontrar categoría dominante para KPI
+      let dominantCategory = '-';
+      let dominantPercentage = '0%';
       if (currentSummary.values.length > 0) {
         const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
-        statDominant.textContent = friendlyLabels[maxIndex] + ` (${((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1)}%)`;
-      } else {
-        statDominant.textContent = '-';
+        dominantCategory = friendlyLabels[maxIndex];
+        dominantPercentage = ((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1) + '%';
       }
       
       // Llenar tabla (solo con las columnas solicitadas)
@@ -1563,32 +1503,26 @@
       // Actualizar KPIs
       kpiTotal.textContent = currentSummary.totalSum.toFixed(2);
       kpiCount.textContent = friendlyLabels.filter((_, i) => currentSummary.values[i] > 0).length;
-      kpiLast.textContent = currentSummary.lastDate ? new Date(currentSummary.lastDate).toLocaleDateString() : '-';
-      kpiAvg.textContent = currentSummary.avgPerDay.toFixed(2);
+      kpiDominant.textContent = dominantCategory;
+      kpiAvgCategory.textContent = basicStats.avgPerCategory.toFixed(2);
+      
+      // Actualizar KPIs de categoría dominante
+      kpiDominantChange.innerHTML = `<span>${dominantPercentage} del total</span>`;
       
       // Calcular cambios porcentuales para KPIs
       if (previousSummary && previousSummary.totalSum > 0) {
         const totalChange = ((currentSummary.totalSum - previousSummary.totalSum) / previousSummary.totalSum) * 100;
         const countChange = ((kpiCount.textContent - previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) / previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) * 100;
-        const avgChange = ((currentSummary.avgPerDay - previousSummary.avgPerDay) / previousSummary.avgPerDay) * 100;
+        const avgChange = ((basicStats.avgPerCategory - (previousSummary.totalSum / previousSummary.labels.length)) / (previousSummary.totalSum / previousSummary.labels.length)) * 100;
         
         // Actualizar elementos de cambio
         actualizarElementoCambio(kpiTotalChange, totalChange);
         actualizarElementoCambio(kpiCountChange, countChange);
-        actualizarElementoCambio(kpiAvgChange, avgChange);
-        
-        // Días desde último registro
-        if (currentSummary.lastDate) {
-          const hoy = new Date();
-          const ultimaFecha = new Date(currentSummary.lastDate);
-          const diffTime = Math.abs(hoy - ultimaFecha);
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          kpiLastChange.innerHTML = `<span>Días desde último registro: ${diffDays}</span>`;
-        }
+        actualizarElementoCambio(kpiAvgCategoryChange, avgChange);
       } else {
         kpiTotalChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
         kpiCountChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
-        kpiAvgChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+        kpiAvgCategoryChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
       }
     }
     
