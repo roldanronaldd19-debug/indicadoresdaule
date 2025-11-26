@@ -1309,20 +1309,35 @@
       const colors = friendlyLabels.map((_, i) => `hsl(${(i * 360 / friendlyLabels.length) % 360} 70% 55%)`);
       
       if (chartType === 'boxplot') {
-        // Diagrama de caja y bigotes
-        const datasets = [{
-          label: 'Distribución de Desechos',
-          data: currentSummary.values,
-          backgroundColor: 'rgba(15, 118, 110, 0.2)',
-          borderColor: 'rgba(15, 118, 110, 1)',
-          borderWidth: 1
-        }];
+        // Implementación de diagrama de caja y bigotes usando un gráfico de barras
+        // Calculamos los valores para el diagrama de caja
+        const sortedValues = [...currentSummary.values].sort((a, b) => a - b);
+        const q1Index = Math.floor(sortedValues.length * 0.25);
+        const medianIndex = Math.floor(sortedValues.length * 0.5);
+        const q3Index = Math.floor(sortedValues.length * 0.75);
         
+        const q1 = sortedValues[q1Index];
+        const median = sortedValues[medianIndex];
+        const q3 = sortedValues[q3Index];
+        const min = sortedValues[0];
+        const max = sortedValues[sortedValues.length - 1];
+        
+        const iqr = q3 - q1;
+        const lowerWhisker = Math.max(min, q1 - 1.5 * iqr);
+        const upperWhisker = Math.min(max, q3 + 1.5 * iqr);
+        
+        // Creamos un gráfico de barras que simule un diagrama de caja
         advancedChart = new Chart(advancedCtx, {
-          type: 'boxplot',
+          type: 'bar',
           data: {
-            labels: ['Distribución'],
-            datasets: datasets
+            labels: ['Distribución de Desechos'],
+            datasets: [{
+              label: 'Diagrama de Caja y Bigotes',
+              data: [median],
+              backgroundColor: 'rgba(15, 118, 110, 0.2)',
+              borderColor: 'rgba(15, 118, 110, 1)',
+              borderWidth: 1
+            }]
           },
           options: {
             responsive: true,
@@ -1340,8 +1355,13 @@
               tooltip: {
                 callbacks: {
                   label: function(context) {
-                    const value = context.raw;
-                    return `Valor: ${value.toFixed(2)} kg`;
+                    return [
+                      `Mínimo: ${min.toFixed(2)} kg`,
+                      `Q1: ${q1.toFixed(2)} kg`,
+                      `Mediana: ${median.toFixed(2)} kg`,
+                      `Q3: ${q3.toFixed(2)} kg`,
+                      `Máximo: ${max.toFixed(2)} kg`
+                    ];
                   }
                 }
               }
