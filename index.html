@@ -448,6 +448,13 @@
       line-height: 1.5;
     }
     
+    .no-data {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px;
+      font-style: italic;
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -880,12 +887,18 @@
 
     // Cargar todos los datos para análisis
     async function cargarTodosLosDatos() {
-      const q = await supabase.from('caracterizacion_desechos_daule').select('*');
-      if (q.error) {
-        console.error(q.error);
-        return;
+      try {
+        const q = await supabase.from('caracterizacion_desechos_daule').select('*');
+        if (q.error) {
+          console.error(q.error);
+          alert('Error al cargar los datos: ' + q.error.message);
+          return;
+        }
+        allData = q.data || [];
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+        alert('Error al cargar los datos. Verifique su conexión a internet.');
       }
-      allData = q.data || [];
     }
 
     // Inicializar filtros con todos los datos disponibles
@@ -926,32 +939,52 @@
         filteredData = filteredData.filter(item => item.subgrupo === selectSubgrupo.value);
       }
 
+      // Guardar valores seleccionados actuales
+      const selectedGrupo = selectGrupo.value;
+      const selectedSubgrupo = selectSubgrupo.value;
+      const selectedCoordinador = selectCoordinador.value;
+
       // Actualizar select de Grupo
       const gruposDisponibles = [...new Set(filteredData.map(r => r.grupo).filter(Boolean))].sort();
       selectGrupo.innerHTML = '<option value="">Todos los grupos</option>';
-      gruposDisponibles.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { 
-        value: v, 
-        textContent: v,
-        selected: selectGrupo.value === v
-      })));
+      gruposDisponibles.forEach(v => {
+        const option = Object.assign(document.createElement('option'), { 
+          value: v, 
+          textContent: v
+        });
+        if (v === selectedGrupo && gruposDisponibles.includes(selectedGrupo)) {
+          option.selected = true;
+        }
+        selectGrupo.appendChild(option);
+      });
 
       // Actualizar select de Subgrupo
       const subgruposDisponibles = [...new Set(filteredData.map(r => r.subgrupo).filter(Boolean))].sort();
       selectSubgrupo.innerHTML = '<option value="">Todos los subgrupos</option>';
-      subgruposDisponibles.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { 
-        value: v, 
-        textContent: v,
-        selected: selectSubgrupo.value === v
-      })));
+      subgruposDisponibles.forEach(v => {
+        const option = Object.assign(document.createElement('option'), { 
+          value: v, 
+          textContent: v
+        });
+        if (v === selectedSubgrupo && subgruposDisponibles.includes(selectedSubgrupo)) {
+          option.selected = true;
+        }
+        selectSubgrupo.appendChild(option);
+      });
 
       // Actualizar select de Coordinador
       const coordinadoresDisponibles = [...new Set(filteredData.map(r => r.coordinador).filter(Boolean))].sort();
       selectCoordinador.innerHTML = '<option value="">Todos los coordinadores</option>';
-      coordinadoresDisponibles.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { 
-        value: v, 
-        textContent: v,
-        selected: selectCoordinador.value === v
-      })));
+      coordinadoresDisponibles.forEach(v => {
+        const option = Object.assign(document.createElement('option'), { 
+          value: v, 
+          textContent: v
+        });
+        if (v === selectedCoordinador && coordinadoresDisponibles.includes(selectedCoordinador)) {
+          option.selected = true;
+        }
+        selectCoordinador.appendChild(option);
+      });
     }
 
     // Construir query según filtros y traer datos
@@ -1001,7 +1034,16 @@
 
     // Calcular estadísticas básicas completas
     function calcularEstadisticasBasicas(rows, currentSummary) {
-      if (rows.length === 0) return {};
+      if (rows.length === 0) return {
+        totalRecords: 0,
+        uniquePlaces: 0,
+        uniqueGroups: 0,
+        uniqueCoordinators: 0,
+        maxCategory: '-',
+        minCategory: '-',
+        avgPerCategory: 0,
+        medianPerCategory: 0
+      };
       
       // Estadísticas generales
       const totalRecords = rows.length;
@@ -1019,8 +1061,8 @@
         const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
         const minIndex = currentSummary.values.indexOf(Math.min(...currentSummary.values.filter(v => v > 0)));
         
-        maxCategory = currentSummary.labels[maxIndex].replace(/_/g, ' ').replace('kg', '').toUpperCase();
-        minCategory = currentSummary.labels[minIndex].replace(/_/g, ' ').replace('kg', '').toUpperCase();
+        maxCategory = currentSummary.labels[maxIndex] ? currentSummary.labels[maxIndex].replace(/_/g, ' ').replace('kg', '').toUpperCase() : '-';
+        minCategory = currentSummary.labels[minIndex] ? currentSummary.labels[minIndex].replace(/_/g, ' ').replace('kg', '').toUpperCase() : '-';
         
         avgPerCategory = currentSummary.totalSum / currentSummary.values.length;
         
@@ -1046,7 +1088,7 @@
 
     // Calcular estadísticas avanzadas
     function calcularEstadisticasAvanzadas(values, totalSum) {
-      if (values.length === 0) return {};
+      if (values.length === 0) return { stdDev: 0, cv: 0, gini: 0, totalSum: 0 };
       
       // Desviación estándar
       const mean = totalSum / values.length;
@@ -1110,6 +1152,16 @@
       
       if (mainChart) mainChart.destroy();
       
+      // Si no hay datos, mostrar mensaje
+      if (values.length === 0 || values.every(v => v === 0)) {
+        mainCtx.clearRect(0, 0, mainCtx.canvas.width, mainCtx.canvas.height);
+        mainCtx.font = '16px Inter';
+        mainCtx.fillStyle = '#64748b';
+        mainCtx.textAlign = 'center';
+        mainCtx.fillText('No hay datos disponibles para mostrar', mainCtx.canvas.width / 2, mainCtx.canvas.height / 2);
+        return;
+      }
+      
       // Configuración base para todos los gráficos
       const baseConfig = {
         data: {
@@ -1136,21 +1188,6 @@
               labels: {
                 font: {
                   size: 12
-                },
-                // Para gráficos circulares, limitar el texto de la leyenda
-                generateLabels: function(chart) {
-                  if (chartType === 'pie') {
-                    const original = Chart.defaults.plugins.legend.labels.generateLabels;
-                    const labels = original.call(this, chart);
-                    // Acortar etiquetas largas
-                    return labels.map(label => {
-                      if (label.text.length > 20) {
-                        label.text = label.text.substring(0, 17) + '...';
-                      }
-                      return label;
-                    });
-                  }
-                  return Chart.defaults.plugins.legend.labels.generateLabels.call(this, chart);
                 }
               }
             },
@@ -1251,46 +1288,6 @@
               }
             }
           }
-        },
-        histogram: {
-          // Histograma - Calcular bins
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Frecuencia',
-                font: { size: 14, weight: 'bold' }
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Rango de Pesos (kg)',
-                font: { size: 14, weight: 'bold' }
-              }
-            }
-          }
-        },
-        scatter: {
-          // Gráfico de dispersión
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' }
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Índice de Categoría',
-                font: { size: 14, weight: 'bold' }
-              }
-            }
-          }
         }
       };
       
@@ -1299,7 +1296,7 @@
         // Calcular bins para el histograma
         const maxValue = Math.max(...values);
         const minValue = Math.min(...values);
-        const binCount = 10;
+        const binCount = Math.min(10, values.length);
         const binWidth = (maxValue - minValue) / binCount;
         
         const bins = Array(binCount).fill(0);
@@ -1317,6 +1314,29 @@
         baseConfig.data.labels = binLabels;
         baseConfig.data.datasets[0].data = bins;
         baseConfig.data.datasets[0].label = 'Frecuencia';
+        baseConfig.data.datasets[0].backgroundColor = 'rgba(15, 118, 110, 0.7)';
+        baseConfig.data.datasets[0].borderColor = 'rgba(15, 118, 110, 1)';
+        
+        // Configuración específica para histograma
+        typeSpecificConfigs.histogram = {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Frecuencia',
+                font: { size: 14, weight: 'bold' }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Rango de Pesos (kg)',
+                font: { size: 14, weight: 'bold' }
+              }
+            }
+          }
+        };
         
       } else if (chartType === 'scatter') {
         // Gráfico de dispersión
@@ -1328,6 +1348,8 @@
         baseConfig.data.labels = undefined;
         baseConfig.data.datasets[0].data = dataPoints;
         baseConfig.data.datasets[0].label = 'Datos';
+        baseConfig.data.datasets[0].backgroundColor = 'rgba(15, 118, 110, 0.7)';
+        baseConfig.data.datasets[0].borderColor = 'rgba(15, 118, 110, 1)';
         
         // Calcular línea de regresión lineal simple
         const n = dataPoints.length;
@@ -1352,8 +1374,30 @@
           borderColor: 'rgba(239, 68, 68, 0.8)',
           borderWidth: 2,
           pointRadius: 0,
-          fill: false
+          fill: false,
+          tension: 0
         });
+        
+        // Configuración específica para scatter
+        typeSpecificConfigs.scatter = {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Peso (kg)',
+                font: { size: 14, weight: 'bold' }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Índice de Categoría',
+                font: { size: 14, weight: 'bold' }
+              }
+            }
+          }
+        };
       }
       
       // Combinar configuración base con configuración específica del tipo
@@ -1384,7 +1428,14 @@
 
     // Renderizar comparación
     function renderComparison() {
-      if (!currentData.length) return;
+      if (!currentData.length) {
+        comparisonCtx.clearRect(0, 0, comparisonCtx.canvas.width, comparisonCtx.canvas.height);
+        comparisonCtx.font = '16px Inter';
+        comparisonCtx.fillStyle = '#64748b';
+        comparisonCtx.textAlign = 'center';
+        comparisonCtx.fillText('No hay datos disponibles para mostrar', comparisonCtx.canvas.width / 2, comparisonCtx.canvas.height / 2);
+        return;
+      }
       
       // Agrupar datos por grupo
       const datosPorGrupo = {};
@@ -1499,6 +1550,15 @@
     // Rellenar tabla resumen y estadísticas
     function renderResumen(currentSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
+      
+      if (currentSummary.labels.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td colspan="3" class="no-data">No hay datos disponibles para mostrar</td>
+        `;
+        tbody.appendChild(tr);
+        return;
+      }
       
       const friendlyLabels = currentSummary.labels.map(l => {
         const nameMap = {
