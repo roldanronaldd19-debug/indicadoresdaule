@@ -601,6 +601,53 @@
       </div>
     </div>
 
+    <!-- KPIs -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-chart-line"></i>
+        Resumen de Datos
+      </div>
+      
+      <div class="kpis" id="kpis">
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-weight-hanging"></i> Total de Desechos (kg)
+          </div>
+          <div class="kpi-value" id="kpiTotal">0</div>
+          <div class="kpi-change" id="kpiTotalChange">
+            <span>Datos actuales</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-list"></i> Categorías con Desechos
+          </div>
+          <div class="kpi-value" id="kpiCount">0</div>
+          <div class="kpi-change" id="kpiCountChange">
+            <span>Tipos diferentes</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-percentage"></i> Categoría Dominante
+          </div>
+          <div class="kpi-value" id="kpiDominant">-</div>
+          <div class="kpi-change" id="kpiDominantChange">
+            <span>% del total</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-balance-scale"></i> Promedio por Categoría (kg)
+          </div>
+          <div class="kpi-value" id="kpiAvgCategory">0</div>
+          <div class="kpi-change" id="kpiAvgCategoryChange">
+            <span>Promedio general</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Gráficos y visualizaciones -->
     <div class="card">
       <div class="card-title">
@@ -645,15 +692,15 @@
       
       <div class="tab-content" id="advanced">
         <div class="chart-type-selector">
-          <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
+          <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de análisis:</span>
           <div class="chart-type-btn active" data-type="boxplot">
-            <i class="fas fa-chart-area"></i> Caja y Bigotes
+            <i class="fas fa-chart-area"></i> Diagrama Caja Bigote
           </div>
           <div class="chart-type-btn" data-type="histogram">
             <i class="fas fa-chart-bar"></i> Histograma
           </div>
           <div class="chart-type-btn" data-type="scatter">
-            <i class="fas fa-braille"></i> Dispersión
+            <i class="fas fa-braille"></i> Dispersión con Regresión
           </div>
         </div>
         
@@ -770,7 +817,7 @@
           </thead>
           <tbody></tbody>
           <tfoot>
-            <tr style="background-color: #f0fdfa; font-weight: bold;">
+            <tr style="background-color: #f0f9ff; font-weight: bold;">
               <td>Total General</td>
               <td id="tableTotal" style="text-align:right">0.00</td>
               <td style="text-align:right">100.00%</td>
@@ -801,6 +848,16 @@
     const exportOptions = document.getElementById('exportOptions');
     const tableTotal = document.getElementById('tableTotal');
 
+    // KPIs y elementos de estadísticas
+    const kpiTotal = document.getElementById('kpiTotal');
+    const kpiCount = document.getElementById('kpiCount');
+    const kpiDominant = document.getElementById('kpiDominant');
+    const kpiAvgCategory = document.getElementById('kpiAvgCategory');
+    const kpiTotalChange = document.getElementById('kpiTotalChange');
+    const kpiCountChange = document.getElementById('kpiCountChange');
+    const kpiDominantChange = document.getElementById('kpiDominantChange');
+    const kpiAvgCategoryChange = document.getElementById('kpiAvgCategoryChange');
+    
     // Elementos de estadísticas básicas
     const statTotalRecords = document.getElementById('statTotalRecords');
     const statUniquePlaces = document.getElementById('statUniquePlaces');
@@ -830,7 +887,7 @@
     let currentData = [];
     let allData = [];
     let currentChartType = 'bar';
-    let advancedChartType = 'boxplot';
+    let currentAdvancedChartType = 'boxplot';
 
     // Inicializar la aplicación
     async function initApp() {
@@ -843,40 +900,38 @@
     // Configurar event listeners
     function setupEventListeners() {
       // Actualización automática al cambiar filtros
-      selectLugar.addEventListener('change', actualizarFiltrosDependientes);
-      selectGrupo.addEventListener('change', actualizarFiltrosDependientes);
-      selectSubgrupo.addEventListener('change', actualizarFiltrosDependientes);
+      selectLugar.addEventListener('change', actualizarFiltrosDinamicos);
+      selectGrupo.addEventListener('change', actualizarFiltrosDinamicos);
+      selectSubgrupo.addEventListener('change', actualizarFiltrosDinamicos);
       selectCoordinador.addEventListener('change', actualizar);
       
-      // Selector de tipo de gráfico principal
-      document.querySelectorAll('#main-chart .chart-type-btn').forEach(btn => {
+      // Selector de tipo de gráfico
+      document.querySelectorAll('.chart-type-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-          // Remover clase activa de todos los botones
-          document.querySelectorAll('#main-chart .chart-type-btn').forEach(b => b.classList.remove('active'));
-          // Agregar clase activa al botón clickeado
-          this.classList.add('active');
-          // Actualizar tipo de gráfico
-          currentChartType = this.getAttribute('data-type');
-          // Re-renderizar el gráfico
-          if (currentData.length > 0) {
-            const currentSummary = resumenPorCategorias(currentData);
-            renderChart(currentSummary.labels, currentSummary.values, currentChartType);
-          }
-        });
-      });
-      
-      // Selector de tipo de gráfico avanzado
-      document.querySelectorAll('#advanced .chart-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          // Remover clase activa de todos los botones
-          document.querySelectorAll('#advanced .chart-type-btn').forEach(b => b.classList.remove('active'));
-          // Agregar clase activa al botón clickeado
-          this.classList.add('active');
-          // Actualizar tipo de gráfico
-          advancedChartType = this.getAttribute('data-type');
-          // Re-renderizar el gráfico
-          if (currentData.length > 0) {
-            renderAdvancedChart(advancedChartType);
+          const tab = this.closest('.tab-content');
+          if (tab.id === 'main-chart') {
+            // Remover clase activa de todos los botones en main-chart
+            tab.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+            // Agregar clase activa al botón clickeado
+            this.classList.add('active');
+            // Actualizar tipo de gráfico
+            currentChartType = this.getAttribute('data-type');
+            // Re-renderizar el gráfico
+            if (currentData.length > 0) {
+              const currentSummary = resumenPorCategorias(currentData);
+              renderChart(currentSummary.labels, currentSummary.values, currentChartType);
+            }
+          } else if (tab.id === 'advanced') {
+            // Remover clase activa de todos los botones en advanced
+            tab.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+            // Agregar clase activa al botón clickeado
+            this.classList.add('active');
+            // Actualizar tipo de gráfico avanzado
+            currentAdvancedChartType = this.getAttribute('data-type');
+            // Re-renderizar el gráfico avanzado
+            if (currentData.length > 0) {
+              renderAdvancedChart(currentAdvancedChartType);
+            }
           }
         });
       });
@@ -918,18 +973,18 @@
           if (tabId === 'comparison') {
             renderComparison();
           } else if (tabId === 'advanced') {
-            renderAdvancedChart(advancedChartType);
+            renderAdvancedChart(currentAdvancedChartType);
           }
         });
       });
       
       // Ayuda
       document.getElementById('btnHelp').addEventListener('click', () => {
-        alert('Este panel permite analizar datos de desechos sólidos del Cantón Daule. Los filtros se aplican automáticamente. Utilice las diferentes pestañas para explorar diversas visualizaciones y análisis estadísticos.');
+        alert('Este panel permite analizar datos de desechos sólidos del Cantón Daule. Los filtros se sincronizan automáticamente. Utilice las diferentes pestañas para explorar diversas visualizaciones y análisis estadísticos.');
       });
     }
 
-    // Cargar todos los datos para análisis comparativos
+    // Cargar todos los datos para análisis
     async function cargarTodosLosDatos() {
       const q = await supabase.from('caracterizacion_desechos_daule').select('*');
       if (q.error) {
@@ -941,34 +996,26 @@
 
     // Inicializar filtros con datos disponibles
     async function inicializarFiltros() {
-      // Limpiar filtros existentes
-      selectLugar.innerHTML = '<option value="">Todas las ubicaciones</option>';
-      selectGrupo.innerHTML = '<option value="">Todos los grupos</option>';
-      selectSubgrupo.innerHTML = '<option value="">Todos los subgrupos</option>';
-      selectCoordinador.innerHTML = '<option value="">Todos los coordinadores</option>';
-
-      // Obtener valores únicos de todos los datos
       const lugares = [...new Set(allData.map(r => r.lugar).filter(Boolean))].sort();
       const grupos = [...new Set(allData.map(r => r.grupo).filter(Boolean))].sort();
       const subgrupos = [...new Set(allData.map(r => r.subgrupo).filter(Boolean))].sort();
       const coordinadores = [...new Set(allData.map(r => r.coordinador).filter(Boolean))].sort();
 
-      // Llenar filtros
       lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       subgrupos.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       coordinadores.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
     }
 
-    // Actualizar filtros dependientes cuando cambia un filtro principal
-    async function actualizarFiltrosDependientes() {
-      // Obtener filtros actuales
+    // Actualizar filtros dinámicamente según selección
+    async function actualizarFiltrosDinamicos() {
+      // Obtener valores seleccionados
       const lugarSeleccionado = selectLugar.value;
       const grupoSeleccionado = selectGrupo.value;
       const subgrupoSeleccionado = selectSubgrupo.value;
-
+      
       // Filtrar datos según selecciones actuales
-      let datosFiltrados = allData;
+      let datosFiltrados = [...allData];
       
       if (lugarSeleccionado) {
         datosFiltrados = datosFiltrados.filter(d => d.lugar === lugarSeleccionado);
@@ -981,44 +1028,44 @@
       if (subgrupoSeleccionado) {
         datosFiltrados = datosFiltrados.filter(d => d.subgrupo === subgrupoSeleccionado);
       }
-
-      // Actualizar opciones de filtros dependientes
-      actualizarOpcionesFiltro(selectGrupo, 'grupo', datosFiltrados, grupoSeleccionado);
-      actualizarOpcionesFiltro(selectSubgrupo, 'subgrupo', datosFiltrados, subgrupoSeleccionado);
-      actualizarOpcionesFiltro(selectCoordinador, 'coordinador', datosFiltrados);
-
-      // Actualizar visualización
+      
+      // Actualizar opciones de grupos disponibles
+      const gruposDisponibles = [...new Set(datosFiltrados.map(r => r.grupo).filter(Boolean))].sort();
+      actualizarSelect(selectGrupo, gruposDisponibles, grupoSeleccionado);
+      
+      // Actualizar opciones de subgrupos disponibles
+      const subgruposDisponibles = [...new Set(datosFiltrados.map(r => r.subgrupo).filter(Boolean))].sort();
+      actualizarSelect(selectSubgrupo, subgruposDisponibles, subgrupoSeleccionado);
+      
+      // Actualizar opciones de coordinadores disponibles
+      const coordinadoresDisponibles = [...new Set(datosFiltrados.map(r => r.coordinador).filter(Boolean))].sort();
+      actualizarSelect(selectCoordinador, coordinadoresDisponibles, selectCoordinador.value);
+      
+      // Actualizar datos y visualizaciones
       await actualizar();
     }
-
-    // Actualizar opciones de un filtro específico
-    function actualizarOpcionesFiltro(selectElement, campo, datos, valorSeleccionado = '') {
+    
+    // Función auxiliar para actualizar select
+    function actualizarSelect(selectElement, opciones, valorSeleccionado) {
       const valorActual = selectElement.value;
-      const opcionesAnteriores = Array.from(selectElement.options).map(opt => opt.value);
+      selectElement.innerHTML = '<option value="">Todos</option>';
       
-      // Obtener valores únicos del campo en los datos filtrados
-      const valoresUnicos = [...new Set(datos.map(d => d[campo]).filter(Boolean))].sort();
-      
-      // Mantener el valor seleccionado si todavía está disponible
-      const valorAMantener = valoresUnicos.includes(valorSeleccionado) ? valorSeleccionado : 
-                            valoresUnicos.includes(valorActual) ? valorActual : '';
-      
-      // Limpiar y repoblar el select
-      selectElement.innerHTML = '<option value="">Todos los ' + campo + 's</option>';
-      valoresUnicos.forEach(valor => {
+      opciones.forEach(opcion => {
         const option = document.createElement('option');
-        option.value = valor;
-        option.textContent = valor;
-        if (valor === valorAMantener) {
-          option.selected = true;
-        }
+        option.value = opcion;
+        option.textContent = opcion;
         selectElement.appendChild(option);
       });
+      
+      // Restaurar selección si todavía está disponible
+      if (valorSeleccionado && opciones.includes(valorSeleccionado)) {
+        selectElement.value = valorSeleccionado;
+      }
     }
 
     // Construir query según filtros y traer datos
     async function obtenerFiltrados() {
-      let datosFiltrados = allData;
+      let datosFiltrados = [...allData];
       
       if (selectLugar.value) {
         datosFiltrados = datosFiltrados.filter(d => d.lugar === selectLugar.value);
@@ -1198,6 +1245,21 @@
               labels: {
                 font: {
                   size: 12
+                },
+                // Para gráficos circulares, limitar el texto de la leyenda
+                generateLabels: function(chart) {
+                  if (chartType === 'pie') {
+                    const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                    const labels = original.call(this, chart);
+                    // Acortar etiquetas largas
+                    return labels.map(label => {
+                      if (label.text.length > 20) {
+                        label.text = label.text.substring(0, 17) + '...';
+                      }
+                      return label;
+                    });
+                  }
+                  return Chart.defaults.plugins.legend.labels.generateLabels.call(this, chart);
                 }
               }
             },
@@ -1320,10 +1382,7 @@
         'bar': 'Gráfico de Barras',
         'pie': 'Gráfico Circular',
         'line': 'Gráfico de Líneas',
-        'radar': 'Gráfico Radar',
-        'boxplot': 'Caja y Bigotes',
-        'histogram': 'Histograma',
-        'scatter': 'Gráfico de Dispersión'
+        'radar': 'Gráfico Radar'
       };
       return names[type] || type;
     }
@@ -1332,236 +1391,264 @@
     function renderAdvancedChart(chartType) {
       if (!currentData.length) return;
       
+      const currentSummary = resumenPorCategorias(currentData);
+      const values = currentSummary.values;
+      
       if (advancedChart) advancedChart.destroy();
       
-      const currentSummary = resumenPorCategorias(currentData);
-      const friendlyLabels = currentSummary.labels.map(l => {
-        const nameMap = {
-          'de_jardin_kg': 'Jardín',
-          'de_cocina_kg': 'Cocina',
-          'aceite_comestible_kg': 'Aceite',
-          'papel_blanco_kg': 'Papel Blanco',
-          'papel_periodico_kg': 'Periódico',
-          'papel_archivo_kg': 'Papel Archivo',
-          'carton_kg': 'Cartón',
-          'tetra_brik_kg': 'Tetra Brik',
-          'pet_kg': 'PET',
-          'plastico_mixto_kg': 'Plástico Mixto'
-        };
+      if (chartType === 'boxplot') {
+        // Diagrama de caja y bigotes
+        const boxplotData = calcularBoxPlotData(values);
         
-        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
-      });
-      
-      // Colores consistentes (HSL)
-      const colors = friendlyLabels.map((_, i) => `hsl(${(i * 360 / friendlyLabels.length) % 360} 70% 55%)`);
-      
-      let config;
-      
-      switch(chartType) {
-        case 'boxplot':
-          // Simular datos para gráfico de caja y bigotes
-          const boxData = friendlyLabels.map((label, i) => {
-            const value = currentSummary.values[i];
-            return {
-              label: label,
-              data: [
-                value * 0.7,  // Mínimo
-                value * 0.8,  // Q1
-                value,        // Mediana
-                value * 1.2,  // Q3
-                value * 1.3   // Máximo
-              ]
-            };
-          });
-          
-          config = {
-            type: 'bar',
-            data: {
-              labels: friendlyLabels,
-              datasets: [{
-                label: 'Distribución (kg)',
-                data: currentSummary.values,
-                backgroundColor: colors,
-                borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                title: {
-                  display: true,
-                  text: 'Distribución de Desechos - Caja y Bigotes',
-                  font: {
-                    size: 16,
-                    weight: 'bold'
-                  },
-                  padding: 20
+        advancedChart = new Chart(advancedCtx, {
+          type: 'boxplot',
+          data: {
+            labels: ['Distribución de Desechos'],
+            datasets: [{
+              label: 'Peso (kg)',
+              data: [boxplotData],
+              backgroundColor: 'rgba(15, 118, 110, 0.2)',
+              borderColor: 'rgba(15, 118, 110, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Diagrama de Caja y Bigotes - Distribución de Desechos',
+                font: {
+                  size: 16,
+                  weight: 'bold'
                 },
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} kg`;
-                    }
-                  }
-                }
+                padding: 20
               },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Peso (kg)',
-                    font: { size: 14, weight: 'bold' }
-                  }
-                },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Categorías de Desechos',
-                    font: { size: 14, weight: 'bold' }
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const data = context.raw;
+                    return [
+                      `Mínimo: ${data.min.toFixed(2)} kg`,
+                      `Q1: ${data.q1.toFixed(2)} kg`,
+                      `Mediana: ${data.median.toFixed(2)} kg`,
+                      `Q3: ${data.q3.toFixed(2)} kg`,
+                      `Máximo: ${data.max.toFixed(2)} kg`
+                    ];
                   }
                 }
               }
+            },
+            scales: {
+              y: {
+                title: {
+                  display: true,
+                  text: 'Peso (kg)',
+                  font: { size: 14, weight: 'bold' }
+                }
+              }
             }
-          };
-          break;
-          
-        case 'histogram':
-          // Crear datos para histograma
-          const histogramData = Array(10).fill(0);
-          const maxValue = Math.max(...currentSummary.values);
-          
-          currentSummary.values.forEach(value => {
-            const binIndex = Math.min(Math.floor((value / maxValue) * 10), 9);
-            histogramData[binIndex]++;
-          });
-          
-          config = {
-            type: 'bar',
-            data: {
-              labels: Array(10).fill(0).map((_, i) => {
-                const min = (i / 10 * maxValue).toFixed(0);
-                const max = ((i + 1) / 10 * maxValue).toFixed(0);
-                return `${min}-${max} kg`;
-              }),
-              datasets: [{
-                label: 'Frecuencia',
-                data: histogramData,
+          }
+        });
+      } else if (chartType === 'histogram') {
+        // Histograma
+        const histogramData = calcularHistograma(values);
+        
+        advancedChart = new Chart(advancedCtx, {
+          type: 'bar',
+          data: {
+            labels: histogramData.labels,
+            datasets: [{
+              label: 'Frecuencia',
+              data: histogramData.frequencies,
+              backgroundColor: 'rgba(15, 118, 110, 0.7)',
+              borderColor: 'rgba(15, 118, 110, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Histograma - Distribución de Pesos de Desechos',
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: 20
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Frecuencia',
+                  font: { size: 14, weight: 'bold' }
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Rango de Pesos (kg)',
+                  font: { size: 14, weight: 'bold' }
+                }
+              }
+            }
+          }
+        });
+      } else if (chartType === 'scatter') {
+        // Gráfico de dispersión con línea de regresión
+        const scatterData = values.map((value, index) => ({
+          x: index,
+          y: value
+        }));
+        
+        const regressionLine = calcularRegresionLineal(scatterData);
+        
+        advancedChart = new Chart(advancedCtx, {
+          type: 'scatter',
+          data: {
+            datasets: [
+              {
+                label: 'Datos',
+                data: scatterData,
                 backgroundColor: 'rgba(15, 118, 110, 0.7)',
                 borderColor: 'rgba(15, 118, 110, 1)',
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                title: {
-                  display: true,
-                  text: 'Distribución de Frecuencias - Histograma',
-                  font: {
-                    size: 16,
-                    weight: 'bold'
-                  },
-                  padding: 20
-                }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Frecuencia',
-                    font: { size: 14, weight: 'bold' }
-                  }
-                },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Rangos de Peso (kg)',
-                    font: { size: 14, weight: 'bold' }
-                  }
-                }
-              }
-            }
-          };
-          break;
-          
-        case 'scatter':
-          // Crear datos para gráfico de dispersión
-          const scatterData = currentSummary.values.map((value, index) => ({
-            x: index,
-            y: value,
-            label: friendlyLabels[index]
-          }));
-          
-          config = {
-            type: 'scatter',
-            data: {
-              datasets: [{
-                label: 'Dispersión de Desechos',
-                data: scatterData,
-                backgroundColor: colors,
-                borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
                 borderWidth: 1,
-                pointRadius: 6,
-                pointHoverRadius: 8
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                title: {
-                  display: true,
-                  text: 'Dispersión de Desechos por Categoría',
-                  font: {
-                    size: 16,
-                    weight: 'bold'
-                  },
-                  padding: 20
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      const point = scatterData[context.dataIndex];
-                      return `${point.label}: ${point.y.toFixed(2)} kg`;
-                    }
-                  }
-                }
+                pointRadius: 5
               },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Peso (kg)',
-                    font: { size: 14, weight: 'bold' }
-                  }
+              {
+                label: 'Línea de Regresión',
+                data: regressionLine.points,
+                type: 'line',
+                borderColor: 'rgba(239, 68, 68, 0.8)',
+                borderWidth: 2,
+                pointRadius: 0,
+                fill: false,
+                tension: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Gráfico de Dispersión con Regresión Lineal',
+                font: {
+                  size: 16,
+                  weight: 'bold'
                 },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Índice de Categoría',
-                    font: { size: 14, weight: 'bold' }
-                  },
-                  ticks: {
-                    callback: function(value) {
-                      return friendlyLabels[value] || value;
-                    }
+                padding: 20
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `Categoría ${context.parsed.x}: ${context.parsed.y.toFixed(2)} kg`;
                   }
                 }
               }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Peso (kg)',
+                  font: { size: 14, weight: 'bold' }
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Índice de Categoría',
+                  font: { size: 14, weight: 'bold' }
+                }
+              }
             }
-          };
-          break;
+          }
+        });
+      }
+    }
+    
+    // Calcular datos para diagrama de caja y bigotes
+    function calcularBoxPlotData(values) {
+      const sorted = [...values].sort((a, b) => a - b);
+      const n = sorted.length;
+      
+      const min = sorted[0];
+      const max = sorted[n - 1];
+      
+      const q1 = calcularPercentil(sorted, 25);
+      const median = calcularPercentil(sorted, 50);
+      const q3 = calcularPercentil(sorted, 75);
+      
+      return { min, q1, median, q3, max };
+    }
+    
+    // Calcular percentil
+    function calcularPercentil(sorted, p) {
+      const index = (p / 100) * (sorted.length - 1);
+      const lower = Math.floor(index);
+      const upper = Math.ceil(index);
+      
+      if (lower === upper) {
+        return sorted[lower];
       }
       
-      if (config) {
-        advancedChart = new Chart(advancedCtx, config);
+      return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower);
+    }
+    
+    // Calcular histograma
+    function calcularHistograma(values, bins = 10) {
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const binWidth = (max - min) / bins;
+      
+      const frequencies = Array(bins).fill(0);
+      const labels = [];
+      
+      for (let i = 0; i < bins; i++) {
+        const binStart = min + i * binWidth;
+        const binEnd = binStart + binWidth;
+        labels.push(`${binStart.toFixed(1)} - ${binEnd.toFixed(1)}`);
+        
+        values.forEach(value => {
+          if (value >= binStart && (i === bins - 1 ? value <= binEnd : value < binEnd)) {
+            frequencies[i]++;
+          }
+        });
       }
+      
+      return { labels, frequencies };
+    }
+    
+    // Calcular regresión lineal
+    function calcularRegresionLineal(points) {
+      const n = points.length;
+      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+      
+      points.forEach(point => {
+        sumX += point.x;
+        sumY += point.y;
+        sumXY += point.x * point.y;
+        sumX2 += point.x * point.x;
+      });
+      
+      const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      const intercept = (sumY - slope * sumX) / n;
+      
+      const regressionPoints = [
+        { x: 0, y: intercept },
+        { x: n - 1, y: slope * (n - 1) + intercept }
+      ];
+      
+      return { slope, intercept, points: regressionPoints };
     }
 
     // Renderizar comparación
@@ -1678,7 +1765,7 @@
       });
     }
 
-    // Rellenar tabla resumen y estadísticas
+    // Rellenar tabla resumen y KPIs
     function renderResumen(currentSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
@@ -1729,14 +1816,22 @@
       statGini.textContent = advancedStats.gini.toFixed(3);
       statTotalKg.textContent = advancedStats.totalSum.toFixed(2);
       
-      // Actualizar total en la tabla
-      tableTotal.textContent = currentSummary.totalSum.toFixed(2);
+      // Encontrar categoría dominante para KPI
+      let dominantCategory = '-';
+      let dominantPercentage = '0%';
+      if (currentSummary.values.length > 0) {
+        const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
+        dominantCategory = friendlyLabels[maxIndex];
+        dominantPercentage = ((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1) + '%';
+      }
       
       // Llenar tabla
+      let tableTotalSum = 0;
       friendlyLabels.forEach((lab, i) => {
         const v = currentSummary.values[i];
         if (v <= 0) return;
         
+        tableTotalSum += v;
         const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
         
         const tr = document.createElement('tr');
@@ -1747,6 +1842,18 @@
         `;
         tbody.appendChild(tr);
       });
+      
+      // Actualizar total en la tabla
+      tableTotal.textContent = tableTotalSum.toFixed(2);
+      
+      // Actualizar KPIs
+      kpiTotal.textContent = currentSummary.totalSum.toFixed(2);
+      kpiCount.textContent = friendlyLabels.filter((_, i) => currentSummary.values[i] > 0).length;
+      kpiDominant.textContent = dominantCategory;
+      kpiAvgCategory.textContent = basicStats.avgPerCategory.toFixed(2);
+      
+      // Actualizar KPIs de categoría dominante
+      kpiDominantChange.innerHTML = `<span>${dominantPercentage} del total</span>`;
     }
 
     // Exportar datos
@@ -1758,13 +1865,12 @@
       
       switch (tipo) {
         case 'png':
-          const chartToExport = document.querySelector('.tab-content.active').id === 'advanced' ? advancedChart : mainChart;
-          if (!chartToExport) {
+          if (!mainChart) {
             alert('Gráfico no disponible');
             return;
           }
           const a = document.createElement('a');
-          a.href = chartToExport.toBase64Image();
+          a.href = mainChart.toBase64Image();
           a.download = 'grafico-desechos-daule.png';
           document.body.appendChild(a);
           a.click();
@@ -1811,7 +1917,9 @@
             const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) : '0.00';
             csvContent += `"${lab}",${v.toFixed(2)},${pct}%\n`;
           });
-          csvContent += `"TOTAL GENERAL",${currentSummary.totalSum.toFixed(2)},100.00%\n`;
+          
+          // Agregar total
+          csvContent += `"TOTAL",${currentSummary.totalSum.toFixed(2)},100.00%\n`;
           
           const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
@@ -1850,7 +1958,7 @@
         
         // Si la pestaña de análisis avanzado está activa, renderizarla
         if (document.querySelector('.tab[data-tab="advanced"]').classList.contains('active')) {
-          renderAdvancedChart(advancedChartType);
+          renderAdvancedChart(currentAdvancedChartType);
         }
       } catch (err) {
         console.error(err);
