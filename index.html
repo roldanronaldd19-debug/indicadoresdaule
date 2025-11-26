@@ -1,3 +1,8 @@
+Análisis y Corrección de Filtros
+
+He identificado el problema con los filtros. El error ocurre porque cuando se selecciona un filtro, los demás selectores no se actualizan para mostrar solo las opciones válidas según la selección actual. Voy a corregir esto implementando una lógica de filtros interdependientes.
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -620,6 +625,9 @@
       </div>
 
       <div class="action-buttons">
+        <button id="btnResetFilters" class="secondary">
+          <i class="fas fa-undo"></i> Restablecer Filtros
+        </button>
         <div style="position: relative;">
           <button id="btnExport" class="secondary">
             <i class="fas fa-download"></i> Exportar Datos
@@ -864,6 +872,7 @@
     const selectSubgrupo = document.getElementById('selectSubgrupo');
     const selectCoordinador = document.getElementById('selectCoordinador');
     const btnExport = document.getElementById('btnExport');
+    const btnResetFilters = document.getElementById('btnResetFilters');
     const exportOptions = document.getElementById('exportOptions');
     const regressionInfo = document.getElementById('regressionInfo');
     const regressionEquation = document.getElementById('regressionEquation');
@@ -915,11 +924,17 @@
     let previousPeriodData = [];
     let allData = [];
     let currentChartType = 'bar';
+    let filterOptions = {
+      lugares: [],
+      grupos: [],
+      subgrupos: [],
+      coordinadores: []
+    };
 
     // Inicializar la aplicación
     async function initApp() {
-      await inicializarFiltros();
       await cargarTodosLosDatos();
+      await inicializarFiltros();
       await actualizar();
       setupEventListeners();
     }
@@ -927,10 +942,25 @@
     // Configurar event listeners
     function setupEventListeners() {
       // Actualización automática al cambiar filtros
-      selectLugar.addEventListener('change', actualizar);
-      selectGrupo.addEventListener('change', actualizar);
-      selectSubgrupo.addEventListener('change', actualizar);
-      selectCoordinador.addEventListener('change', actualizar);
+      selectLugar.addEventListener('change', async function() {
+        await actualizarFiltrosDependientes('lugar');
+        await actualizar();
+      });
+      
+      selectGrupo.addEventListener('change', async function() {
+        await actualizarFiltrosDependientes('grupo');
+        await actualizar();
+      });
+      
+      selectSubgrupo.addEventListener('change', async function() {
+        await actualizarFiltrosDependientes('subgrupo');
+        await actualizar();
+      });
+      
+      selectCoordinador.addEventListener('change', async function() {
+        await actualizarFiltrosDependientes('coordinador');
+        await actualizar();
+      });
       
       // Selector de tipo de gráfico
       document.querySelectorAll('.chart-type-btn').forEach(btn => {
@@ -947,6 +977,16 @@
             renderChart(currentSummary.labels, currentSummary.values, currentChartType);
           }
         });
+      });
+      
+      // Botón para restablecer filtros
+      btnResetFilters.addEventListener('click', function() {
+        selectLugar.value = '';
+        selectGrupo.value = '';
+        selectSubgrupo.value = '';
+        selectCoordinador.value = '';
+        actualizarFiltrosDependientes('reset');
+        actualizar();
       });
       
       // Toggle export options
@@ -1007,6 +1047,7 @@
 
     // Cargar lista de filtros desde la BD
     async function inicializarFiltros() {
+      // Obtener todos los datos para construir los filtros
       const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, subgrupo, coordinador');
       if (q.error) {
         console.error(q.error);
@@ -1014,22 +1055,120 @@
       }
       const rows = q.data || [];
 
-      const lugares = [...new Set(rows.map(r => r.lugar).filter(Boolean))].sort();
-      const grupos = [...new Set(rows.map(r => r.grupo).filter(Boolean))].sort();
-      const subgrupos = [...new Set(rows.map(r => r.subgrupo).filter(Boolean))].sort();
-      const coordinadores = [...new Set(rows.map(r => r.coordinador).filter(Boolean))].sort();
+      // Construir opciones de filtro
+      filterOptions.lugares = [...new Set(rows.map(r => r.lugar).filter(Boolean))].sort();
+      filterOptions.grupos = [...new Set(rows.map(r => r.grupo).filter(Boolean))].sort();
+      filterOptions.subgrupos = [...new Set(rows.map(r => r.subgrupo).filter(Boolean))].sort();
+      filterOptions.coordinadores = [...new Set(rows.map(r => r.coordinador).filter(Boolean))].sort();
 
       // Actualizar información de filtros
-      lugarInfo.textContent = `${lugares.length} ubicaciones disponibles`;
-      grupoInfo.textContent = `${grupos.length} grupos disponibles`;
-      subgrupoInfo.textContent = `${subgrupos.length} subgrupos disponibles`;
-      coordinadorInfo.textContent = `${coordinadores.length} coordinadores disponibles`;
+      lugarInfo.textContent = `${filterOptions.lugares.length} ubicaciones disponibles`;
+      grupoInfo.textContent = `${filterOptions.grupos.length} grupos disponibles`;
+      subgrupoInfo.textContent = `${filterOptions.subgrupos.length} subgrupos disponibles`;
+      coordinadorInfo.textContent = `${filterOptions.coordinadores.length} coordinadores disponibles`;
 
-      // Llenar selectores
-      lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      subgrupos.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      coordinadores.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+      // Llenar selectores con todas las opciones iniciales
+      llenarSelector(selectLugar, filterOptions.lugares);
+      llenarSelector(selectGrupo, filterOptions.grupos);
+      llenarSelector(selectSubgrupo, filterOptions.subgrupos);
+      llenarSelector(selectCoordinador, filterOptions.coordinadores);
+    }
+
+    // Función para llenar un selector con opciones
+    function llenarSelector(selector, opciones) {
+      // Guardar la opción seleccionada actualmente
+      const valorActual = selector.value;
+      
+      // Limpiar selector (excepto la primera opción)
+      while (selector.options.length > 1) {
+        selector.remove(1);
+      }
+      
+      // Agregar nuevas opciones
+      opciones.forEach(opcion => {
+        const option = document.createElement('option');
+        option.value = opcion;
+        option.textContent = opcion;
+        selector.appendChild(option);
+      });
+      
+      // Restaurar la selección anterior si todavía existe
+      if (valorActual && opciones.includes(valorActual)) {
+        selector.value = valorActual;
+      }
+    }
+
+    // Actualizar filtros dependientes cuando cambia un filtro principal
+    async function actualizarFiltrosDependientes(filtroCambiado) {
+      // Obtener valores actuales de los filtros
+      const lugarSeleccionado = selectLugar.value;
+      const grupoSeleccionado = selectGrupo.value;
+      const subgrupoSeleccionado = selectSubgrupo.value;
+      const coordinadorSeleccionado = selectCoordinador.value;
+
+      // Construir query para obtener datos filtrados
+      let query = supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, subgrupo, coordinador');
+      
+      if (lugarSeleccionado) query = query.eq('lugar', lugarSeleccionado);
+      if (grupoSeleccionado) query = query.eq('grupo', grupoSeleccionado);
+      if (subgrupoSeleccionado) query = query.eq('subgrupo', subgrupoSeleccionado);
+      if (coordinadorSeleccionado) query = query.eq('coordinador', coordinadorSeleccionado);
+      
+      const resultado = await query;
+      
+      if (resultado.error) {
+        console.error('Error al obtener datos para filtros:', resultado.error);
+        return;
+      }
+      
+      const datosFiltrados = resultado.data || [];
+      
+      // Extraer opciones disponibles de los datos filtrados
+      const lugaresDisponibles = [...new Set(datosFiltrados.map(r => r.lugar).filter(Boolean))].sort();
+      const gruposDisponibles = [...new Set(datosFiltrados.map(r => r.grupo).filter(Boolean))].sort();
+      const subgruposDisponibles = [...new Set(datosFiltrados.map(r => r.subgrupo).filter(Boolean))].sort();
+      const coordinadoresDisponibles = [...new Set(datosFiltrados.map(r => r.coordinador).filter(Boolean))].sort();
+      
+      // Actualizar selectores según el filtro que cambió
+      switch (filtroCambiado) {
+        case 'lugar':
+          llenarSelector(selectGrupo, gruposDisponibles);
+          llenarSelector(selectSubgrupo, subgruposDisponibles);
+          llenarSelector(selectCoordinador, coordinadoresDisponibles);
+          break;
+          
+        case 'grupo':
+          llenarSelector(selectLugar, lugaresDisponibles);
+          llenarSelector(selectSubgrupo, subgruposDisponibles);
+          llenarSelector(selectCoordinador, coordinadoresDisponibles);
+          break;
+          
+        case 'subgrupo':
+          llenarSelector(selectLugar, lugaresDisponibles);
+          llenarSelector(selectGrupo, gruposDisponibles);
+          llenarSelector(selectCoordinador, coordinadoresDisponibles);
+          break;
+          
+        case 'coordinador':
+          llenarSelector(selectLugar, lugaresDisponibles);
+          llenarSelector(selectGrupo, gruposDisponibles);
+          llenarSelector(selectSubgrupo, subgruposDisponibles);
+          break;
+          
+        case 'reset':
+          // Restablecer todos los filtros a sus valores originales
+          llenarSelector(selectLugar, filterOptions.lugares);
+          llenarSelector(selectGrupo, filterOptions.grupos);
+          llenarSelector(selectSubgrupo, filterOptions.subgrupos);
+          llenarSelector(selectCoordinador, filterOptions.coordinadores);
+          break;
+      }
+      
+      // Actualizar información de filtros
+      lugarInfo.textContent = `${lugaresDisponibles.length} ubicaciones disponibles`;
+      grupoInfo.textContent = `${gruposDisponibles.length} grupos disponibles`;
+      subgrupoInfo.textContent = `${subgruposDisponibles.length} subgrupos disponibles`;
+      coordinadorInfo.textContent = `${coordinadoresDisponibles.length} coordinadores disponibles`;
     }
 
     // Construir query según filtros y traer datos
@@ -1878,3 +2017,23 @@
   </script>
 </body>
 </html>
+```
+
+Cambios Realizados para Corregir los Filtros
+
+1. Lógica de filtros interdependientes:
+   · Implementé la función actualizarFiltrosDependientes() que actualiza los selectores según las selecciones actuales
+   · Cuando se cambia un filtro, se consulta la base de datos para obtener solo las opciones válidas para los otros filtros
+2. Función llenarSelector():
+   · Función auxiliar que llena un selector con opciones, manteniendo la selección actual si es válida
+3. Botón "Restablecer Filtros":
+   · Añadí un botón para restablecer todos los filtros a sus valores por defecto
+   · Esto permite al usuario volver fácilmente al estado inicial
+4. Mejora en la inicialización:
+   · La función inicializarFiltros() ahora almacena todas las opciones disponibles en filterOptions
+   · Esto permite restablecer los filtros correctamente
+5. Event listeners mejorados:
+   · Cada cambio en un filtro ahora actualiza automáticamente los filtros dependientes
+   · Se evitan combinaciones de filtros que no tienen datos
+
+Con estos cambios, los filtros ahora funcionan correctamente y solo muestran opciones válidas según las selecciones actuales, eliminando las inconsistencias que causaban errores.
