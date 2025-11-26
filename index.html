@@ -657,7 +657,6 @@
       
       <div class="tabs">
         <div class="tab active" data-tab="main-chart">Distribución por Categoría</div>
-        <div class="tab" data-tab="trend-analysis">Análisis de Tendencia</div>
         <div class="tab" data-tab="comparison">Comparación por Grupos</div>
       </div>
       
@@ -687,13 +686,6 @@
         
         <div class="chart-container">
           <canvas id="mainChart"></canvas>
-        </div>
-        <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
-      </div>
-      
-      <div class="tab-content" id="trend-analysis">
-        <div class="chart-container">
-          <canvas id="trendChart"></canvas>
         </div>
         <div class="data-source">Fuente: Base de datos de caracterización de desechos - Cantón Daule</div>
       </div>
@@ -870,9 +862,8 @@
 
     // Charts
     const mainCtx = document.getElementById('mainChart').getContext('2d');
-    const trendCtx = document.getElementById('trendChart').getContext('2d');
     const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
-    let mainChart, trendChart, comparisonChart;
+    let mainChart, comparisonChart;
 
     // Variables globales para datos
     let currentData = [];
@@ -954,9 +945,7 @@
           document.getElementById(tabId).classList.add('active');
           
           // Renderizar gráficos específicos si es necesario
-          if (tabId === 'trend-analysis') {
-            renderTrendAnalysis();
-          } else if (tabId === 'comparison') {
+          if (tabId === 'comparison') {
             renderComparison();
           }
         });
@@ -1383,95 +1372,6 @@
       return names[type] || type;
     }
 
-    // Renderizar análisis de tendencia
-    function renderTrendAnalysis() {
-      if (!currentData.length) return;
-      
-      // Agrupar datos por fecha
-      const datosPorFecha = {};
-      currentData.forEach(row => {
-        if (!row.fecha_registro) return;
-        
-        const fecha = new Date(row.fecha_registro).toISOString().slice(0, 10);
-        if (!datosPorFecha[fecha]) datosPorFecha[fecha] = { total: 0 };
-        
-        Object.entries(row).forEach(([k, v]) => {
-          if (k.endsWith('_kg')) {
-            const val = parseFloat(v) || 0;
-            datosPorFecha[fecha].total += val;
-          }
-        });
-      });
-      
-      // Preparar datos para el gráfico
-      const fechas = Object.keys(datosPorFecha).sort();
-      const totales = fechas.map(fecha => datosPorFecha[fecha].total);
-      
-      if (trendChart) trendChart.destroy();
-      
-      trendChart = new Chart(trendCtx, {
-        type: 'line',
-        data: {
-          labels: fechas.map(f => new Date(f).toLocaleDateString()),
-          datasets: [{
-            label: 'Total de Desechos (kg)',
-            data: totales,
-            borderColor: 'rgba(15, 118, 110, 1)',
-            backgroundColor: 'rgba(15, 118, 110, 0.1)',
-            tension: 0.4,
-            fill: true,
-            borderWidth: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                font: {
-                  size: 12
-                }
-              }
-            },
-            title: {
-              display: true,
-              text: 'Evolución Temporal del Total de Desechos',
-              font: {
-                size: 16,
-                weight: 'bold'
-              },
-              padding: 20
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Peso Total (kg)',
-                font: {
-                  size: 14,
-                  weight: 'bold'
-                }
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Fecha de Medición',
-                font: {
-                  size: 14,
-                  weight: 'bold'
-                }
-              }
-            }
-          }
-        }
-      });
-    }
-
     // Renderizar comparación
     function renderComparison() {
       if (!currentData.length) return;
@@ -1794,11 +1694,6 @@
         // Renderizar
         renderChart(currentSummary.labels, currentSummary.values, currentChartType);
         renderResumen(currentSummary, previousSummary, basicStats, advancedStats);
-        
-        // Si la pestaña de análisis de tendencia está activa, renderizarla
-        if (document.querySelector('.tab[data-tab="trend-analysis"]').classList.contains('active')) {
-          renderTrendAnalysis();
-        }
         
         // Si la pestaña de comparación está activa, renderizarla
         if (document.querySelector('.tab[data-tab="comparison"]').classList.contains('active')) {
