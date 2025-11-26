@@ -213,60 +213,6 @@
       margin-top: 16px;
     }
     
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    
-    .kpi {
-      background: linear-gradient(135deg, #fff, #f7fffb);
-      padding: 20px;
-      border-radius: 10px;
-      border: 1px solid #eef7f4;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      transition: transform 0.2s;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .kpi:hover {
-      transform: translateY(-2px);
-    }
-    
-    .kpi-title {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 500;
-    }
-    
-    .kpi-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 4px;
-    }
-    
-    .kpi-change {
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    
-    .positive {
-      color: var(--success);
-    }
-    
-    .negative {
-      color: var(--danger);
-    }
-    
     .chart-container {
       position: relative;
       height: 500px;
@@ -457,13 +403,6 @@
       background: var(--bg1);
     }
     
-    .data-source {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 8px;
-      text-align: right;
-    }
-    
     .chart-type-selector {
       display: flex;
       flex-wrap: wrap;
@@ -497,6 +436,11 @@
       border-color: var(--primary-light);
     }
     
+    .table-total {
+      font-weight: bold;
+      background-color: #f0f9ff;
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -515,10 +459,6 @@
       
       .chart-container {
         height: 400px;
-      }
-      
-      .kpis {
-        grid-template-columns: 1fr;
       }
       
       .chart-type-selector {
@@ -601,53 +541,6 @@
       </div>
     </div>
 
-    <!-- KPIs -->
-    <div class="card">
-      <div class="card-title">
-        <i class="fas fa-chart-line"></i>
-        Resumen de Datos
-      </div>
-      
-      <div class="kpis" id="kpis">
-        <div class="kpi">
-          <div class="kpi-title">
-            <i class="fas fa-weight-hanging"></i> Total de Desechos (kg)
-          </div>
-          <div class="kpi-value" id="kpiTotal">0</div>
-          <div class="kpi-change" id="kpiTotalChange">
-            <span>Datos actuales</span>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-title">
-            <i class="fas fa-list"></i> Categorías con Desechos
-          </div>
-          <div class="kpi-value" id="kpiCount">0</div>
-          <div class="kpi-change" id="kpiCountChange">
-            <span>Tipos diferentes</span>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-title">
-            <i class="fas fa-percentage"></i> Categoría Dominante
-          </div>
-          <div class="kpi-value" id="kpiDominant">-</div>
-          <div class="kpi-change" id="kpiDominantChange">
-            <span>% del total</span>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-title">
-            <i class="fas fa-balance-scale"></i> Promedio por Categoría (kg)
-          </div>
-          <div class="kpi-value" id="kpiAvgCategory">0</div>
-          <div class="kpi-change" id="kpiAvgCategoryChange">
-            <span>Promedio general</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Gráficos y visualizaciones -->
     <div class="card">
       <div class="card-title">
@@ -658,7 +551,7 @@
       <div class="tabs">
         <div class="tab active" data-tab="main-chart">Distribución por Categoría</div>
         <div class="tab" data-tab="comparison">Comparación por Grupos</div>
-        <div class="tab" data-tab="advanced">Análisis Avanzado</div>
+        <div class="tab" data-tab="advanced-charts">Gráficos Avanzados</div>
       </div>
       
       <div class="tab-content active" id="main-chart">
@@ -690,9 +583,9 @@
         </div>
       </div>
       
-      <div class="tab-content" id="advanced">
+      <div class="tab-content" id="advanced-charts">
         <div class="chart-type-selector">
-          <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de análisis:</span>
+          <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
           <div class="chart-type-btn active" data-type="boxplot">
             <i class="fas fa-chart-area"></i> Diagrama Caja Bigote
           </div>
@@ -817,10 +710,10 @@
           </thead>
           <tbody></tbody>
           <tfoot>
-            <tr style="background-color: #f0f9ff; font-weight: bold;">
-              <td>Total General</td>
-              <td id="tableTotal" style="text-align:right">0.00</td>
-              <td style="text-align:right">100.00%</td>
+            <tr class="table-total">
+              <td><strong>Total General</strong></td>
+              <td style="text-align:right"><strong id="tableTotalKg">0</strong></td>
+              <td style="text-align:right"><strong>100%</strong></td>
             </tr>
           </tfoot>
         </table>
@@ -846,18 +739,8 @@
     const selectCoordinador = document.getElementById('selectCoordinador');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
-    const tableTotal = document.getElementById('tableTotal');
+    const tableTotalKg = document.getElementById('tableTotalKg');
 
-    // KPIs y elementos de estadísticas
-    const kpiTotal = document.getElementById('kpiTotal');
-    const kpiCount = document.getElementById('kpiCount');
-    const kpiDominant = document.getElementById('kpiDominant');
-    const kpiAvgCategory = document.getElementById('kpiAvgCategory');
-    const kpiTotalChange = document.getElementById('kpiTotalChange');
-    const kpiCountChange = document.getElementById('kpiCountChange');
-    const kpiDominantChange = document.getElementById('kpiDominantChange');
-    const kpiAvgCategoryChange = document.getElementById('kpiAvgCategoryChange');
-    
     // Elementos de estadísticas básicas
     const statTotalRecords = document.getElementById('statTotalRecords');
     const statUniquePlaces = document.getElementById('statUniquePlaces');
@@ -900,38 +783,52 @@
     // Configurar event listeners
     function setupEventListeners() {
       // Actualización automática al cambiar filtros
-      selectLugar.addEventListener('change', actualizarFiltrosDinamicos);
-      selectGrupo.addEventListener('change', actualizarFiltrosDinamicos);
-      selectSubgrupo.addEventListener('change', actualizarFiltrosDinamicos);
+      selectLugar.addEventListener('change', async function() {
+        await actualizarFiltrosDependientes();
+        await actualizar();
+      });
+      
+      selectGrupo.addEventListener('change', async function() {
+        await actualizarFiltrosDependientes();
+        await actualizar();
+      });
+      
+      selectSubgrupo.addEventListener('change', async function() {
+        await actualizarFiltrosDependientes();
+        await actualizar();
+      });
+      
       selectCoordinador.addEventListener('change', actualizar);
       
-      // Selector de tipo de gráfico
-      document.querySelectorAll('.chart-type-btn').forEach(btn => {
+      // Selector de tipo de gráfico principal
+      document.querySelectorAll('#main-chart .chart-type-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-          const tab = this.closest('.tab-content');
-          if (tab.id === 'main-chart') {
-            // Remover clase activa de todos los botones en main-chart
-            tab.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
-            // Agregar clase activa al botón clickeado
-            this.classList.add('active');
-            // Actualizar tipo de gráfico
-            currentChartType = this.getAttribute('data-type');
-            // Re-renderizar el gráfico
-            if (currentData.length > 0) {
-              const currentSummary = resumenPorCategorias(currentData);
-              renderChart(currentSummary.labels, currentSummary.values, currentChartType);
-            }
-          } else if (tab.id === 'advanced') {
-            // Remover clase activa de todos los botones en advanced
-            tab.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
-            // Agregar clase activa al botón clickeado
-            this.classList.add('active');
-            // Actualizar tipo de gráfico avanzado
-            currentAdvancedChartType = this.getAttribute('data-type');
-            // Re-renderizar el gráfico avanzado
-            if (currentData.length > 0) {
-              renderAdvancedChart(currentAdvancedChartType);
-            }
+          // Remover clase activa de todos los botones
+          document.querySelectorAll('#main-chart .chart-type-btn').forEach(b => b.classList.remove('active'));
+          // Agregar clase activa al botón clickeado
+          this.classList.add('active');
+          // Actualizar tipo de gráfico
+          currentChartType = this.getAttribute('data-type');
+          // Re-renderizar el gráfico
+          if (currentData.length > 0) {
+            const currentSummary = resumenPorCategorias(currentData);
+            renderChart(currentSummary.labels, currentSummary.values, currentChartType);
+          }
+        });
+      });
+      
+      // Selector de tipo de gráfico avanzado
+      document.querySelectorAll('#advanced-charts .chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Remover clase activa de todos los botones
+          document.querySelectorAll('#advanced-charts .chart-type-btn').forEach(b => b.classList.remove('active'));
+          // Agregar clase activa al botón clickeado
+          this.classList.add('active');
+          // Actualizar tipo de gráfico
+          currentAdvancedChartType = this.getAttribute('data-type');
+          // Re-renderizar el gráfico
+          if (currentData.length > 0) {
+            renderAdvancedChart(currentAdvancedChartType);
           }
         });
       });
@@ -972,7 +869,7 @@
           // Renderizar gráficos específicos si es necesario
           if (tabId === 'comparison') {
             renderComparison();
-          } else if (tabId === 'advanced') {
+          } else if (tabId === 'advanced-charts') {
             renderAdvancedChart(currentAdvancedChartType);
           }
         });
@@ -980,7 +877,7 @@
       
       // Ayuda
       document.getElementById('btnHelp').addEventListener('click', () => {
-        alert('Este panel permite analizar datos de desechos sólidos del Cantón Daule. Los filtros se sincronizan automáticamente. Utilice las diferentes pestañas para explorar diversas visualizaciones y análisis estadísticos.');
+        alert('Este panel permite analizar datos de desechos sólidos del Cantón Daule. Los filtros se aplican automáticamente. Utilice las diferentes pestañas para explorar diversas visualizaciones y análisis estadísticos.');
       });
     }
 
@@ -994,96 +891,93 @@
       allData = q.data || [];
     }
 
-    // Inicializar filtros con datos disponibles
+    // Inicializar filtros con todos los datos disponibles
     async function inicializarFiltros() {
+      // Limpiar selects
+      selectLugar.innerHTML = '<option value="">Todas las ubicaciones</option>';
+      selectGrupo.innerHTML = '<option value="">Todos los grupos</option>';
+      selectSubgrupo.innerHTML = '<option value="">Todos los subgrupos</option>';
+      selectCoordinador.innerHTML = '<option value="">Todos los coordinadores</option>';
+
+      // Obtener valores únicos de todos los datos
       const lugares = [...new Set(allData.map(r => r.lugar).filter(Boolean))].sort();
       const grupos = [...new Set(allData.map(r => r.grupo).filter(Boolean))].sort();
       const subgrupos = [...new Set(allData.map(r => r.subgrupo).filter(Boolean))].sort();
       const coordinadores = [...new Set(allData.map(r => r.coordinador).filter(Boolean))].sort();
 
+      // Llenar selects
       lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       subgrupos.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
       coordinadores.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
     }
 
-    // Actualizar filtros dinámicamente según selección
-    async function actualizarFiltrosDinamicos() {
-      // Obtener valores seleccionados
-      const lugarSeleccionado = selectLugar.value;
-      const grupoSeleccionado = selectGrupo.value;
-      const subgrupoSeleccionado = selectSubgrupo.value;
+    // Actualizar filtros dependientes según selección actual
+    async function actualizarFiltrosDependientes() {
+      // Obtener datos filtrados según selecciones actuales
+      let filteredData = [...allData];
       
-      // Filtrar datos según selecciones actuales
-      let datosFiltrados = [...allData];
-      
-      if (lugarSeleccionado) {
-        datosFiltrados = datosFiltrados.filter(d => d.lugar === lugarSeleccionado);
+      if (selectLugar.value) {
+        filteredData = filteredData.filter(item => item.lugar === selectLugar.value);
       }
       
-      if (grupoSeleccionado) {
-        datosFiltrados = datosFiltrados.filter(d => d.grupo === grupoSeleccionado);
+      if (selectGrupo.value) {
+        filteredData = filteredData.filter(item => item.grupo === selectGrupo.value);
       }
       
-      if (subgrupoSeleccionado) {
-        datosFiltrados = datosFiltrados.filter(d => d.subgrupo === subgrupoSeleccionado);
+      if (selectSubgrupo.value) {
+        filteredData = filteredData.filter(item => item.subgrupo === selectSubgrupo.value);
       }
-      
-      // Actualizar opciones de grupos disponibles
-      const gruposDisponibles = [...new Set(datosFiltrados.map(r => r.grupo).filter(Boolean))].sort();
-      actualizarSelect(selectGrupo, gruposDisponibles, grupoSeleccionado);
-      
-      // Actualizar opciones de subgrupos disponibles
-      const subgruposDisponibles = [...new Set(datosFiltrados.map(r => r.subgrupo).filter(Boolean))].sort();
-      actualizarSelect(selectSubgrupo, subgruposDisponibles, subgrupoSeleccionado);
-      
-      // Actualizar opciones de coordinadores disponibles
-      const coordinadoresDisponibles = [...new Set(datosFiltrados.map(r => r.coordinador).filter(Boolean))].sort();
-      actualizarSelect(selectCoordinador, coordinadoresDisponibles, selectCoordinador.value);
-      
-      // Actualizar datos y visualizaciones
-      await actualizar();
-    }
-    
-    // Función auxiliar para actualizar select
-    function actualizarSelect(selectElement, opciones, valorSeleccionado) {
-      const valorActual = selectElement.value;
-      selectElement.innerHTML = '<option value="">Todos</option>';
-      
-      opciones.forEach(opcion => {
-        const option = document.createElement('option');
-        option.value = opcion;
-        option.textContent = opcion;
-        selectElement.appendChild(option);
-      });
-      
-      // Restaurar selección si todavía está disponible
-      if (valorSeleccionado && opciones.includes(valorSeleccionado)) {
-        selectElement.value = valorSeleccionado;
-      }
+
+      // Actualizar select de Grupo
+      const gruposDisponibles = [...new Set(filteredData.map(r => r.grupo).filter(Boolean))].sort();
+      selectGrupo.innerHTML = '<option value="">Todos los grupos</option>';
+      gruposDisponibles.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { 
+        value: v, 
+        textContent: v,
+        selected: selectGrupo.value === v
+      })));
+
+      // Actualizar select de Subgrupo
+      const subgruposDisponibles = [...new Set(filteredData.map(r => r.subgrupo).filter(Boolean))].sort();
+      selectSubgrupo.innerHTML = '<option value="">Todos los subgrupos</option>';
+      subgruposDisponibles.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { 
+        value: v, 
+        textContent: v,
+        selected: selectSubgrupo.value === v
+      })));
+
+      // Actualizar select de Coordinador
+      const coordinadoresDisponibles = [...new Set(filteredData.map(r => r.coordinador).filter(Boolean))].sort();
+      selectCoordinador.innerHTML = '<option value="">Todos los coordinadores</option>';
+      coordinadoresDisponibles.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { 
+        value: v, 
+        textContent: v,
+        selected: selectCoordinador.value === v
+      })));
     }
 
     // Construir query según filtros y traer datos
     async function obtenerFiltrados() {
-      let datosFiltrados = [...allData];
+      let filteredData = [...allData];
       
       if (selectLugar.value) {
-        datosFiltrados = datosFiltrados.filter(d => d.lugar === selectLugar.value);
+        filteredData = filteredData.filter(item => item.lugar === selectLugar.value);
       }
       
       if (selectGrupo.value) {
-        datosFiltrados = datosFiltrados.filter(d => d.grupo === selectGrupo.value);
+        filteredData = filteredData.filter(item => item.grupo === selectGrupo.value);
       }
       
       if (selectSubgrupo.value) {
-        datosFiltrados = datosFiltrados.filter(d => d.subgrupo === selectSubgrupo.value);
+        filteredData = filteredData.filter(item => item.subgrupo === selectSubgrupo.value);
       }
       
       if (selectCoordinador.value) {
-        datosFiltrados = datosFiltrados.filter(d => d.coordinador === selectCoordinador.value);
+        filteredData = filteredData.filter(item => item.coordinador === selectCoordinador.value);
       }
       
-      return datosFiltrados;
+      return filteredData;
     }
 
     // Procesa filas y calcula totales por columna *_kg
@@ -1229,11 +1123,11 @@
             backgroundColor: colors,
             borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
             borderWidth: chartType === 'line' ? 2 : 1,
-            pointBackgroundColor: chartType === 'line' ? colors : undefined,
-            pointBorderColor: chartType === 'line' ? '#fff' : undefined,
-            pointBorderWidth: chartType === 'line' ? 2 : undefined,
-            pointRadius: chartType === 'line' ? 4 : undefined,
-            pointHoverRadius: chartType === 'line' ? 6 : undefined
+            pointBackgroundColor: colors,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
           }]
         },
         options: {
@@ -1391,26 +1285,44 @@
     function renderAdvancedChart(chartType) {
       if (!currentData.length) return;
       
-      const currentSummary = resumenPorCategorias(currentData);
-      const values = currentSummary.values;
-      
       if (advancedChart) advancedChart.destroy();
+      
+      const currentSummary = resumenPorCategorias(currentData);
+      const friendlyLabels = currentSummary.labels.map(l => {
+        const nameMap = {
+          'de_jardin_kg': 'Jardín',
+          'de_cocina_kg': 'Cocina',
+          'aceite_comestible_kg': 'Aceite',
+          'papel_blanco_kg': 'Papel Blanco',
+          'papel_periodico_kg': 'Periódico',
+          'papel_archivo_kg': 'Papel Archivo',
+          'carton_kg': 'Cartón',
+          'tetra_brik_kg': 'Tetra Brik',
+          'pet_kg': 'PET',
+          'plastico_mixto_kg': 'Plástico Mixto'
+        };
+        
+        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
+      });
+      
+      // Colores
+      const colors = friendlyLabels.map((_, i) => `hsl(${(i * 360 / friendlyLabels.length) % 360} 70% 55%)`);
       
       if (chartType === 'boxplot') {
         // Diagrama de caja y bigotes
-        const boxplotData = calcularBoxPlotData(values);
+        const datasets = [{
+          label: 'Distribución de Desechos',
+          data: currentSummary.values,
+          backgroundColor: 'rgba(15, 118, 110, 0.2)',
+          borderColor: 'rgba(15, 118, 110, 1)',
+          borderWidth: 1
+        }];
         
         advancedChart = new Chart(advancedCtx, {
           type: 'boxplot',
           data: {
-            labels: ['Distribución de Desechos'],
-            datasets: [{
-              label: 'Peso (kg)',
-              data: [boxplotData],
-              backgroundColor: 'rgba(15, 118, 110, 0.2)',
-              borderColor: 'rgba(15, 118, 110, 1)',
-              borderWidth: 1
-            }]
+            labels: ['Distribución'],
+            datasets: datasets
           },
           options: {
             responsive: true,
@@ -1428,20 +1340,15 @@
               tooltip: {
                 callbacks: {
                   label: function(context) {
-                    const data = context.raw;
-                    return [
-                      `Mínimo: ${data.min.toFixed(2)} kg`,
-                      `Q1: ${data.q1.toFixed(2)} kg`,
-                      `Mediana: ${data.median.toFixed(2)} kg`,
-                      `Q3: ${data.q3.toFixed(2)} kg`,
-                      `Máximo: ${data.max.toFixed(2)} kg`
-                    ];
+                    const value = context.raw;
+                    return `Valor: ${value.toFixed(2)} kg`;
                   }
                 }
               }
             },
             scales: {
               y: {
+                beginAtZero: true,
                 title: {
                   display: true,
                   text: 'Peso (kg)',
@@ -1451,17 +1358,34 @@
             }
           }
         });
+        
       } else if (chartType === 'histogram') {
         // Histograma
-        const histogramData = calcularHistograma(values);
+        // Calcular bins para el histograma
+        const maxValue = Math.max(...currentSummary.values);
+        const minValue = Math.min(...currentSummary.values);
+        const binCount = 10;
+        const binWidth = (maxValue - minValue) / binCount;
+        
+        const bins = Array(binCount).fill(0);
+        currentSummary.values.forEach(value => {
+          const binIndex = Math.min(Math.floor((value - minValue) / binWidth), binCount - 1);
+          bins[binIndex]++;
+        });
+        
+        const binLabels = Array(binCount).fill(0).map((_, i) => {
+          const start = minValue + i * binWidth;
+          const end = minValue + (i + 1) * binWidth;
+          return `${start.toFixed(1)} - ${end.toFixed(1)}`;
+        });
         
         advancedChart = new Chart(advancedCtx, {
           type: 'bar',
           data: {
-            labels: histogramData.labels,
+            labels: binLabels,
             datasets: [{
               label: 'Frecuencia',
-              data: histogramData.frequencies,
+              data: bins,
               backgroundColor: 'rgba(15, 118, 110, 0.7)',
               borderColor: 'rgba(15, 118, 110, 1)',
               borderWidth: 1
@@ -1500,14 +1424,28 @@
             }
           }
         });
+        
       } else if (chartType === 'scatter') {
         // Gráfico de dispersión con línea de regresión
-        const scatterData = values.map((value, index) => ({
+        const dataPoints = currentSummary.values.map((value, index) => ({
           x: index,
           y: value
         }));
         
-        const regressionLine = calcularRegresionLineal(scatterData);
+        // Calcular línea de regresión lineal simple
+        const n = dataPoints.length;
+        const sumX = dataPoints.reduce((sum, point) => sum + point.x, 0);
+        const sumY = dataPoints.reduce((sum, point) => sum + point.y, 0);
+        const sumXY = dataPoints.reduce((sum, point) => sum + point.x * point.y, 0);
+        const sumXX = dataPoints.reduce((sum, point) => sum + point.x * point.x, 0);
+        
+        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+        
+        const regressionLine = dataPoints.map(point => ({
+          x: point.x,
+          y: slope * point.x + intercept
+        }));
         
         advancedChart = new Chart(advancedCtx, {
           type: 'scatter',
@@ -1515,21 +1453,20 @@
             datasets: [
               {
                 label: 'Datos',
-                data: scatterData,
+                data: dataPoints,
                 backgroundColor: 'rgba(15, 118, 110, 0.7)',
                 borderColor: 'rgba(15, 118, 110, 1)',
-                borderWidth: 1,
-                pointRadius: 5
+                pointRadius: 6,
+                pointHoverRadius: 8
               },
               {
                 label: 'Línea de Regresión',
-                data: regressionLine.points,
+                data: regressionLine,
                 type: 'line',
                 borderColor: 'rgba(239, 68, 68, 0.8)',
                 borderWidth: 2,
                 pointRadius: 0,
-                fill: false,
-                tension: 0
+                fill: false
               }
             ]
           },
@@ -1574,81 +1511,6 @@
           }
         });
       }
-    }
-    
-    // Calcular datos para diagrama de caja y bigotes
-    function calcularBoxPlotData(values) {
-      const sorted = [...values].sort((a, b) => a - b);
-      const n = sorted.length;
-      
-      const min = sorted[0];
-      const max = sorted[n - 1];
-      
-      const q1 = calcularPercentil(sorted, 25);
-      const median = calcularPercentil(sorted, 50);
-      const q3 = calcularPercentil(sorted, 75);
-      
-      return { min, q1, median, q3, max };
-    }
-    
-    // Calcular percentil
-    function calcularPercentil(sorted, p) {
-      const index = (p / 100) * (sorted.length - 1);
-      const lower = Math.floor(index);
-      const upper = Math.ceil(index);
-      
-      if (lower === upper) {
-        return sorted[lower];
-      }
-      
-      return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower);
-    }
-    
-    // Calcular histograma
-    function calcularHistograma(values, bins = 10) {
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-      const binWidth = (max - min) / bins;
-      
-      const frequencies = Array(bins).fill(0);
-      const labels = [];
-      
-      for (let i = 0; i < bins; i++) {
-        const binStart = min + i * binWidth;
-        const binEnd = binStart + binWidth;
-        labels.push(`${binStart.toFixed(1)} - ${binEnd.toFixed(1)}`);
-        
-        values.forEach(value => {
-          if (value >= binStart && (i === bins - 1 ? value <= binEnd : value < binEnd)) {
-            frequencies[i]++;
-          }
-        });
-      }
-      
-      return { labels, frequencies };
-    }
-    
-    // Calcular regresión lineal
-    function calcularRegresionLineal(points) {
-      const n = points.length;
-      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-      
-      points.forEach(point => {
-        sumX += point.x;
-        sumY += point.y;
-        sumXY += point.x * point.y;
-        sumX2 += point.x * point.x;
-      });
-      
-      const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-      const intercept = (sumY - slope * sumX) / n;
-      
-      const regressionPoints = [
-        { x: 0, y: intercept },
-        { x: n - 1, y: slope * (n - 1) + intercept }
-      ];
-      
-      return { slope, intercept, points: regressionPoints };
     }
 
     // Renderizar comparación
@@ -1765,7 +1627,7 @@
       });
     }
 
-    // Rellenar tabla resumen y KPIs
+    // Rellenar tabla resumen y estadísticas
     function renderResumen(currentSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
@@ -1816,22 +1678,14 @@
       statGini.textContent = advancedStats.gini.toFixed(3);
       statTotalKg.textContent = advancedStats.totalSum.toFixed(2);
       
-      // Encontrar categoría dominante para KPI
-      let dominantCategory = '-';
-      let dominantPercentage = '0%';
-      if (currentSummary.values.length > 0) {
-        const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
-        dominantCategory = friendlyLabels[maxIndex];
-        dominantPercentage = ((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1) + '%';
-      }
+      // Actualizar total en la tabla
+      tableTotalKg.textContent = advancedStats.totalSum.toFixed(2);
       
       // Llenar tabla
-      let tableTotalSum = 0;
       friendlyLabels.forEach((lab, i) => {
         const v = currentSummary.values[i];
         if (v <= 0) return;
         
-        tableTotalSum += v;
         const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
         
         const tr = document.createElement('tr');
@@ -1842,18 +1696,6 @@
         `;
         tbody.appendChild(tr);
       });
-      
-      // Actualizar total en la tabla
-      tableTotal.textContent = tableTotalSum.toFixed(2);
-      
-      // Actualizar KPIs
-      kpiTotal.textContent = currentSummary.totalSum.toFixed(2);
-      kpiCount.textContent = friendlyLabels.filter((_, i) => currentSummary.values[i] > 0).length;
-      kpiDominant.textContent = dominantCategory;
-      kpiAvgCategory.textContent = basicStats.avgPerCategory.toFixed(2);
-      
-      // Actualizar KPIs de categoría dominante
-      kpiDominantChange.innerHTML = `<span>${dominantPercentage} del total</span>`;
     }
 
     // Exportar datos
@@ -1865,12 +1707,20 @@
       
       switch (tipo) {
         case 'png':
-          if (!mainChart) {
+          const activeTab = document.querySelector('.tab-content.active').id;
+          let chartToExport;
+          
+          if (activeTab === 'main-chart') chartToExport = mainChart;
+          else if (activeTab === 'comparison') chartToExport = comparisonChart;
+          else if (activeTab === 'advanced-charts') chartToExport = advancedChart;
+          
+          if (!chartToExport) {
             alert('Gráfico no disponible');
             return;
           }
+          
           const a = document.createElement('a');
-          a.href = mainChart.toBase64Image();
+          a.href = chartToExport.toBase64Image();
           a.download = 'grafico-desechos-daule.png';
           document.body.appendChild(a);
           a.click();
@@ -1918,8 +1768,8 @@
             csvContent += `"${lab}",${v.toFixed(2)},${pct}%\n`;
           });
           
-          // Agregar total
-          csvContent += `"TOTAL",${currentSummary.totalSum.toFixed(2)},100.00%\n`;
+          // Agregar total al CSV
+          csvContent += `"TOTAL GENERAL",${currentSummary.totalSum.toFixed(2)},100.00%\n`;
           
           const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
@@ -1956,8 +1806,8 @@
           renderComparison();
         }
         
-        // Si la pestaña de análisis avanzado está activa, renderizarla
-        if (document.querySelector('.tab[data-tab="advanced"]').classList.contains('active')) {
+        // Si la pestaña de gráficos avanzados está activa, renderizarla
+        if (document.querySelector('.tab[data-tab="advanced-charts"]').classList.contains('active')) {
           renderAdvancedChart(currentAdvancedChartType);
         }
       } catch (err) {
