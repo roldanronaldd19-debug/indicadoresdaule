@@ -601,6 +601,53 @@
       </div>
     </div>
 
+    <!-- KPIs -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-chart-line"></i>
+        Resumen de Datos
+      </div>
+      
+      <div class="kpis" id="kpis">
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-weight-hanging"></i> Total de Desechos (kg)
+          </div>
+          <div class="kpi-value" id="kpiTotal">0</div>
+          <div class="kpi-change" id="kpiTotalChange">
+            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-list"></i> Categorías con Desechos
+          </div>
+          <div class="kpi-value" id="kpiCount">0</div>
+          <div class="kpi-change" id="kpiCountChange">
+            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-percentage"></i> Categoría Dominante
+          </div>
+          <div class="kpi-value" id="kpiDominant">-</div>
+          <div class="kpi-change" id="kpiDominantChange">
+            <span>% del total</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-balance-scale"></i> Promedio por Categoría (kg)
+          </div>
+          <div class="kpi-value" id="kpiAvgCategory">0</div>
+          <div class="kpi-change" id="kpiAvgCategoryChange">
+            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Gráficos y visualizaciones -->
     <div class="card">
       <div class="card-title">
@@ -611,7 +658,6 @@
       <div class="tabs">
         <div class="tab active" data-tab="main-chart">Distribución por Categoría</div>
         <div class="tab" data-tab="comparison">Comparación por Grupos</div>
-        <div class="tab" data-tab="advanced">Análisis Avanzado</div>
       </div>
       
       <div class="tab-content active" id="main-chart">
@@ -640,25 +686,6 @@
       <div class="tab-content" id="comparison">
         <div class="chart-container">
           <canvas id="comparisonChart"></canvas>
-        </div>
-      </div>
-      
-      <div class="tab-content" id="advanced">
-        <div class="chart-type-selector">
-          <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
-          <div class="chart-type-btn active" data-type="boxplot">
-            <i class="fas fa-chart-area"></i> Caja y Bigotes
-          </div>
-          <div class="chart-type-btn" data-type="histogram">
-            <i class="fas fa-chart-bar"></i> Histograma
-          </div>
-          <div class="chart-type-btn" data-type="scatter">
-            <i class="fas fa-braille"></i> Dispersión
-          </div>
-        </div>
-        
-        <div class="chart-container">
-          <canvas id="advancedChart"></canvas>
         </div>
       </div>
     </div>
@@ -770,10 +797,10 @@
           </thead>
           <tbody></tbody>
           <tfoot>
-            <tr style="background-color: #f0fdfa; font-weight: bold;">
-              <td>Total General</td>
-              <td id="tableTotal" style="text-align:right">0.00</td>
-              <td style="text-align:right">100.00%</td>
+            <tr style="background-color: #f8fafc; font-weight: 600;">
+              <td style="text-align:right">Total:</td>
+              <td style="text-align:right" id="tableTotalKg">0</td>
+              <td style="text-align:right">100%</td>
             </tr>
           </tfoot>
         </table>
@@ -799,8 +826,18 @@
     const selectCoordinador = document.getElementById('selectCoordinador');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
-    const tableTotal = document.getElementById('tableTotal');
+    const tableTotalKg = document.getElementById('tableTotalKg');
 
+    // KPIs y elementos de estadísticas
+    const kpiTotal = document.getElementById('kpiTotal');
+    const kpiCount = document.getElementById('kpiCount');
+    const kpiDominant = document.getElementById('kpiDominant');
+    const kpiAvgCategory = document.getElementById('kpiAvgCategory');
+    const kpiTotalChange = document.getElementById('kpiTotalChange');
+    const kpiCountChange = document.getElementById('kpiCountChange');
+    const kpiDominantChange = document.getElementById('kpiDominantChange');
+    const kpiAvgCategoryChange = document.getElementById('kpiAvgCategoryChange');
+    
     // Elementos de estadísticas básicas
     const statTotalRecords = document.getElementById('statTotalRecords');
     const statUniquePlaces = document.getElementById('statUniquePlaces');
@@ -823,14 +860,14 @@
     // Charts
     const mainCtx = document.getElementById('mainChart').getContext('2d');
     const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
-    const advancedCtx = document.getElementById('advancedChart').getContext('2d');
-    let mainChart, comparisonChart, advancedChart;
+    let mainChart, comparisonChart;
 
     // Variables globales para datos
     let currentData = [];
+    let previousPeriodData = [];
     let allData = [];
     let currentChartType = 'bar';
-    let advancedChartType = 'boxplot';
+    let filterData = {};
 
     // Inicializar la aplicación
     async function initApp() {
@@ -843,16 +880,28 @@
     // Configurar event listeners
     function setupEventListeners() {
       // Actualización automática al cambiar filtros
-      selectLugar.addEventListener('change', actualizarFiltrosDependientes);
-      selectGrupo.addEventListener('change', actualizarFiltrosDependientes);
-      selectSubgrupo.addEventListener('change', actualizarFiltrosDependientes);
+      selectLugar.addEventListener('change', function() {
+        actualizarFiltrosDinamicos();
+        actualizar();
+      });
+      
+      selectGrupo.addEventListener('change', function() {
+        actualizarFiltrosDinamicos();
+        actualizar();
+      });
+      
+      selectSubgrupo.addEventListener('change', function() {
+        actualizarFiltrosDinamicos();
+        actualizar();
+      });
+      
       selectCoordinador.addEventListener('change', actualizar);
       
-      // Selector de tipo de gráfico principal
-      document.querySelectorAll('#main-chart .chart-type-btn').forEach(btn => {
+      // Selector de tipo de gráfico
+      document.querySelectorAll('.chart-type-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           // Remover clase activa de todos los botones
-          document.querySelectorAll('#main-chart .chart-type-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
           // Agregar clase activa al botón clickeado
           this.classList.add('active');
           // Actualizar tipo de gráfico
@@ -861,22 +910,6 @@
           if (currentData.length > 0) {
             const currentSummary = resumenPorCategorias(currentData);
             renderChart(currentSummary.labels, currentSummary.values, currentChartType);
-          }
-        });
-      });
-      
-      // Selector de tipo de gráfico avanzado
-      document.querySelectorAll('#advanced .chart-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          // Remover clase activa de todos los botones
-          document.querySelectorAll('#advanced .chart-type-btn').forEach(b => b.classList.remove('active'));
-          // Agregar clase activa al botón clickeado
-          this.classList.add('active');
-          // Actualizar tipo de gráfico
-          advancedChartType = this.getAttribute('data-type');
-          // Re-renderizar el gráfico
-          if (currentData.length > 0) {
-            renderAdvancedChart(advancedChartType);
           }
         });
       });
@@ -917,8 +950,6 @@
           // Renderizar gráficos específicos si es necesario
           if (tabId === 'comparison') {
             renderComparison();
-          } else if (tabId === 'advanced') {
-            renderAdvancedChart(advancedChartType);
           }
         });
       });
@@ -939,30 +970,36 @@
       allData = q.data || [];
     }
 
-    // Inicializar filtros con datos disponibles
+    // Cargar lista de filtros desde la BD
     async function inicializarFiltros() {
-      // Limpiar filtros existentes
-      selectLugar.innerHTML = '<option value="">Todas las ubicaciones</option>';
-      selectGrupo.innerHTML = '<option value="">Todos los grupos</option>';
-      selectSubgrupo.innerHTML = '<option value="">Todos los subgrupos</option>';
-      selectCoordinador.innerHTML = '<option value="">Todos los coordinadores</option>';
+      // Preparar datos para filtros dinámicos
+      filterData = {
+        lugares: [...new Set(allData.map(r => r.lugar).filter(Boolean))].sort(),
+        grupos: [...new Set(allData.map(r => r.grupo).filter(Boolean))].sort(),
+        subgrupos: [...new Set(allData.map(r => r.subgrupo).filter(Boolean))].sort(),
+        coordinadores: [...new Set(allData.map(r => r.coordinador).filter(Boolean))].sort()
+      };
 
-      // Obtener valores únicos de todos los datos
-      const lugares = [...new Set(allData.map(r => r.lugar).filter(Boolean))].sort();
-      const grupos = [...new Set(allData.map(r => r.grupo).filter(Boolean))].sort();
-      const subgrupos = [...new Set(allData.map(r => r.subgrupo).filter(Boolean))].sort();
-      const coordinadores = [...new Set(allData.map(r => r.coordinador).filter(Boolean))].sort();
-
-      // Llenar filtros
-      lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      subgrupos.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      coordinadores.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+      // Llenar filtros iniciales
+      llenarSelect(selectLugar, filterData.lugares);
+      llenarSelect(selectGrupo, filterData.grupos);
+      llenarSelect(selectSubgrupo, filterData.subgrupos);
+      llenarSelect(selectCoordinador, filterData.coordinadores);
     }
 
-    // Actualizar filtros dependientes cuando cambia un filtro principal
-    async function actualizarFiltrosDependientes() {
-      // Obtener filtros actuales
+    // Función para llenar un select con opciones
+    function llenarSelect(select, opciones) {
+      select.innerHTML = '<option value="">Todos</option>';
+      opciones.forEach(opcion => {
+        select.appendChild(Object.assign(document.createElement('option'), { 
+          value: opcion, 
+          textContent: opcion 
+        }));
+      });
+    }
+
+    // Actualizar filtros dinámicamente
+    function actualizarFiltrosDinamicos() {
       const lugarSeleccionado = selectLugar.value;
       const grupoSeleccionado = selectGrupo.value;
       const subgrupoSeleccionado = selectSubgrupo.value;
@@ -982,68 +1019,70 @@
         datosFiltrados = datosFiltrados.filter(d => d.subgrupo === subgrupoSeleccionado);
       }
 
-      // Actualizar opciones de filtros dependientes
-      actualizarOpcionesFiltro(selectGrupo, 'grupo', datosFiltrados, grupoSeleccionado);
-      actualizarOpcionesFiltro(selectSubgrupo, 'subgrupo', datosFiltrados, subgrupoSeleccionado);
-      actualizarOpcionesFiltro(selectCoordinador, 'coordinador', datosFiltrados);
+      // Actualizar opciones disponibles en cada filtro
+      const gruposDisponibles = [...new Set(datosFiltrados.map(d => d.grupo).filter(Boolean))].sort();
+      const subgruposDisponibles = [...new Set(datosFiltrados.map(d => d.subgrupo).filter(Boolean))].sort();
+      const coordinadoresDisponibles = [...new Set(datosFiltrados.map(d => d.coordinador).filter(Boolean))].sort();
 
-      // Actualizar visualización
-      await actualizar();
-    }
+      // Guardar valores actuales antes de actualizar
+      const grupoActual = selectGrupo.value;
+      const subgrupoActual = selectSubgrupo.value;
+      const coordinadorActual = selectCoordinador.value;
 
-    // Actualizar opciones de un filtro específico
-    function actualizarOpcionesFiltro(selectElement, campo, datos, valorSeleccionado = '') {
-      const valorActual = selectElement.value;
-      const opcionesAnteriores = Array.from(selectElement.options).map(opt => opt.value);
+      // Actualizar selects
+      llenarSelect(selectGrupo, gruposDisponibles);
+      llenarSelect(selectSubgrupo, subgruposDisponibles);
+      llenarSelect(selectCoordinador, coordinadoresDisponibles);
+
+      // Restaurar valores si todavía están disponibles
+      if (grupoActual && gruposDisponibles.includes(grupoActual)) {
+        selectGrupo.value = grupoActual;
+      }
       
-      // Obtener valores únicos del campo en los datos filtrados
-      const valoresUnicos = [...new Set(datos.map(d => d[campo]).filter(Boolean))].sort();
+      if (subgrupoActual && subgruposDisponibles.includes(subgrupoActual)) {
+        selectSubgrupo.value = subgrupoActual;
+      }
       
-      // Mantener el valor seleccionado si todavía está disponible
-      const valorAMantener = valoresUnicos.includes(valorSeleccionado) ? valorSeleccionado : 
-                            valoresUnicos.includes(valorActual) ? valorActual : '';
-      
-      // Limpiar y repoblar el select
-      selectElement.innerHTML = '<option value="">Todos los ' + campo + 's</option>';
-      valoresUnicos.forEach(valor => {
-        const option = document.createElement('option');
-        option.value = valor;
-        option.textContent = valor;
-        if (valor === valorAMantener) {
-          option.selected = true;
-        }
-        selectElement.appendChild(option);
-      });
+      if (coordinadorActual && coordinadoresDisponibles.includes(coordinadorActual)) {
+        selectCoordinador.value = coordinadorActual;
+      }
     }
 
     // Construir query según filtros y traer datos
     async function obtenerFiltrados() {
-      let datosFiltrados = allData;
+      let q = supabase.from('caracterizacion_desechos_daule').select('*');
+      if (selectLugar.value) q = q.eq('lugar', selectLugar.value);
+      if (selectGrupo.value) q = q.eq('grupo', selectGrupo.value);
+      if (selectSubgrupo.value) q = q.eq('subgrupo', selectSubgrupo.value);
+      if (selectCoordinador.value) q = q.eq('coordinador', selectCoordinador.value);
       
-      if (selectLugar.value) {
-        datosFiltrados = datosFiltrados.filter(d => d.lugar === selectLugar.value);
+      const r = await q;
+      if (r.error) {
+        console.error(r.error);
+        return [];
       }
-      
-      if (selectGrupo.value) {
-        datosFiltrados = datosFiltrados.filter(d => d.grupo === selectGrupo.value);
-      }
-      
-      if (selectSubgrupo.value) {
-        datosFiltrados = datosFiltrados.filter(d => d.subgrupo === selectSubgrupo.value);
-      }
-      
-      if (selectCoordinador.value) {
-        datosFiltrados = datosFiltrados.filter(d => d.coordinador === selectCoordinador.value);
-      }
-      
-      return datosFiltrados;
+      return r.data || [];
+    }
+
+    // Obtener datos del período anterior para comparación
+    async function obtenerDatosPeriodoAnterior() {
+      // Para simplificar, usamos todos los datos como período anterior
+      // En una implementación real, se usaría un período de tiempo específico
+      return allData.filter(item => {
+        if (selectLugar.value && item.lugar !== selectLugar.value) return false;
+        if (selectGrupo.value && item.grupo !== selectGrupo.value) return false;
+        if (selectSubgrupo.value && item.subgrupo !== selectSubgrupo.value) return false;
+        if (selectCoordinador.value && item.coordinador !== selectCoordinador.value) return false;
+        return true;
+      }).slice(0, Math.floor(allData.length / 2)); // Tomamos la primera mitad como período anterior
     }
 
     // Procesa filas y calcula totales por columna *_kg
     function resumenPorCategorias(rows) {
-      if (!rows || rows.length === 0) return { labels: [], values: [], totalesObj: {}, totalSum: 0 };
+      if (!rows || rows.length === 0) return { labels: [], values: [], totalesObj: {}, totalSum: 0, lastDate: null, avgPerDay: 0 };
       
       const totales = {};
+      const fechasUnicas = new Set();
       
       rows.forEach(row => {
         Object.entries(row).forEach(([k, v]) => {
@@ -1052,13 +1091,28 @@
             totales[k] = (totales[k] || 0) + val;
           }
         });
+        
+        // Registrar fecha para cálculo de promedio diario
+        if (row.fecha_registro) {
+          const fecha = new Date(row.fecha_registro).toISOString().slice(0, 10);
+          fechasUnicas.add(fecha);
+        }
       });
       
       const labels = Object.keys(totales).sort();
       const values = labels.map(l => totales[l]);
       const totalSum = values.reduce((a, b) => a + b, 0);
       
-      return { labels, values, totalesObj: totales, totalSum };
+      // Fecha última en el conjunto
+      const lastDate = rows.map(r => r.fecha_registro ? new Date(r.fecha_registro) : null)
+        .filter(Boolean)
+        .sort((a, b) => b - a)[0] || null;
+      
+      // Promedio diario
+      const numDias = fechasUnicas.size || 1;
+      const avgPerDay = totalSum / numDias;
+      
+      return { labels, values, totalesObj: totales, totalSum, lastDate, avgPerDay, numDias };
     }
 
     // Calcular estadísticas básicas completas
@@ -1181,12 +1235,7 @@
             data: values,
             backgroundColor: colors,
             borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-            borderWidth: chartType === 'line' ? 2 : 1,
-            pointBackgroundColor: chartType === 'line' ? colors : undefined,
-            pointBorderColor: chartType === 'line' ? '#fff' : undefined,
-            pointBorderWidth: chartType === 'line' ? 2 : undefined,
-            pointRadius: chartType === 'line' ? 4 : undefined,
-            pointHoverRadius: chartType === 'line' ? 6 : undefined
+            borderWidth: chartType === 'line' ? 2 : 1
           }]
         },
         options: {
@@ -1198,6 +1247,21 @@
               labels: {
                 font: {
                   size: 12
+                },
+                // Para gráficos circulares, limitar el texto de la leyenda
+                generateLabels: function(chart) {
+                  if (chartType === 'pie') {
+                    const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                    const labels = original.call(this, chart);
+                    // Acortar etiquetas largas
+                    return labels.map(label => {
+                      if (label.text.length > 20) {
+                        label.text = label.text.substring(0, 17) + '...';
+                      }
+                      return label;
+                    });
+                  }
+                  return Chart.defaults.plugins.legend.labels.generateLabels.call(this, chart);
                 }
               }
             },
@@ -1320,248 +1384,9 @@
         'bar': 'Gráfico de Barras',
         'pie': 'Gráfico Circular',
         'line': 'Gráfico de Líneas',
-        'radar': 'Gráfico Radar',
-        'boxplot': 'Caja y Bigotes',
-        'histogram': 'Histograma',
-        'scatter': 'Gráfico de Dispersión'
+        'radar': 'Gráfico Radar'
       };
       return names[type] || type;
-    }
-
-    // Renderizar gráficos avanzados
-    function renderAdvancedChart(chartType) {
-      if (!currentData.length) return;
-      
-      if (advancedChart) advancedChart.destroy();
-      
-      const currentSummary = resumenPorCategorias(currentData);
-      const friendlyLabels = currentSummary.labels.map(l => {
-        const nameMap = {
-          'de_jardin_kg': 'Jardín',
-          'de_cocina_kg': 'Cocina',
-          'aceite_comestible_kg': 'Aceite',
-          'papel_blanco_kg': 'Papel Blanco',
-          'papel_periodico_kg': 'Periódico',
-          'papel_archivo_kg': 'Papel Archivo',
-          'carton_kg': 'Cartón',
-          'tetra_brik_kg': 'Tetra Brik',
-          'pet_kg': 'PET',
-          'plastico_mixto_kg': 'Plástico Mixto'
-        };
-        
-        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
-      });
-      
-      // Colores consistentes (HSL)
-      const colors = friendlyLabels.map((_, i) => `hsl(${(i * 360 / friendlyLabels.length) % 360} 70% 55%)`);
-      
-      let config;
-      
-      switch(chartType) {
-        case 'boxplot':
-          // Simular datos para gráfico de caja y bigotes
-          const boxData = friendlyLabels.map((label, i) => {
-            const value = currentSummary.values[i];
-            return {
-              label: label,
-              data: [
-                value * 0.7,  // Mínimo
-                value * 0.8,  // Q1
-                value,        // Mediana
-                value * 1.2,  // Q3
-                value * 1.3   // Máximo
-              ]
-            };
-          });
-          
-          config = {
-            type: 'bar',
-            data: {
-              labels: friendlyLabels,
-              datasets: [{
-                label: 'Distribución (kg)',
-                data: currentSummary.values,
-                backgroundColor: colors,
-                borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                title: {
-                  display: true,
-                  text: 'Distribución de Desechos - Caja y Bigotes',
-                  font: {
-                    size: 16,
-                    weight: 'bold'
-                  },
-                  padding: 20
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} kg`;
-                    }
-                  }
-                }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Peso (kg)',
-                    font: { size: 14, weight: 'bold' }
-                  }
-                },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Categorías de Desechos',
-                    font: { size: 14, weight: 'bold' }
-                  }
-                }
-              }
-            }
-          };
-          break;
-          
-        case 'histogram':
-          // Crear datos para histograma
-          const histogramData = Array(10).fill(0);
-          const maxValue = Math.max(...currentSummary.values);
-          
-          currentSummary.values.forEach(value => {
-            const binIndex = Math.min(Math.floor((value / maxValue) * 10), 9);
-            histogramData[binIndex]++;
-          });
-          
-          config = {
-            type: 'bar',
-            data: {
-              labels: Array(10).fill(0).map((_, i) => {
-                const min = (i / 10 * maxValue).toFixed(0);
-                const max = ((i + 1) / 10 * maxValue).toFixed(0);
-                return `${min}-${max} kg`;
-              }),
-              datasets: [{
-                label: 'Frecuencia',
-                data: histogramData,
-                backgroundColor: 'rgba(15, 118, 110, 0.7)',
-                borderColor: 'rgba(15, 118, 110, 1)',
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                title: {
-                  display: true,
-                  text: 'Distribución de Frecuencias - Histograma',
-                  font: {
-                    size: 16,
-                    weight: 'bold'
-                  },
-                  padding: 20
-                }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Frecuencia',
-                    font: { size: 14, weight: 'bold' }
-                  }
-                },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Rangos de Peso (kg)',
-                    font: { size: 14, weight: 'bold' }
-                  }
-                }
-              }
-            }
-          };
-          break;
-          
-        case 'scatter':
-          // Crear datos para gráfico de dispersión
-          const scatterData = currentSummary.values.map((value, index) => ({
-            x: index,
-            y: value,
-            label: friendlyLabels[index]
-          }));
-          
-          config = {
-            type: 'scatter',
-            data: {
-              datasets: [{
-                label: 'Dispersión de Desechos',
-                data: scatterData,
-                backgroundColor: colors,
-                borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-                borderWidth: 1,
-                pointRadius: 6,
-                pointHoverRadius: 8
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                title: {
-                  display: true,
-                  text: 'Dispersión de Desechos por Categoría',
-                  font: {
-                    size: 16,
-                    weight: 'bold'
-                  },
-                  padding: 20
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      const point = scatterData[context.dataIndex];
-                      return `${point.label}: ${point.y.toFixed(2)} kg`;
-                    }
-                  }
-                }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Peso (kg)',
-                    font: { size: 14, weight: 'bold' }
-                  }
-                },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Índice de Categoría',
-                    font: { size: 14, weight: 'bold' }
-                  },
-                  ticks: {
-                    callback: function(value) {
-                      return friendlyLabels[value] || value;
-                    }
-                  }
-                }
-              }
-            }
-          };
-          break;
-      }
-      
-      if (config) {
-        advancedChart = new Chart(advancedCtx, config);
-      }
     }
 
     // Renderizar comparación
@@ -1678,8 +1503,8 @@
       });
     }
 
-    // Rellenar tabla resumen y estadísticas
-    function renderResumen(currentSummary, basicStats, advancedStats) {
+    // Rellenar tabla resumen y KPIs
+    function renderResumen(currentSummary, previousSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
       const friendlyLabels = currentSummary.labels.map(l => {
@@ -1729,10 +1554,16 @@
       statGini.textContent = advancedStats.gini.toFixed(3);
       statTotalKg.textContent = advancedStats.totalSum.toFixed(2);
       
-      // Actualizar total en la tabla
-      tableTotal.textContent = currentSummary.totalSum.toFixed(2);
+      // Encontrar categoría dominante para KPI
+      let dominantCategory = '-';
+      let dominantPercentage = '0%';
+      if (currentSummary.values.length > 0) {
+        const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
+        dominantCategory = friendlyLabels[maxIndex];
+        dominantPercentage = ((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1) + '%';
+      }
       
-      // Llenar tabla
+      // Llenar tabla (solo con las columnas solicitadas)
       friendlyLabels.forEach((lab, i) => {
         const v = currentSummary.values[i];
         if (v <= 0) return;
@@ -1747,6 +1578,43 @@
         `;
         tbody.appendChild(tr);
       });
+      
+      // Actualizar total en la tabla
+      tableTotalKg.textContent = currentSummary.totalSum.toFixed(2);
+      
+      // Actualizar KPIs
+      kpiTotal.textContent = currentSummary.totalSum.toFixed(2);
+      kpiCount.textContent = friendlyLabels.filter((_, i) => currentSummary.values[i] > 0).length;
+      kpiDominant.textContent = dominantCategory;
+      kpiAvgCategory.textContent = basicStats.avgPerCategory.toFixed(2);
+      
+      // Actualizar KPIs de categoría dominante
+      kpiDominantChange.innerHTML = `<span>${dominantPercentage} del total</span>`;
+      
+      // Calcular cambios porcentuales para KPIs
+      if (previousSummary && previousSummary.totalSum > 0) {
+        const totalChange = ((currentSummary.totalSum - previousSummary.totalSum) / previousSummary.totalSum) * 100;
+        const countChange = ((kpiCount.textContent - previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) / previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) * 100;
+        const avgChange = ((basicStats.avgPerCategory - (previousSummary.totalSum / previousSummary.labels.length)) / (previousSummary.totalSum / previousSummary.labels.length)) * 100;
+        
+        // Actualizar elementos de cambio
+        actualizarElementoCambio(kpiTotalChange, totalChange);
+        actualizarElementoCambio(kpiCountChange, countChange);
+        actualizarElementoCambio(kpiAvgCategoryChange, avgChange);
+      } else {
+        kpiTotalChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+        kpiCountChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+        kpiAvgCategoryChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+      }
+    }
+    
+    // Helper para actualizar elementos de cambio
+    function actualizarElementoCambio(element, cambio) {
+      const icon = cambio > 0 ? 'fa-arrow-up' : (cambio < 0 ? 'fa-arrow-down' : 'fa-minus');
+      const className = cambio > 0 ? 'positive' : (cambio < 0 ? 'negative' : '');
+      
+      element.innerHTML = `<i class="fas ${icon}"></i> <span>${Math.abs(cambio).toFixed(2)}% vs período anterior</span>`;
+      element.className = `kpi-change ${className}`;
     }
 
     // Exportar datos
@@ -1758,13 +1626,12 @@
       
       switch (tipo) {
         case 'png':
-          const chartToExport = document.querySelector('.tab-content.active').id === 'advanced' ? advancedChart : mainChart;
-          if (!chartToExport) {
+          if (!mainChart) {
             alert('Gráfico no disponible');
             return;
           }
           const a = document.createElement('a');
-          a.href = chartToExport.toBase64Image();
+          a.href = mainChart.toBase64Image();
           a.download = 'grafico-desechos-daule.png';
           document.body.appendChild(a);
           a.click();
@@ -1811,7 +1678,6 @@
             const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) : '0.00';
             csvContent += `"${lab}",${v.toFixed(2)},${pct}%\n`;
           });
-          csvContent += `"TOTAL GENERAL",${currentSummary.totalSum.toFixed(2)},100.00%\n`;
           
           const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
@@ -1829,11 +1695,13 @@
     // Acción principal: obtener datos, procesar y renderizar
     async function actualizar() {
       try {
-        // Obtener datos del período actual
+        // Obtener datos del período actual y anterior
         currentData = await obtenerFiltrados();
+        previousPeriodData = await obtenerDatosPeriodoAnterior();
         
         // Procesar datos
         const currentSummary = resumenPorCategorias(currentData);
+        const previousSummary = resumenPorCategorias(previousPeriodData);
         
         // Calcular estadísticas
         const basicStats = calcularEstadisticasBasicas(currentData, currentSummary);
@@ -1841,16 +1709,11 @@
         
         // Renderizar
         renderChart(currentSummary.labels, currentSummary.values, currentChartType);
-        renderResumen(currentSummary, basicStats, advancedStats);
+        renderResumen(currentSummary, previousSummary, basicStats, advancedStats);
         
         // Si la pestaña de comparación está activa, renderizarla
         if (document.querySelector('.tab[data-tab="comparison"]').classList.contains('active')) {
           renderComparison();
-        }
-        
-        // Si la pestaña de análisis avanzado está activa, renderizarla
-        if (document.querySelector('.tab[data-tab="advanced"]').classList.contains('active')) {
-          renderAdvancedChart(advancedChartType);
         }
       } catch (err) {
         console.error(err);
