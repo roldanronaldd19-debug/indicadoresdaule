@@ -152,16 +152,6 @@
       font-weight: 500;
       margin-bottom: 6px;
       color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .filter-info {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 4px;
-      font-style: italic;
     }
     
     select {
@@ -223,14 +213,14 @@
       margin-top: 16px;
     }
     
-    .summary-cards {
+    .kpis {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
     
-    .summary-card {
+    .kpi {
       background: linear-gradient(135deg, #fff, #f7fffb);
       padding: 20px;
       border-radius: 10px;
@@ -241,11 +231,11 @@
       flex-direction: column;
     }
     
-    .summary-card:hover {
+    .kpi:hover {
       transform: translateY(-2px);
     }
     
-    .summary-title {
+    .kpi-title {
       font-size: 13px;
       color: var(--muted);
       margin-bottom: 8px;
@@ -255,14 +245,14 @@
       font-weight: 500;
     }
     
-    .summary-value {
+    .kpi-value {
       font-size: 28px;
       font-weight: 700;
       color: var(--primary);
       margin-bottom: 4px;
     }
     
-    .summary-subtitle {
+    .kpi-change {
       font-size: 12px;
       display: flex;
       align-items: center;
@@ -332,15 +322,6 @@
     
     tr:hover {
       background-color: #f8fafc;
-    }
-    
-    .total-row {
-      background-color: #f0f9ff;
-      font-weight: 600;
-    }
-    
-    .total-row td {
-      border-top: 2px solid var(--primary);
     }
     
     .statistics-grid {
@@ -476,6 +457,13 @@
       background: var(--bg1);
     }
     
+    .data-source {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: right;
+    }
+    
     .chart-type-selector {
       display: flex;
       flex-wrap: wrap;
@@ -529,7 +517,7 @@
         height: 400px;
       }
       
-      .summary-cards {
+      .kpis {
         grid-template-columns: 1fr;
       }
       
@@ -568,35 +556,31 @@
       <!-- Controles -->
       <div class="controls" id="controls">
         <div class="control-group">
-          <label for="selectLugar"><i class="fas fa-map-marker-alt"></i> Ubicación</label>
+          <label for="selectLugar">Ubicación Geográfica</label>
           <select id="selectLugar">
             <option value="">Todas las ubicaciones</option>
           </select>
-          <div class="filter-info" id="lugarInfo">Cargando...</div>
         </div>
 
         <div class="control-group">
-          <label for="selectGrupo"><i class="fas fa-users"></i> Grupo</label>
+          <label for="selectGrupo">Grupo de Estudio</label>
           <select id="selectGrupo">
             <option value="">Todos los grupos</option>
           </select>
-          <div class="filter-info" id="grupoInfo">Cargando...</div>
         </div>
 
         <div class="control-group">
-          <label for="selectSubgrupo"><i class="fas fa-user-friends"></i> Subgrupo</label>
+          <label for="selectSubgrupo">Subgrupo</label>
           <select id="selectSubgrupo">
             <option value="">Todos los subgrupos</option>
           </select>
-          <div class="filter-info" id="subgrupoInfo">Cargando...</div>
         </div>
 
         <div class="control-group">
-          <label for="selectCoordinador"><i class="fas fa-user-tie"></i> Coordinador</label>
+          <label for="selectCoordinador">Coordinador</label>
           <select id="selectCoordinador">
             <option value="">Todos los coordinadores</option>
           </select>
-          <div class="filter-info" id="coordinadorInfo">Cargando...</div>
         </div>
       </div>
 
@@ -617,47 +601,47 @@
       </div>
     </div>
 
-    <!-- Tarjetas de resumen -->
+    <!-- KPIs -->
     <div class="card">
       <div class="card-title">
         <i class="fas fa-chart-line"></i>
-        Resumen General
+        Resumen de Datos
       </div>
       
-      <div class="summary-cards" id="summaryCards">
-        <div class="summary-card">
-          <div class="summary-title">
-            <i class="fas fa-weight-hanging"></i> Total de Desechos
+      <div class="kpis" id="kpis">
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-weight-hanging"></i> Total de Desechos (kg)
           </div>
-          <div class="summary-value" id="summaryTotal">0 kg</div>
-          <div class="summary-subtitle" id="summaryTotalChange">
+          <div class="kpi-value" id="kpiTotal">0</div>
+          <div class="kpi-change" id="kpiTotalChange">
             <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
           </div>
         </div>
-        <div class="summary-card">
-          <div class="summary-title">
+        <div class="kpi">
+          <div class="kpi-title">
             <i class="fas fa-list"></i> Categorías con Desechos
           </div>
-          <div class="summary-value" id="summaryCount">0</div>
-          <div class="summary-subtitle" id="summaryCountChange">
+          <div class="kpi-value" id="kpiCount">0</div>
+          <div class="kpi-change" id="kpiCountChange">
             <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
           </div>
         </div>
-        <div class="summary-card">
-          <div class="summary-title">
+        <div class="kpi">
+          <div class="kpi-title">
             <i class="fas fa-percentage"></i> Categoría Dominante
           </div>
-          <div class="summary-value" id="summaryDominant">-</div>
-          <div class="summary-subtitle" id="summaryDominantChange">
+          <div class="kpi-value" id="kpiDominant">-</div>
+          <div class="kpi-change" id="kpiDominantChange">
             <span>% del total</span>
           </div>
         </div>
-        <div class="summary-card">
-          <div class="summary-title">
-            <i class="fas fa-balance-scale"></i> Promedio por Categoría
+        <div class="kpi">
+          <div class="kpi-title">
+            <i class="fas fa-balance-scale"></i> Promedio por Categoría (kg)
           </div>
-          <div class="summary-value" id="summaryAvgCategory">0 kg</div>
-          <div class="summary-subtitle" id="summaryAvgCategoryChange">
+          <div class="kpi-value" id="kpiAvgCategory">0</div>
+          <div class="kpi-change" id="kpiAvgCategoryChange">
             <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
           </div>
         </div>
@@ -812,6 +796,13 @@
             </tr>
           </thead>
           <tbody></tbody>
+          <tfoot>
+            <tr style="background-color: #f8fafc; font-weight: 600;">
+              <td style="text-align:right">Total:</td>
+              <td style="text-align:right" id="tableTotalKg">0</td>
+              <td style="text-align:right">100%</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
@@ -835,22 +826,17 @@
     const selectCoordinador = document.getElementById('selectCoordinador');
     const btnExport = document.getElementById('btnExport');
     const exportOptions = document.getElementById('exportOptions');
+    const tableTotalKg = document.getElementById('tableTotalKg');
 
-    // Elementos de información de filtros
-    const lugarInfo = document.getElementById('lugarInfo');
-    const grupoInfo = document.getElementById('grupoInfo');
-    const subgrupoInfo = document.getElementById('subgrupoInfo');
-    const coordinadorInfo = document.getElementById('coordinadorInfo');
-
-    // Elementos de resumen
-    const summaryTotal = document.getElementById('summaryTotal');
-    const summaryCount = document.getElementById('summaryCount');
-    const summaryDominant = document.getElementById('summaryDominant');
-    const summaryAvgCategory = document.getElementById('summaryAvgCategory');
-    const summaryTotalChange = document.getElementById('summaryTotalChange');
-    const summaryCountChange = document.getElementById('summaryCountChange');
-    const summaryDominantChange = document.getElementById('summaryDominantChange');
-    const summaryAvgCategoryChange = document.getElementById('summaryAvgCategoryChange');
+    // KPIs y elementos de estadísticas
+    const kpiTotal = document.getElementById('kpiTotal');
+    const kpiCount = document.getElementById('kpiCount');
+    const kpiDominant = document.getElementById('kpiDominant');
+    const kpiAvgCategory = document.getElementById('kpiAvgCategory');
+    const kpiTotalChange = document.getElementById('kpiTotalChange');
+    const kpiCountChange = document.getElementById('kpiCountChange');
+    const kpiDominantChange = document.getElementById('kpiDominantChange');
+    const kpiAvgCategoryChange = document.getElementById('kpiAvgCategoryChange');
     
     // Elementos de estadísticas básicas
     const statTotalRecords = document.getElementById('statTotalRecords');
@@ -881,11 +867,12 @@
     let previousPeriodData = [];
     let allData = [];
     let currentChartType = 'bar';
+    let filterData = {};
 
     // Inicializar la aplicación
     async function initApp() {
-      await inicializarFiltros();
       await cargarTodosLosDatos();
+      await inicializarFiltros();
       await actualizar();
       setupEventListeners();
     }
@@ -893,9 +880,21 @@
     // Configurar event listeners
     function setupEventListeners() {
       // Actualización automática al cambiar filtros
-      selectLugar.addEventListener('change', actualizar);
-      selectGrupo.addEventListener('change', actualizar);
-      selectSubgrupo.addEventListener('change', actualizar);
+      selectLugar.addEventListener('change', function() {
+        actualizarFiltrosDinamicos();
+        actualizar();
+      });
+      
+      selectGrupo.addEventListener('change', function() {
+        actualizarFiltrosDinamicos();
+        actualizar();
+      });
+      
+      selectSubgrupo.addEventListener('change', function() {
+        actualizarFiltrosDinamicos();
+        actualizar();
+      });
+      
       selectCoordinador.addEventListener('change', actualizar);
       
       // Selector de tipo de gráfico
@@ -973,29 +972,80 @@
 
     // Cargar lista de filtros desde la BD
     async function inicializarFiltros() {
-      const q = await supabase.from('caracterizacion_desechos_daule').select('lugar, grupo, subgrupo, coordinador');
-      if (q.error) {
-        console.error(q.error);
-        return;
+      // Preparar datos para filtros dinámicos
+      filterData = {
+        lugares: [...new Set(allData.map(r => r.lugar).filter(Boolean))].sort(),
+        grupos: [...new Set(allData.map(r => r.grupo).filter(Boolean))].sort(),
+        subgrupos: [...new Set(allData.map(r => r.subgrupo).filter(Boolean))].sort(),
+        coordinadores: [...new Set(allData.map(r => r.coordinador).filter(Boolean))].sort()
+      };
+
+      // Llenar filtros iniciales
+      llenarSelect(selectLugar, filterData.lugares);
+      llenarSelect(selectGrupo, filterData.grupos);
+      llenarSelect(selectSubgrupo, filterData.subgrupos);
+      llenarSelect(selectCoordinador, filterData.coordinadores);
+    }
+
+    // Función para llenar un select con opciones
+    function llenarSelect(select, opciones) {
+      select.innerHTML = '<option value="">Todos</option>';
+      opciones.forEach(opcion => {
+        select.appendChild(Object.assign(document.createElement('option'), { 
+          value: opcion, 
+          textContent: opcion 
+        }));
+      });
+    }
+
+    // Actualizar filtros dinámicamente
+    function actualizarFiltrosDinamicos() {
+      const lugarSeleccionado = selectLugar.value;
+      const grupoSeleccionado = selectGrupo.value;
+      const subgrupoSeleccionado = selectSubgrupo.value;
+
+      // Filtrar datos según selecciones actuales
+      let datosFiltrados = allData;
+      
+      if (lugarSeleccionado) {
+        datosFiltrados = datosFiltrados.filter(d => d.lugar === lugarSeleccionado);
       }
-      const rows = q.data || [];
+      
+      if (grupoSeleccionado) {
+        datosFiltrados = datosFiltrados.filter(d => d.grupo === grupoSeleccionado);
+      }
+      
+      if (subgrupoSeleccionado) {
+        datosFiltrados = datosFiltrados.filter(d => d.subgrupo === subgrupoSeleccionado);
+      }
 
-      const lugares = [...new Set(rows.map(r => r.lugar).filter(Boolean))].sort();
-      const grupos = [...new Set(rows.map(r => r.grupo).filter(Boolean))].sort();
-      const subgrupos = [...new Set(rows.map(r => r.subgrupo).filter(Boolean))].sort();
-      const coordinadores = [...new Set(rows.map(r => r.coordinador).filter(Boolean))].sort();
+      // Actualizar opciones disponibles en cada filtro
+      const gruposDisponibles = [...new Set(datosFiltrados.map(d => d.grupo).filter(Boolean))].sort();
+      const subgruposDisponibles = [...new Set(datosFiltrados.map(d => d.subgrupo).filter(Boolean))].sort();
+      const coordinadoresDisponibles = [...new Set(datosFiltrados.map(d => d.coordinador).filter(Boolean))].sort();
 
-      // Actualizar información de filtros
-      lugarInfo.textContent = `${lugares.length} ubicaciones disponibles`;
-      grupoInfo.textContent = `${grupos.length} grupos disponibles`;
-      subgrupoInfo.textContent = `${subgrupos.length} subgrupos disponibles`;
-      coordinadorInfo.textContent = `${coordinadores.length} coordinadores disponibles`;
+      // Guardar valores actuales antes de actualizar
+      const grupoActual = selectGrupo.value;
+      const subgrupoActual = selectSubgrupo.value;
+      const coordinadorActual = selectCoordinador.value;
 
-      // Llenar selectores
-      lugares.forEach(v => selectLugar.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      grupos.forEach(v => selectGrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      subgrupos.forEach(v => selectSubgrupo.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
-      coordinadores.forEach(v => selectCoordinador.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: v })));
+      // Actualizar selects
+      llenarSelect(selectGrupo, gruposDisponibles);
+      llenarSelect(selectSubgrupo, subgruposDisponibles);
+      llenarSelect(selectCoordinador, coordinadoresDisponibles);
+
+      // Restaurar valores si todavía están disponibles
+      if (grupoActual && gruposDisponibles.includes(grupoActual)) {
+        selectGrupo.value = grupoActual;
+      }
+      
+      if (subgrupoActual && subgruposDisponibles.includes(subgrupoActual)) {
+        selectSubgrupo.value = subgrupoActual;
+      }
+      
+      if (coordinadorActual && coordinadoresDisponibles.includes(coordinadorActual)) {
+        selectCoordinador.value = coordinadorActual;
+      }
     }
 
     // Construir query según filtros y traer datos
@@ -1453,7 +1503,7 @@
       });
     }
 
-    // Rellenar tabla resumen y actualizar resúmenes
+    // Rellenar tabla resumen y KPIs
     function renderResumen(currentSummary, previousSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
@@ -1504,7 +1554,7 @@
       statGini.textContent = advancedStats.gini.toFixed(3);
       statTotalKg.textContent = advancedStats.totalSum.toFixed(2);
       
-      // Encontrar categoría dominante para resumen
+      // Encontrar categoría dominante para KPI
       let dominantCategory = '-';
       let dominantPercentage = '0%';
       if (currentSummary.values.length > 0) {
@@ -1513,13 +1563,11 @@
         dominantPercentage = ((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1) + '%';
       }
       
-      // Llenar tabla
-      let totalKg = 0;
+      // Llenar tabla (solo con las columnas solicitadas)
       friendlyLabels.forEach((lab, i) => {
         const v = currentSummary.values[i];
         if (v <= 0) return;
         
-        totalKg += v;
         const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
         
         const tr = document.createElement('tr');
@@ -1531,39 +1579,32 @@
         tbody.appendChild(tr);
       });
       
-      // Agregar fila de total al final de la tabla
-      const totalRow = document.createElement('tr');
-      totalRow.className = 'total-row';
-      totalRow.innerHTML = `
-        <td><strong>TOTAL</strong></td>
-        <td style="text-align:right"><strong>${totalKg.toFixed(2)}</strong></td>
-        <td style="text-align:right"><strong>100.00%</strong></td>
-      `;
-      tbody.appendChild(totalRow);
+      // Actualizar total en la tabla
+      tableTotalKg.textContent = currentSummary.totalSum.toFixed(2);
       
-      // Actualizar tarjetas de resumen
-      summaryTotal.textContent = currentSummary.totalSum.toFixed(2) + ' kg';
-      summaryCount.textContent = friendlyLabels.filter((_, i) => currentSummary.values[i] > 0).length;
-      summaryDominant.textContent = dominantCategory;
-      summaryAvgCategory.textContent = basicStats.avgPerCategory.toFixed(2) + ' kg';
+      // Actualizar KPIs
+      kpiTotal.textContent = currentSummary.totalSum.toFixed(2);
+      kpiCount.textContent = friendlyLabels.filter((_, i) => currentSummary.values[i] > 0).length;
+      kpiDominant.textContent = dominantCategory;
+      kpiAvgCategory.textContent = basicStats.avgPerCategory.toFixed(2);
       
-      // Actualizar resúmenes de categoría dominante
-      summaryDominantChange.innerHTML = `<span>${dominantPercentage} del total</span>`;
+      // Actualizar KPIs de categoría dominante
+      kpiDominantChange.innerHTML = `<span>${dominantPercentage} del total</span>`;
       
-      // Calcular cambios porcentuales para resúmenes
+      // Calcular cambios porcentuales para KPIs
       if (previousSummary && previousSummary.totalSum > 0) {
         const totalChange = ((currentSummary.totalSum - previousSummary.totalSum) / previousSummary.totalSum) * 100;
-        const countChange = ((summaryCount.textContent - previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) / previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) * 100;
+        const countChange = ((kpiCount.textContent - previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) / previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) * 100;
         const avgChange = ((basicStats.avgPerCategory - (previousSummary.totalSum / previousSummary.labels.length)) / (previousSummary.totalSum / previousSummary.labels.length)) * 100;
         
         // Actualizar elementos de cambio
-        actualizarElementoCambio(summaryTotalChange, totalChange);
-        actualizarElementoCambio(summaryCountChange, countChange);
-        actualizarElementoCambio(summaryAvgCategoryChange, avgChange);
+        actualizarElementoCambio(kpiTotalChange, totalChange);
+        actualizarElementoCambio(kpiCountChange, countChange);
+        actualizarElementoCambio(kpiAvgCategoryChange, avgChange);
       } else {
-        summaryTotalChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
-        summaryCountChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
-        summaryAvgCategoryChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+        kpiTotalChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+        kpiCountChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
+        kpiAvgCategoryChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
       }
     }
     
@@ -1573,7 +1614,7 @@
       const className = cambio > 0 ? 'positive' : (cambio < 0 ? 'negative' : '');
       
       element.innerHTML = `<i class="fas ${icon}"></i> <span>${Math.abs(cambio).toFixed(2)}% vs período anterior</span>`;
-      element.className = `summary-subtitle ${className}`;
+      element.className = `kpi-change ${className}`;
     }
 
     // Exportar datos
@@ -1637,9 +1678,6 @@
             const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) : '0.00';
             csvContent += `"${lab}",${v.toFixed(2)},${pct}%\n`;
           });
-          
-          // Agregar total al CSV
-          csvContent += `"TOTAL",${currentSummary.totalSum.toFixed(2)},100.00%\n`;
           
           const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
