@@ -223,60 +223,6 @@
       margin-top: 16px;
     }
     
-    .summary-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    
-    .summary-card {
-      background: linear-gradient(135deg, #fff, #f7fffb);
-      padding: 20px;
-      border-radius: 10px;
-      border: 1px solid #eef7f4;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      transition: transform 0.2s;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .summary-card:hover {
-      transform: translateY(-2px);
-    }
-    
-    .summary-title {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 500;
-    }
-    
-    .summary-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 4px;
-    }
-    
-    .summary-subtitle {
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    
-    .positive {
-      color: var(--success);
-    }
-    
-    .negative {
-      color: var(--danger);
-    }
-    
     .chart-container {
       position: relative;
       height: 500px;
@@ -529,10 +475,6 @@
         height: 400px;
       }
       
-      .summary-cards {
-        grid-template-columns: 1fr;
-      }
-      
       .chart-type-selector {
         justify-content: center;
       }
@@ -617,53 +559,6 @@
       </div>
     </div>
 
-    <!-- Tarjetas de resumen -->
-    <div class="card">
-      <div class="card-title">
-        <i class="fas fa-chart-line"></i>
-        Resumen General
-      </div>
-      
-      <div class="summary-cards" id="summaryCards">
-        <div class="summary-card">
-          <div class="summary-title">
-            <i class="fas fa-weight-hanging"></i> Total de Desechos
-          </div>
-          <div class="summary-value" id="summaryTotal">0 kg</div>
-          <div class="summary-subtitle" id="summaryTotalChange">
-            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-title">
-            <i class="fas fa-list"></i> Categorías con Desechos
-          </div>
-          <div class="summary-value" id="summaryCount">0</div>
-          <div class="summary-subtitle" id="summaryCountChange">
-            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-title">
-            <i class="fas fa-percentage"></i> Categoría Dominante
-          </div>
-          <div class="summary-value" id="summaryDominant">-</div>
-          <div class="summary-subtitle" id="summaryDominantChange">
-            <span>% del total</span>
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-title">
-            <i class="fas fa-balance-scale"></i> Promedio por Categoría
-          </div>
-          <div class="summary-value" id="summaryAvgCategory">0 kg</div>
-          <div class="summary-subtitle" id="summaryAvgCategoryChange">
-            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Gráficos y visualizaciones -->
     <div class="card">
       <div class="card-title">
@@ -674,6 +569,8 @@
       <div class="tabs">
         <div class="tab active" data-tab="main-chart">Distribución por Categoría</div>
         <div class="tab" data-tab="comparison">Comparación por Grupos</div>
+        <div class="tab" data-tab="histogram">Histograma</div>
+        <div class="tab" data-tab="scatter">Dispersión</div>
       </div>
       
       <div class="tab-content active" id="main-chart">
@@ -702,6 +599,18 @@
       <div class="tab-content" id="comparison">
         <div class="chart-container">
           <canvas id="comparisonChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="histogram">
+        <div class="chart-container">
+          <canvas id="histogramChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="scatter">
+        <div class="chart-container">
+          <canvas id="scatterChart"></canvas>
         </div>
       </div>
     </div>
@@ -842,16 +751,6 @@
     const subgrupoInfo = document.getElementById('subgrupoInfo');
     const coordinadorInfo = document.getElementById('coordinadorInfo');
 
-    // Elementos de resumen
-    const summaryTotal = document.getElementById('summaryTotal');
-    const summaryCount = document.getElementById('summaryCount');
-    const summaryDominant = document.getElementById('summaryDominant');
-    const summaryAvgCategory = document.getElementById('summaryAvgCategory');
-    const summaryTotalChange = document.getElementById('summaryTotalChange');
-    const summaryCountChange = document.getElementById('summaryCountChange');
-    const summaryDominantChange = document.getElementById('summaryDominantChange');
-    const summaryAvgCategoryChange = document.getElementById('summaryAvgCategoryChange');
-    
     // Elementos de estadísticas básicas
     const statTotalRecords = document.getElementById('statTotalRecords');
     const statUniquePlaces = document.getElementById('statUniquePlaces');
@@ -874,7 +773,9 @@
     // Charts
     const mainCtx = document.getElementById('mainChart').getContext('2d');
     const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
-    let mainChart, comparisonChart;
+    const histogramCtx = document.getElementById('histogramChart').getContext('2d');
+    const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+    let mainChart, comparisonChart, histogramChart, scatterChart;
 
     // Variables globales para datos
     let currentData = [];
@@ -951,6 +852,10 @@
           // Renderizar gráficos específicos si es necesario
           if (tabId === 'comparison') {
             renderComparison();
+          } else if (tabId === 'histogram') {
+            renderHistogram();
+          } else if (tabId === 'scatter') {
+            renderScatter();
           }
         });
       });
@@ -1453,7 +1358,226 @@
       });
     }
 
-    // Rellenar tabla resumen y actualizar resúmenes
+    // Renderizar histograma
+    function renderHistogram() {
+      if (!currentData.length) return;
+      
+      const currentSummary = resumenPorCategorias(currentData);
+      const values = currentSummary.values;
+      
+      // Calcular bins para el histograma
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const binCount = Math.min(10, values.length);
+      const binSize = (max - min) / binCount;
+      
+      const bins = Array(binCount).fill(0);
+      values.forEach(value => {
+        const binIndex = Math.min(Math.floor((value - min) / binSize), binCount - 1);
+        bins[binIndex]++;
+      });
+      
+      // Crear etiquetas para los bins
+      const binLabels = Array(binCount).fill(0).map((_, i) => {
+        const start = min + i * binSize;
+        const end = start + binSize;
+        return `${start.toFixed(1)} - ${end.toFixed(1)} kg`;
+      });
+      
+      if (histogramChart) histogramChart.destroy();
+      
+      histogramChart = new Chart(histogramCtx, {
+        type: 'bar',
+        data: {
+          labels: binLabels,
+          datasets: [{
+            label: 'Frecuencia',
+            data: bins,
+            backgroundColor: 'rgba(15, 118, 110, 0.7)',
+            borderColor: 'rgba(15, 118, 110, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                font: {
+                  size: 12
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Histograma de Distribución de Pesos por Categoría',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              padding: 20
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Frecuencia',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Rangos de Peso (kg)',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Renderizar gráfico de dispersión con línea de regresión
+    function renderScatter() {
+      if (!currentData.length) return;
+      
+      const currentSummary = resumenPorCategorias(currentData);
+      const labels = currentSummary.labels;
+      const values = currentSummary.values;
+      
+      // Crear datos para el gráfico de dispersión
+      const scatterData = values.map((value, index) => ({
+        x: index,
+        y: value,
+        label: labels[index]
+      }));
+      
+      // Calcular línea de regresión lineal
+      const n = scatterData.length;
+      const sumX = scatterData.reduce((sum, point) => sum + point.x, 0);
+      const sumY = scatterData.reduce((sum, point) => sum + point.y, 0);
+      const sumXY = scatterData.reduce((sum, point) => sum + point.x * point.y, 0);
+      const sumX2 = scatterData.reduce((sum, point) => sum + point.x * point.x, 0);
+      
+      const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      const intercept = (sumY - slope * sumX) / n;
+      
+      // Crear puntos para la línea de regresión
+      const regressionLine = scatterData.map(point => ({
+        x: point.x,
+        y: slope * point.x + intercept
+      }));
+      
+      if (scatterChart) scatterChart.destroy();
+      
+      scatterChart = new Chart(scatterCtx, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Datos por Categoría',
+              data: scatterData,
+              backgroundColor: 'rgba(15, 118, 110, 0.7)',
+              borderColor: 'rgba(15, 118, 110, 1)',
+              pointRadius: 6,
+              pointHoverRadius: 8
+            },
+            {
+              label: 'Línea de Regresión',
+              data: regressionLine,
+              type: 'line',
+              fill: false,
+              borderColor: 'rgba(239, 68, 68, 0.8)',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                font: {
+                  size: 12
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Gráfico de Dispersión con Línea de Regresión',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              padding: 20
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  if (context.datasetIndex === 0) {
+                    const point = scatterData[context.dataIndex];
+                    return `${point.label}: ${point.y.toFixed(2)} kg`;
+                  }
+                  return `Regresión: ${context.parsed.y.toFixed(2)} kg`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Peso (kg)',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Índice de Categoría',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              },
+              ticks: {
+                callback: function(value) {
+                  if (value >= 0 && value < labels.length) {
+                    const shortLabel = labels[value].replace(/_/g, ' ').replace('kg', '').substring(0, 10) + '...';
+                    return shortLabel;
+                  }
+                  return value;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Rellenar tabla resumen y actualizar estadísticas
     function renderResumen(currentSummary, previousSummary, basicStats, advancedStats) {
       tbody.innerHTML = '';
       
@@ -1504,15 +1628,6 @@
       statGini.textContent = advancedStats.gini.toFixed(3);
       statTotalKg.textContent = advancedStats.totalSum.toFixed(2);
       
-      // Encontrar categoría dominante para resumen
-      let dominantCategory = '-';
-      let dominantPercentage = '0%';
-      if (currentSummary.values.length > 0) {
-        const maxIndex = currentSummary.values.indexOf(Math.max(...currentSummary.values));
-        dominantCategory = friendlyLabels[maxIndex];
-        dominantPercentage = ((currentSummary.values[maxIndex] / currentSummary.totalSum) * 100).toFixed(1) + '%';
-      }
-      
       // Llenar tabla
       let totalKg = 0;
       friendlyLabels.forEach((lab, i) => {
@@ -1540,40 +1655,6 @@
         <td style="text-align:right"><strong>100.00%</strong></td>
       `;
       tbody.appendChild(totalRow);
-      
-      // Actualizar tarjetas de resumen
-      summaryTotal.textContent = currentSummary.totalSum.toFixed(2) + ' kg';
-      summaryCount.textContent = friendlyLabels.filter((_, i) => currentSummary.values[i] > 0).length;
-      summaryDominant.textContent = dominantCategory;
-      summaryAvgCategory.textContent = basicStats.avgPerCategory.toFixed(2) + ' kg';
-      
-      // Actualizar resúmenes de categoría dominante
-      summaryDominantChange.innerHTML = `<span>${dominantPercentage} del total</span>`;
-      
-      // Calcular cambios porcentuales para resúmenes
-      if (previousSummary && previousSummary.totalSum > 0) {
-        const totalChange = ((currentSummary.totalSum - previousSummary.totalSum) / previousSummary.totalSum) * 100;
-        const countChange = ((summaryCount.textContent - previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) / previousSummary.labels.filter((_, i) => previousSummary.values[i] > 0).length) * 100;
-        const avgChange = ((basicStats.avgPerCategory - (previousSummary.totalSum / previousSummary.labels.length)) / (previousSummary.totalSum / previousSummary.labels.length)) * 100;
-        
-        // Actualizar elementos de cambio
-        actualizarElementoCambio(summaryTotalChange, totalChange);
-        actualizarElementoCambio(summaryCountChange, countChange);
-        actualizarElementoCambio(summaryAvgCategoryChange, avgChange);
-      } else {
-        summaryTotalChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
-        summaryCountChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
-        summaryAvgCategoryChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
-      }
-    }
-    
-    // Helper para actualizar elementos de cambio
-    function actualizarElementoCambio(element, cambio) {
-      const icon = cambio > 0 ? 'fa-arrow-up' : (cambio < 0 ? 'fa-arrow-down' : 'fa-minus');
-      const className = cambio > 0 ? 'positive' : (cambio < 0 ? 'negative' : '');
-      
-      element.innerHTML = `<i class="fas ${icon}"></i> <span>${Math.abs(cambio).toFixed(2)}% vs período anterior</span>`;
-      element.className = `summary-subtitle ${className}`;
     }
 
     // Exportar datos
@@ -1674,8 +1755,13 @@
         renderResumen(currentSummary, previousSummary, basicStats, advancedStats);
         
         // Si la pestaña de comparación está activa, renderizarla
-        if (document.querySelector('.tab[data-tab="comparison"]').classList.contains('active')) {
+        const activeTab = document.querySelector('.tab.active').getAttribute('data-tab');
+        if (activeTab === 'comparison') {
           renderComparison();
+        } else if (activeTab === 'histogram') {
+          renderHistogram();
+        } else if (activeTab === 'scatter') {
+          renderScatter();
         }
       } catch (err) {
         console.error(err);
