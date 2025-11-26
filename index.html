@@ -1279,6 +1279,7 @@
                 label: function(context) {
                   let label = context.dataset.label || '';
                   if (label) label += ': ';
+                  // Mostrar siempre el valor en kg, independientemente del tipo de gráfico
                   label += context.parsed !== undefined ? context.parsed.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
                   return label;
                 }
@@ -1474,6 +1475,16 @@
                 weight: 'bold'
               },
               padding: 20
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) label += ': ';
+                  label += context.parsed.y !== undefined ? context.parsed.y.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
+                  return label;
+                }
+              }
             }
           },
           scales: {
