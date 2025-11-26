@@ -441,6 +441,20 @@
       background-color: #f0f9ff;
     }
     
+    .chart-section {
+      margin-bottom: 30px;
+    }
+    
+    .chart-section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -473,8 +487,8 @@
       <div class="logo">
         <i class="fas fa-recycle"></i>
         <div class="logo-text">
-          <h1>Análisis de Desechos Sólidos</h1>
-          <div class="subtitle">Cantón Daule - Panel de Indicadores</div>
+          <h1>Sistema de Análisis de Desechos Sólidos</h1>
+          <div class="subtitle">Cantón Daule - Panel de Monitoreo y Análisis</div>
         </div>
       </div>
       <div class="header-actions">
@@ -551,7 +565,6 @@
       <div class="tabs">
         <div class="tab active" data-tab="main-chart">Distribución por Categoría</div>
         <div class="tab" data-tab="comparison">Comparación por Grupos</div>
-        <div class="tab" data-tab="advanced-charts">Gráficos Avanzados</div>
       </div>
       
       <div class="tab-content active" id="main-chart">
@@ -575,30 +588,32 @@
         <div class="chart-container">
           <canvas id="mainChart"></canvas>
         </div>
+        
+        <!-- Gráficos avanzados integrados -->
+        <div class="chart-section">
+          <div class="chart-section-title">
+            <i class="fas fa-chart-area"></i>
+            Análisis de Distribución - Histograma
+          </div>
+          <div class="chart-container">
+            <canvas id="histogramChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="chart-section">
+          <div class="chart-section-title">
+            <i class="fas fa-braille"></i>
+            Análisis de Correlación - Dispersión con Regresión
+          </div>
+          <div class="chart-container">
+            <canvas id="scatterChart"></canvas>
+          </div>
+        </div>
       </div>
       
       <div class="tab-content" id="comparison">
         <div class="chart-container">
           <canvas id="comparisonChart"></canvas>
-        </div>
-      </div>
-      
-      <div class="tab-content" id="advanced-charts">
-        <div class="chart-type-selector">
-          <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
-          <div class="chart-type-btn active" data-type="boxplot">
-            <i class="fas fa-chart-area"></i> Diagrama Caja Bigote
-          </div>
-          <div class="chart-type-btn" data-type="histogram">
-            <i class="fas fa-chart-bar"></i> Histograma
-          </div>
-          <div class="chart-type-btn" data-type="scatter">
-            <i class="fas fa-braille"></i> Dispersión con Regresión
-          </div>
-        </div>
-        
-        <div class="chart-container">
-          <canvas id="advancedChart"></canvas>
         </div>
       </div>
     </div>
@@ -721,7 +736,7 @@
     </div>
 
     <footer>
-      <p>Fuente: Base de datos <code>caracterizacion_desechos_daule</code> | Última actualización: 25 de noviembre de 2025</p>
+      <p>Fuente: Base de datos <code>caracterizacion_desechos_daule</code> | Sistema de Monitoreo Ambiental - Cantón Daule | Última actualización: 25 de noviembre de 2025</p>
     </footer>
   </main>
 
@@ -763,14 +778,14 @@
     // Charts
     const mainCtx = document.getElementById('mainChart').getContext('2d');
     const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
-    const advancedCtx = document.getElementById('advancedChart').getContext('2d');
-    let mainChart, comparisonChart, advancedChart;
+    const histogramCtx = document.getElementById('histogramChart').getContext('2d');
+    const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+    let mainChart, comparisonChart, histogramChart, scatterChart;
 
     // Variables globales para datos
     let currentData = [];
     let allData = [];
     let currentChartType = 'bar';
-    let currentAdvancedChartType = 'boxplot';
 
     // Inicializar la aplicación
     async function initApp() {
@@ -817,22 +832,6 @@
         });
       });
       
-      // Selector de tipo de gráfico avanzado
-      document.querySelectorAll('#advanced-charts .chart-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          // Remover clase activa de todos los botones
-          document.querySelectorAll('#advanced-charts .chart-type-btn').forEach(b => b.classList.remove('active'));
-          // Agregar clase activa al botón clickeado
-          this.classList.add('active');
-          // Actualizar tipo de gráfico
-          currentAdvancedChartType = this.getAttribute('data-type');
-          // Re-renderizar el gráfico
-          if (currentData.length > 0) {
-            renderAdvancedChart(currentAdvancedChartType);
-          }
-        });
-      });
-      
       // Toggle export options
       btnExport.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -869,8 +868,6 @@
           // Renderizar gráficos específicos si es necesario
           if (tabId === 'comparison') {
             renderComparison();
-          } else if (tabId === 'advanced-charts') {
-            renderAdvancedChart(currentAdvancedChartType);
           }
         });
       });
@@ -1281,256 +1278,167 @@
       return names[type] || type;
     }
 
-    // Renderizar gráficos avanzados
-    function renderAdvancedChart(chartType) {
-      if (!currentData.length) return;
+    // Renderizar histograma
+    function renderHistogram(values) {
+      if (!values.length) return;
       
-      if (advancedChart) advancedChart.destroy();
+      if (histogramChart) histogramChart.destroy();
       
-      const currentSummary = resumenPorCategorias(currentData);
-      const friendlyLabels = currentSummary.labels.map(l => {
-        const nameMap = {
-          'de_jardin_kg': 'Jardín',
-          'de_cocina_kg': 'Cocina',
-          'aceite_comestible_kg': 'Aceite',
-          'papel_blanco_kg': 'Papel Blanco',
-          'papel_periodico_kg': 'Periódico',
-          'papel_archivo_kg': 'Papel Archivo',
-          'carton_kg': 'Cartón',
-          'tetra_brik_kg': 'Tetra Brik',
-          'pet_kg': 'PET',
-          'plastico_mixto_kg': 'Plástico Mixto'
-        };
-        
-        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
+      // Calcular bins para el histograma
+      const maxValue = Math.max(...values);
+      const minValue = Math.min(...values);
+      const binCount = 10;
+      const binWidth = (maxValue - minValue) / binCount;
+      
+      const bins = Array(binCount).fill(0);
+      values.forEach(value => {
+        const binIndex = Math.min(Math.floor((value - minValue) / binWidth), binCount - 1);
+        bins[binIndex]++;
       });
       
-      // Colores
-      const colors = friendlyLabels.map((_, i) => `hsl(${(i * 360 / friendlyLabels.length) % 360} 70% 55%)`);
+      const binLabels = Array(binCount).fill(0).map((_, i) => {
+        const start = minValue + i * binWidth;
+        const end = minValue + (i + 1) * binWidth;
+        return `${start.toFixed(1)} - ${end.toFixed(1)}`;
+      });
       
-      if (chartType === 'boxplot') {
-        // Implementación de diagrama de caja y bigotes usando un gráfico de barras
-        // Calculamos los valores para el diagrama de caja
-        const sortedValues = [...currentSummary.values].sort((a, b) => a - b);
-        const q1Index = Math.floor(sortedValues.length * 0.25);
-        const medianIndex = Math.floor(sortedValues.length * 0.5);
-        const q3Index = Math.floor(sortedValues.length * 0.75);
-        
-        const q1 = sortedValues[q1Index];
-        const median = sortedValues[medianIndex];
-        const q3 = sortedValues[q3Index];
-        const min = sortedValues[0];
-        const max = sortedValues[sortedValues.length - 1];
-        
-        const iqr = q3 - q1;
-        const lowerWhisker = Math.max(min, q1 - 1.5 * iqr);
-        const upperWhisker = Math.min(max, q3 + 1.5 * iqr);
-        
-        // Creamos un gráfico de barras que simule un diagrama de caja
-        advancedChart = new Chart(advancedCtx, {
-          type: 'bar',
-          data: {
-            labels: ['Distribución de Desechos'],
-            datasets: [{
-              label: 'Diagrama de Caja y Bigotes',
-              data: [median],
-              backgroundColor: 'rgba(15, 118, 110, 0.2)',
-              borderColor: 'rgba(15, 118, 110, 1)',
-              borderWidth: 1
-            }]
+      histogramChart = new Chart(histogramCtx, {
+        type: 'bar',
+        data: {
+          labels: binLabels,
+          datasets: [{
+            label: 'Frecuencia',
+            data: bins,
+            backgroundColor: 'rgba(15, 118, 110, 0.7)',
+            borderColor: 'rgba(15, 118, 110, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Histograma - Distribución de Pesos de Desechos',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              padding: 20
+            }
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
+          scales: {
+            y: {
+              beginAtZero: true,
               title: {
                 display: true,
-                text: 'Diagrama de Caja y Bigotes - Distribución de Desechos',
-                font: {
-                  size: 16,
-                  weight: 'bold'
-                },
-                padding: 20
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return [
-                      `Mínimo: ${min.toFixed(2)} kg`,
-                      `Q1: ${q1.toFixed(2)} kg`,
-                      `Mediana: ${median.toFixed(2)} kg`,
-                      `Q3: ${q3.toFixed(2)} kg`,
-                      `Máximo: ${max.toFixed(2)} kg`
-                    ];
-                  }
-                }
+                text: 'Frecuencia',
+                font: { size: 14, weight: 'bold' }
               }
             },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Peso (kg)',
-                  font: { size: 14, weight: 'bold' }
-                }
+            x: {
+              title: {
+                display: true,
+                text: 'Rango de Pesos (kg)',
+                font: { size: 14, weight: 'bold' }
               }
             }
           }
-        });
-        
-      } else if (chartType === 'histogram') {
-        // Histograma
-        // Calcular bins para el histograma
-        const maxValue = Math.max(...currentSummary.values);
-        const minValue = Math.min(...currentSummary.values);
-        const binCount = 10;
-        const binWidth = (maxValue - minValue) / binCount;
-        
-        const bins = Array(binCount).fill(0);
-        currentSummary.values.forEach(value => {
-          const binIndex = Math.min(Math.floor((value - minValue) / binWidth), binCount - 1);
-          bins[binIndex]++;
-        });
-        
-        const binLabels = Array(binCount).fill(0).map((_, i) => {
-          const start = minValue + i * binWidth;
-          const end = minValue + (i + 1) * binWidth;
-          return `${start.toFixed(1)} - ${end.toFixed(1)}`;
-        });
-        
-        advancedChart = new Chart(advancedCtx, {
-          type: 'bar',
-          data: {
-            labels: binLabels,
-            datasets: [{
-              label: 'Frecuencia',
-              data: bins,
+        }
+      });
+    }
+
+    // Renderizar gráfico de dispersión
+    function renderScatterPlot(values) {
+      if (!values.length) return;
+      
+      if (scatterChart) scatterChart.destroy();
+      
+      // Gráfico de dispersión con línea de regresión
+      const dataPoints = values.map((value, index) => ({
+        x: index,
+        y: value
+      }));
+      
+      // Calcular línea de regresión lineal simple
+      const n = dataPoints.length;
+      const sumX = dataPoints.reduce((sum, point) => sum + point.x, 0);
+      const sumY = dataPoints.reduce((sum, point) => sum + point.y, 0);
+      const sumXY = dataPoints.reduce((sum, point) => sum + point.x * point.y, 0);
+      const sumXX = dataPoints.reduce((sum, point) => sum + point.x * point.x, 0);
+      
+      const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+      const intercept = (sumY - slope * sumX) / n;
+      
+      const regressionLine = dataPoints.map(point => ({
+        x: point.x,
+        y: slope * point.x + intercept
+      }));
+      
+      scatterChart = new Chart(scatterCtx, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Datos',
+              data: dataPoints,
               backgroundColor: 'rgba(15, 118, 110, 0.7)',
               borderColor: 'rgba(15, 118, 110, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              title: {
-                display: true,
-                text: 'Histograma - Distribución de Pesos de Desechos',
-                font: {
-                  size: 16,
-                  weight: 'bold'
-                },
-                padding: 20
-              }
+              pointRadius: 6,
+              pointHoverRadius: 8
             },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Frecuencia',
-                  font: { size: 14, weight: 'bold' }
-                }
+            {
+              label: 'Línea de Regresión',
+              data: regressionLine,
+              type: 'line',
+              borderColor: 'rgba(239, 68, 68, 0.8)',
+              borderWidth: 2,
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Gráfico de Dispersión con Regresión Lineal',
+              font: {
+                size: 16,
+                weight: 'bold'
               },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Rango de Pesos (kg)',
-                  font: { size: 14, weight: 'bold' }
+              padding: 20
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `Categoría ${context.parsed.x}: ${context.parsed.y.toFixed(2)} kg`;
                 }
               }
             }
-          }
-        });
-        
-      } else if (chartType === 'scatter') {
-        // Gráfico de dispersión con línea de regresión
-        const dataPoints = currentSummary.values.map((value, index) => ({
-          x: index,
-          y: value
-        }));
-        
-        // Calcular línea de regresión lineal simple
-        const n = dataPoints.length;
-        const sumX = dataPoints.reduce((sum, point) => sum + point.x, 0);
-        const sumY = dataPoints.reduce((sum, point) => sum + point.y, 0);
-        const sumXY = dataPoints.reduce((sum, point) => sum + point.x * point.y, 0);
-        const sumXX = dataPoints.reduce((sum, point) => sum + point.x * point.x, 0);
-        
-        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-        const intercept = (sumY - slope * sumX) / n;
-        
-        const regressionLine = dataPoints.map(point => ({
-          x: point.x,
-          y: slope * point.x + intercept
-        }));
-        
-        advancedChart = new Chart(advancedCtx, {
-          type: 'scatter',
-          data: {
-            datasets: [
-              {
-                label: 'Datos',
-                data: dataPoints,
-                backgroundColor: 'rgba(15, 118, 110, 0.7)',
-                borderColor: 'rgba(15, 118, 110, 1)',
-                pointRadius: 6,
-                pointHoverRadius: 8
-              },
-              {
-                label: 'Línea de Regresión',
-                data: regressionLine,
-                type: 'line',
-                borderColor: 'rgba(239, 68, 68, 0.8)',
-                borderWidth: 2,
-                pointRadius: 0,
-                fill: false
-              }
-            ]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
+          scales: {
+            y: {
+              beginAtZero: true,
               title: {
                 display: true,
-                text: 'Gráfico de Dispersión con Regresión Lineal',
-                font: {
-                  size: 16,
-                  weight: 'bold'
-                },
-                padding: 20
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return `Categoría ${context.parsed.x}: ${context.parsed.y.toFixed(2)} kg`;
-                  }
-                }
+                text: 'Peso (kg)',
+                font: { size: 14, weight: 'bold' }
               }
             },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Peso (kg)',
-                  font: { size: 14, weight: 'bold' }
-                }
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Índice de Categoría',
-                  font: { size: 14, weight: 'bold' }
-                }
+            x: {
+              title: {
+                display: true,
+                text: 'Índice de Categoría',
+                font: { size: 14, weight: 'bold' }
               }
             }
           }
-        });
-      }
+        }
+      });
     }
 
     // Renderizar comparación
@@ -1732,7 +1640,6 @@
           
           if (activeTab === 'main-chart') chartToExport = mainChart;
           else if (activeTab === 'comparison') chartToExport = comparisonChart;
-          else if (activeTab === 'advanced-charts') chartToExport = advancedChart;
           
           if (!chartToExport) {
             alert('Gráfico no disponible');
@@ -1819,16 +1726,13 @@
         
         // Renderizar
         renderChart(currentSummary.labels, currentSummary.values, currentChartType);
+        renderHistogram(currentSummary.values);
+        renderScatterPlot(currentSummary.values);
         renderResumen(currentSummary, basicStats, advancedStats);
         
         // Si la pestaña de comparación está activa, renderizarla
         if (document.querySelector('.tab[data-tab="comparison"]').classList.contains('active')) {
           renderComparison();
-        }
-        
-        // Si la pestaña de gráficos avanzados está activa, renderizarla
-        if (document.querySelector('.tab[data-tab="advanced-charts"]').classList.contains('active')) {
-          renderAdvancedChart(currentAdvancedChartType);
         }
       } catch (err) {
         console.error(err);
