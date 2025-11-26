@@ -615,7 +615,7 @@
           </div>
           <div class="kpi-value" id="kpiTotal">0</div>
           <div class="kpi-change" id="kpiTotalChange">
-            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
+            <i class="fas fa-minus"></i> <span>Sin datos comparativos</span>
           </div>
         </div>
         <div class="kpi">
@@ -624,7 +624,7 @@
           </div>
           <div class="kpi-value" id="kpiCount">0</div>
           <div class="kpi-change" id="kpiCountChange">
-            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
+            <i class="fas fa-minus"></i> <span>Sin datos comparativos</span>
           </div>
         </div>
         <div class="kpi">
@@ -642,7 +642,7 @@
           </div>
           <div class="kpi-value" id="kpiAvgCategory">0</div>
           <div class="kpi-change" id="kpiAvgCategoryChange">
-            <i class="fas fa-minus"></i> <span>0% vs período anterior</span>
+            <i class="fas fa-minus"></i> <span>Sin datos comparativos</span>
           </div>
         </div>
       </div>
@@ -1279,7 +1279,7 @@
                 label: function(context) {
                   let label = context.dataset.label || '';
                   if (label) label += ': ';
-                  // Mostrar siempre el valor en kg, independientemente del tipo de gráfico
+                  // Mostrar siempre el valor en kg
                   label += context.parsed !== undefined ? context.parsed.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
                   return label;
                 }
@@ -1481,7 +1481,8 @@
                 label: function(context) {
                   let label = context.dataset.label || '';
                   if (label) label += ': ';
-                  label += context.parsed.y !== undefined ? context.parsed.y.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
+                  // Mostrar siempre el valor en kg
+                  label += context.parsed !== undefined ? context.parsed.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
                   return label;
                 }
               }
@@ -1613,6 +1614,7 @@
         actualizarElementoCambio(kpiCountChange, countChange);
         actualizarElementoCambio(kpiAvgCategoryChange, avgChange);
       } else {
+        // Mostrar "Sin datos comparativos" en lugar de porcentajes específicos
         kpiTotalChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
         kpiCountChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
         kpiAvgCategoryChange.innerHTML = '<i class="fas fa-minus"></i> <span>Sin datos comparativos</span>';
@@ -1624,7 +1626,8 @@
       const icon = cambio > 0 ? 'fa-arrow-up' : (cambio < 0 ? 'fa-arrow-down' : 'fa-minus');
       const className = cambio > 0 ? 'positive' : (cambio < 0 ? 'negative' : '');
       
-      element.innerHTML = `<i class="fas ${icon}"></i> <span>${Math.abs(cambio).toFixed(2)}% vs período anterior</span>`;
+      // Mostrar "Sin datos comparativos" en lugar de porcentajes específicos
+      element.innerHTML = `<i class="fas ${icon}"></i> <span>Sin datos comparativos</span>`;
       element.className = `kpi-change ${className}`;
     }
 
