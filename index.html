@@ -453,25 +453,6 @@
       border-color: var(--primary-light);
     }
     
-    .regression-info {
-      background: #f8fafc;
-      border-radius: 8px;
-      padding: 16px;
-      margin-top: 16px;
-      border-left: 4px solid var(--primary);
-    }
-    
-    .regression-info h4 {
-      color: var(--primary);
-      margin-bottom: 8px;
-      font-size: 16px;
-    }
-    
-    .regression-info p {
-      margin: 4px 0;
-      font-size: 14px;
-    }
-    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -686,37 +667,34 @@
       lugares: []
     };
 
-    // Definición de las 15 categorías principales con sus subcategorías
-    // Basado en la estructura de la base de datos
+    // Definición de las 15 categorías principales con sus subcategorías (basado en la estructura real de la BD)
     const categoriasPrincipales = [
       {
         id: 1,
-        nombre: "1. MATERIA ORGANICA",
+        nombre: "MATERIA ORGANICA",
         subcategorias: [
-          { campo: "de_jardin_kg", nombre: "De jardin" },
-          { campo: "de_cocina_kg", nombre: "De cocina" }
+          { campo: "materia_organica_jardin_kg", nombre: "De jardin" },
+          { campo: "materia_organica_cocina_kg", nombre: "De cocina" }
         ]
       },
       {
         id: 2,
-        nombre: "2. GRASAS Y ACEITES",
+        nombre: "GRASAS Y ACEITES",
         subcategorias: [
-          { campo: "aceite_comestible_kg", nombre: "Aceite comestible" }
+          { campo: "grasas_aceite_comestible_kg", nombre: "Aceite comestible" }
         ]
       },
       {
         id: 3,
-        nombre: "3. MEDICINA",
+        nombre: "MEDICINA",
         subcategorias: [
-          // Nota: En la base de datos no veo campos específicos para medicina
-          // Los agregaremos si existen o usaremos campos generales
-          { campo: "medicina_kg", nombre: "JARABE" },
-          { campo: "medicina_kg", nombre: "TABLETAS" }
+          { campo: "medicina_jarabe_kg", nombre: "JARABE" },
+          { campo: "medicina_tabletas_kg", nombre: "TABLETAS" }
         ]
       },
       {
         id: 4,
-        nombre: "4. PAPELES Y CARTON",
+        nombre: "PAPELES Y CARTON",
         subcategorias: [
           { campo: "papel_blanco_kg", nombre: "Papel Blanco" },
           { campo: "papel_periodico_kg", nombre: "Papel periodico" },
@@ -727,9 +705,9 @@
       },
       {
         id: 5,
-        nombre: "5. PLASTICOS",
+        nombre: "PLASTICOS",
         subcategorias: [
-          { campo: "pet_kg", nombre: "PET" },
+          { campo: "plastico_pet_kg", nombre: "PET" },
           { campo: "plastico_mixto_kg", nombre: "Plastico mixto" },
           { campo: "bot_aceite_kg", nombre: "Bot de aceite" },
           { campo: "bolsas_kg", nombre: "Bolsas" }
@@ -737,7 +715,7 @@
       },
       {
         id: 6,
-        nombre: "6. VIDRIOS",
+        nombre: "VIDRIOS",
         subcategorias: [
           { campo: "vidrio_blanco_kg", nombre: "Blanco" },
           { campo: "vidrio_verde_kg", nombre: "Verde" },
@@ -746,7 +724,7 @@
       },
       {
         id: 7,
-        nombre: "7. METAL",
+        nombre: "METAL",
         subcategorias: [
           { campo: "latas_ferrosas_kg", nombre: "Latas ferrosas" },
           { campo: "aluminio_kg", nombre: "Aluminio" },
@@ -756,58 +734,58 @@
       },
       {
         id: 8,
-        nombre: "8. TEXTILES",
+        nombre: "TEXTILES",
         subcategorias: [
-          { campo: "ropa_kg", nombre: "Ropa, mantas, manteles, etc." }
+          { campo: "textiles_ropa_kg", nombre: "Ropa, mantas, manteles, etc." }
         ]
       },
       {
         id: 9,
-        nombre: "9. CAUCHO",
+        nombre: "CAUCHO",
         subcategorias: [
-          { campo: "zapatos_neumaticos_kg", nombre: "Zapatos, neumáticos" }
+          { campo: "caucho_zapatos_neumaticos_kg", nombre: "Zapatos, neumáticos" }
         ]
       },
       {
         id: 10,
-        nombre: "10. CUERO",
+        nombre: "CUERO",
         subcategorias: [
-          { campo: "cuero_kg", nombre: "Zapatos, carteras, etc." }
+          { campo: "cuero_zapatos_neumaticos_kg", nombre: "Zapatos, carteras, etc." }
         ]
       },
       {
         id: 11,
-        nombre: "11. RESTO SANITARIOS",
+        nombre: "RESTO SANITARIOS",
         subcategorias: [
           { campo: "papel_higienico_kg", nombre: "Papel Higienico" }
         ]
       },
       {
         id: 12,
-        nombre: "12. MADERAS",
+        nombre: "MADERAS",
         subcategorias: [
           { campo: "maderas_kg", nombre: "Maderas" }
         ]
       },
       {
         id: 13,
-        nombre: "13. BATERIAS",
+        nombre: "BATERIAS",
         subcategorias: [
-          { campo: "baterias_kg", nombre: "de telefóno, lamparas" }
+          { campo: "baterias_tel_lamparas_kg", nombre: "de telefóno, lamparas" }
         ]
       },
       {
         id: 14,
-        nombre: "14. EQUIPOS ELECTRONICOS",
+        nombre: "EQUIPOS ELECTRONICOS",
         subcategorias: [
-          { campo: "electronicos_kg", nombre: "Electrodomesticos" }
+          { campo: "electronicos_electrodomesticos_kg", nombre: "Electrodomesticos" }
         ]
       },
       {
         id: 15,
-        nombre: "15. ESCOMBROS",
+        nombre: "ESCOMBROS",
         subcategorias: [
-          { campo: "escombros_kg", nombre: "Otros" }
+          { campo: "escombros_otros_kg", nombre: "Otros" }
         ]
       }
     ];
@@ -923,20 +901,6 @@
       return r.data || [];
     }
 
-    // Función para verificar qué campos existen en los datos
-    function verificarCamposDisponibles(rows) {
-      if (rows.length === 0) return [];
-      
-      const camposDisponibles = new Set();
-      rows.forEach(row => {
-        Object.keys(row).forEach(key => {
-          camposDisponibles.add(key);
-        });
-      });
-      
-      return Array.from(camposDisponibles);
-    }
-
     // Calcular resumen por las 15 categorías principales
     function calcularResumenPorCategorias(rows) {
       if (!rows || rows.length === 0) {
@@ -948,9 +912,6 @@
         };
       }
       
-      // Verificar campos disponibles
-      const camposDisponibles = verificarCamposDisponibles(rows);
-      
       const valoresPorCategoria = Array(categoriasPrincipales.length).fill(0);
       const detallesPorCategoria = [];
       
@@ -958,11 +919,8 @@
       rows.forEach(row => {
         categoriasPrincipales.forEach((categoria, idx) => {
           categoria.subcategorias.forEach(subcategoria => {
-            // Verificar si el campo existe en los datos
-            if (camposDisponibles.includes(subcategoria.campo)) {
-              const valor = parseFloat(row[subcategoria.campo]) || 0;
-              valoresPorCategoria[idx] += valor;
-            }
+            const valor = parseFloat(row[subcategoria.campo]) || 0;
+            valoresPorCategoria[idx] += valor;
           });
         });
       });
@@ -974,21 +932,15 @@
         // Calcular subtotales por subcategoría
         const subcategoriasConValores = categoria.subcategorias.map(subcategoria => {
           let subtotal = 0;
-          // Verificar si el campo existe
-          if (camposDisponibles.includes(subcategoria.campo)) {
-            rows.forEach(row => {
-              subtotal += parseFloat(row[subcategoria.campo]) || 0;
-            });
-          }
+          rows.forEach(row => {
+            subtotal += parseFloat(row[subcategoria.campo]) || 0;
+          });
           return {
             nombre: subcategoria.nombre,
-            valor: subtotal,
-            campo: subcategoria.campo,
-            existe: camposDisponibles.includes(subcategoria.campo)
+            valor: subtotal
           };
-        }).filter(sub => sub.existe && sub.valor > 0);
+        }).filter(sub => sub.valor > 0);
         
-        // Solo incluir categorías que tengan datos o subcategorías con datos
         if (totalCategoria > 0 || subcategoriasConValores.length > 0) {
           detallesPorCategoria.push({
             categoria: categoria.nombre,
@@ -1023,18 +975,6 @@
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
-      if (labels.length === 0 || values.length === 0) {
-        // Mostrar mensaje de no datos
-        mainCtx.clearRect(0, 0, mainCtx.canvas.width, mainCtx.canvas.height);
-        mainCtx.font = '16px Arial';
-        mainCtx.fillStyle = '#64748b';
-        mainCtx.textAlign = 'center';
-        mainCtx.fillText('No hay datos disponibles para mostrar', 
-          mainCtx.canvas.width / 2, 
-          mainCtx.canvas.height / 2);
-        return;
-      }
-      
       // Calcular porcentajes para mostrar en los gráficos
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
@@ -1058,7 +998,7 @@
             pointRadius: 6,
             pointHoverRadius: 8,
             fill: chartType === 'line' ? false : undefined,
-            tension: chartType === 'line' ? 0.1 : 0
+            tension: chartType === 'line' ? 0.4 : 0
           }]
         },
         options: {
@@ -1179,22 +1119,14 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' }
-              },
-              ticks: {
-                maxRotation: 45,
-                minRotation: 45
               }
             }
           },
-          // Configuración específica para líneas - porcentajes ENCIMA (arriba) del punto
+          // Configuración específica para líneas - porcentajes ENCIMA del punto
           plugins: {
             datalabels: {
               display: true,
               color: '#1e293b',
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              borderColor: '#64748b',
-              borderWidth: 1,
-              borderRadius: 4,
               font: {
                 weight: 'bold',
                 size: 11
@@ -1203,14 +1135,12 @@
                 return percentages[context.dataIndex];
               },
               anchor: 'center',
-              align: 'top', // ENCIMA del punto
-              offset: -20, // Posicionado encima del punto
+              align: 'bottom', // ENCIMA del punto
+              offset: 10, // Positivo para colocar ENCIMA
               clamp: true,
               padding: {
-                top: 4,
-                bottom: 4,
-                left: 6,
-                right: 6
+                top: 5,
+                bottom: 5
               }
             }
           }
@@ -1261,18 +1191,6 @@
     // Rellenar tabla resumen y actualizar resúmenes
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
-      
-      if (currentData.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td colspan="3" style="text-align: center; padding: 40px; color: var(--muted);">
-            <i class="fas fa-database" style="font-size: 32px; margin-bottom: 16px; display: block;"></i>
-            No hay datos disponibles para mostrar
-          </td>
-        `;
-        tbody.appendChild(tr);
-        return;
-      }
       
       // Actualizar resumen de encuestas y ubicaciones
       summaryEncuestas.textContent = currentData.length;
