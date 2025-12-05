@@ -1155,7 +1155,7 @@
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS
+      // Configuraciones específicas por tipo de gráfico - MEJORADAS con título de eje Y más arriba
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1164,25 +1164,40 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' }
+                font: { 
+                  size: 14, 
+                  weight: 'bold' 
+                },
+                // Posición más arriba para el título del eje Y
+                padding: { top: 0, bottom: 20 }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 15 // Espacio para evitar superposición
+                padding: 8 // Reducido para dar más espacio arriba
+              },
+              // Ajustar el grid para que el título esté más arriba
+              grid: {
+                drawBorder: true,
+                drawOnChartArea: true,
+                drawTicks: true
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' }
+                font: { 
+                  size: 14, 
+                  weight: 'bold' 
+                },
+                padding: { top: 10, bottom: 0 }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10 // Espacio para evitar superposición
+                padding: 10
               }
             }
           },
@@ -1199,7 +1214,7 @@
               },
               anchor: 'end',
               align: 'top',
-              offset: 2 // Reducido para mejor visualización
+              offset: 2
             }
           }
         },
@@ -1210,25 +1225,40 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' }
+                font: { 
+                  size: 14, 
+                  weight: 'bold' 
+                },
+                // Posición más arriba para el título del eje Y
+                padding: { top: 0, bottom: 20 }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 15 // Espacio para evitar superposición
+                padding: 8 // Reducido para dar más espacio arriba
+              },
+              // Ajustar el grid para que el título esté más arriba
+              grid: {
+                drawBorder: true,
+                drawOnChartArea: true,
+                drawTicks: true
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' }
+                font: { 
+                  size: 14, 
+                  weight: 'bold' 
+                },
+                padding: { top: 10, bottom: 0 }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10 // Espacio para evitar superposición
+                padding: 10
               }
             }
           },
@@ -1245,8 +1275,8 @@
                 return percentages[context.dataIndex];
               },
               anchor: 'center',
-              align: 'top', // ENCIMA del punto
-              offset: 10, // Optimizado para mejor visualización
+              align: 'top',
+              offset: 10,
               clamp: true
             }
           }
@@ -1302,7 +1332,7 @@
           // Configuración común para evitar superposición en gráficos
           layout: {
             padding: {
-              top: chartType === 'line' ? 50 : 20,
+              top: chartType === 'line' ? 50 : 30, // Aumentado para dar más espacio arriba
               bottom: 30,
               left: 15,
               right: 15
