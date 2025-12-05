@@ -363,7 +363,60 @@
     }
     
     .subcategory-row td:first-child {
-      padding-left: 30px;
+      padding-left: 40px;
+      position: relative;
+    }
+    
+    .subcategory-row td:first-child::before {
+      content: "↳";
+      position: absolute;
+      left: 20px;
+      color: var(--muted);
+    }
+    
+    .table-info {
+      background-color: #f8fafc;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border-left: 4px solid var(--primary);
+      font-size: 13px;
+      color: var(--muted);
+    }
+    
+    .table-info i {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+    
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+    
+    .table-responsive::-webkit-scrollbar {
+      height: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 10px;
+    }
+    
+    .category-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background-color: var(--primary-light);
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 8px;
     }
     
     footer {
@@ -500,6 +553,20 @@
       font-weight: 600;
     }
     
+    .chart-tooltip {
+      position: absolute;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -536,6 +603,16 @@
         padding: 8px 12px;
         font-size: 13px;
       }
+      
+      th, td {
+        padding: 10px 8px;
+        font-size: 13px;
+      }
+      
+      .table-info {
+        padding: 10px;
+        font-size: 12px;
+      }
     }
   </style>
 </head>
@@ -546,7 +623,7 @@
         <i class="fas fa-recycle"></i>
         <div class="logo-text">
           <h1>Análisis de Desechos Sólidos</h1>
-          <div class="subtitle">Cantón Daule - Panel de Indicadores</div>
+          <div class="subtitle">Cantón Daule - Panel de Indicadores Ambientales</div>
         </div>
       </div>
       <div class="header-actions">
@@ -572,7 +649,7 @@
           <select id="selectLugar">
             <option value="">Todas las ubicaciones</option>
           </select>
-          <div class="filter-info" id="lugarInfo">Cargando...</div>
+          <div class="filter-info" id="lugarInfo">Cargando ubicaciones disponibles...</div>
         </div>
       </div>
 
@@ -640,13 +717,13 @@
       <!-- Botones de tipo de gráfico mejorados -->
       <div class="chart-actions">
         <div class="chart-action-btn active" data-chart-type="bar">
-          <i class="fas fa-chart-bar"></i> Barras
+          <i class="fas fa-chart-bar"></i> Gráfico de Barras
         </div>
         <div class="chart-action-btn" data-chart-type="pie">
-          <i class="fas fa-chart-pie"></i> Torta
+          <i class="fas fa-chart-pie"></i> Gráfico Circular
         </div>
         <div class="chart-action-btn" data-chart-type="line">
-          <i class="fas fa-chart-line"></i> Líneas
+          <i class="fas fa-chart-line"></i> Gráfico de Líneas
         </div>
       </div>
       
@@ -668,22 +745,33 @@
         Tabla Resumen por Categorías
       </div>
       
+      <div class="table-info">
+        <i class="fas fa-info-circle"></i>
+        <strong>Instrucciones:</strong> Esta tabla muestra la distribución de desechos sólidos por categorías principales y sus subcategorías. Los porcentajes se calculan en relación al total general.
+      </div>
+      
       <div class="table-responsive">
         <table id="tableResumen">
           <thead>
             <tr>
-              <th>Categoría / Subcategoría</th>
-              <th style="text-align:right">Peso (kg)</th>
-              <th style="text-align:right">% del Total</th>
+              <th style="width: 50%">Categoría / Subcategoría</th>
+              <th style="width: 25%; text-align:right">Peso Total (kg)</th>
+              <th style="width: 25%; text-align:right">Porcentaje del Total</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
+      
+      <div class="table-info" style="margin-top: 16px;">
+        <i class="fas fa-lightbulb"></i>
+        <strong>Leyenda:</strong> Las filas con fondo azul claro representan categorías principales, mientras que las filas con flecha (↳) indican subcategorías. El total general se muestra en la última fila.
+      </div>
     </div>
 
     <footer>
-      <p>Fuente: Base de datos <code>caracterizacion_desechos_daule</code> | Última actualización: 25 de noviembre de 2025</p>
+      <p><strong>Fuente:</strong> Base de datos <code>caracterizacion_desechos_daule</code> | <strong>Última actualización:</strong> 25 de noviembre de 2025</p>
+      <p style="margin-top: 8px; font-size: 12px;">Panel desarrollado para el análisis ambiental del Cantón Daule</p>
     </footer>
   </main>
 
@@ -723,125 +811,125 @@
       lugares: []
     };
 
-    // Definición de las 15 categorías principales con sus subcategorías (basado en la estructura real de la BD)
+    // Definición de las 15 categorías principales con sus subcategorías CORREGIDAS
     const categoriasPrincipales = [
       {
         id: 1,
-        nombre: "MATERIA ORGANICA",
+        nombre: "MATERIA ORGÁNICA",
         subcategorias: [
-          { campo: "materia_organica_jardin_kg", nombre: "De jardin" },
-          { campo: "materia_organica_cocina_kg", nombre: "De cocina" }
+          { campo: "materia_organica_jardin_kg", nombre: "Residuos de jardín" },
+          { campo: "materia_organica_cocina_kg", nombre: "Residuos de cocina" }
         ]
       },
       {
         id: 2,
         nombre: "GRASAS Y ACEITES",
         subcategorias: [
-          { campo: "grasas_aceite_comestible_kg", nombre: "Aceite comestible" }
+          { campo: "grasas_aceite_comestible_kg", nombre: "Aceite comestible usado" }
         ]
       },
       {
         id: 3,
-        nombre: "MEDICINA",
+        nombre: "MEDICAMENTOS",
         subcategorias: [
-          { campo: "medicina_jarabe_kg", nombre: "JARABE" },
-          { campo: "medicina_tabletas_kg", nombre: "TABLETAS" }
+          { campo: "medicina_jarabe_kg", nombre: "Medicamentos líquidos (jarabes)" },
+          { campo: "medicina_tabletas_kg", nombre: "Medicamentos sólidos (tabletas)" }
         ]
       },
       {
         id: 4,
-        nombre: "PAPELES Y CARTON",
+        nombre: "PAPELES Y CARTÓN",
         subcategorias: [
-          { campo: "papel_blanco_kg", nombre: "Papel Blanco" },
-          { campo: "papel_periodico_kg", nombre: "Papel periodico" },
-          { campo: "papel_archivo_kg", nombre: "Papel archivo" },
+          { campo: "papel_blanco_kg", nombre: "Papel blanco" },
+          { campo: "papel_periodico_kg", nombre: "Periódico" },
+          { campo: "papel_archivo_kg", nombre: "Papel de archivo" },
           { campo: "carton_kg", nombre: "Cartón" },
-          { campo: "tetra_brik_kg", nombre: "Tetra-brik" }
+          { campo: "tetra_brik_kg", nombre: "Envases Tetra Brik" }
         ]
       },
       {
         id: 5,
-        nombre: "PLASTICOS",
+        nombre: "PLÁSTICOS",
         subcategorias: [
-          { campo: "plastico_pet_kg", nombre: "PET" },
-          { campo: "plastico_mixto_kg", nombre: "Plastico mixto" },
-          { campo: "bot_aceite_kg", nombre: "Bot de aceite" },
-          { campo: "bolsas_kg", nombre: "Bolsas" }
+          { campo: "plastico_pet_kg", nombre: "Plástico PET" },
+          { campo: "plastico_mixto_kg", nombre: "Plástico mixto" },
+          { campo: "bot_aceite_kg", nombre: "Botellas de aceite" },
+          { campo: "bolsas_kg", nombre: "Bolsas plásticas" }
         ]
       },
       {
         id: 6,
         nombre: "VIDRIOS",
         subcategorias: [
-          { campo: "vidrio_blanco_kg", nombre: "Blanco" },
-          { campo: "vidrio_verde_kg", nombre: "Verde" },
-          { campo: "vidrio_otros_kg", nombre: "Otros" }
+          { campo: "vidrio_blanco_kg", nombre: "Vidrio transparente" },
+          { campo: "vidrio_verde_kg", nombre: "Vidrio verde" },
+          { campo: "vidrio_otros_kg", nombre: "Otros tipos de vidrio" }
         ]
       },
       {
         id: 7,
-        nombre: "METAL",
+        nombre: "METALES",
         subcategorias: [
           { campo: "latas_ferrosas_kg", nombre: "Latas ferrosas" },
           { campo: "aluminio_kg", nombre: "Aluminio" },
           { campo: "acero_kg", nombre: "Acero" },
-          { campo: "metal_otros_kg", nombre: "Otros" }
+          { campo: "metal_otros_kg", nombre: "Otros metales" }
         ]
       },
       {
         id: 8,
         nombre: "TEXTILES",
         subcategorias: [
-          { campo: "textiles_ropa_kg", nombre: "Ropa, mantas, manteles, etc." }
+          { campo: "textiles_ropa_kg", nombre: "Ropa, mantas, manteles" }
         ]
       },
       {
         id: 9,
         nombre: "CAUCHO",
         subcategorias: [
-          { campo: "caucho_zapatos_neumaticos_kg", nombre: "Zapatos, neumáticos" }
+          { campo: "caucho_zapatos_neumaticos_kg", nombre: "Zapatos y neumáticos" }
         ]
       },
       {
         id: 10,
         nombre: "CUERO",
         subcategorias: [
-          { campo: "cuero_zapatos_neumaticos_kg", nombre: "Zapatos, carteras, etc." }
+          { campo: "cuero_zapatos_neumaticos_kg", nombre: "Zapatos, carteras y artículos de cuero" }
         ]
       },
       {
         id: 11,
-        nombre: "RESTO SANITARIOS",
+        nombre: "RESIDUOS SANITARIOS",
         subcategorias: [
-          { campo: "papel_higienico_kg", nombre: "Papel Higienico" }
+          { campo: "papel_higienico_kg", nombre: "Papel higiénico" }
         ]
       },
       {
         id: 12,
         nombre: "MADERAS",
         subcategorias: [
-          { campo: "maderas_kg", nombre: "Maderas" }
+          { campo: "maderas_kg", nombre: "Residuos de madera" }
         ]
       },
       {
         id: 13,
-        nombre: "BATERIAS",
+        nombre: "BATERÍAS",
         subcategorias: [
-          { campo: "baterias_tel_lamparas_kg", nombre: "de telefóno, lamparas" }
+          { campo: "baterias_tel_lamparas_kg", nombre: "Baterías de teléfonos y lámparas" }
         ]
       },
       {
         id: 14,
-        nombre: "EQUIPOS ELECTRONICOS",
+        nombre: "EQUIPOS ELECTRÓNICOS",
         subcategorias: [
-          { campo: "electronicos_electrodomesticos_kg", nombre: "Electrodomesticos" }
+          { campo: "electronicos_electrodomesticos_kg", nombre: "Electrodomésticos" }
         ]
       },
       {
         id: 15,
         nombre: "ESCOMBROS",
         subcategorias: [
-          { campo: "escombros_otros_kg", nombre: "Otros" }
+          { campo: "escombros_otros_kg", nombre: "Otros escombros" }
         ]
       }
     ];
@@ -875,6 +963,13 @@
           // Cambiar tipo de gráfico
           currentChartType = this.getAttribute('data-chart-type');
           
+          // Actualizar texto del botón para mayor claridad
+          const chartTypeNames = {
+            'bar': 'Gráfico de Barras',
+            'pie': 'Gráfico Circular', 
+            'line': 'Gráfico de Líneas'
+          };
+          
           // Re-renderizar el gráfico
           if (currentData.length > 0) {
             const resumenCategorias = calcularResumenPorCategorias(currentData);
@@ -900,6 +995,7 @@
       const q = await supabase.from('caracterizacion_desechos_daule').select('*');
       if (q.error) {
         console.error(q.error);
+        alert('Error al cargar los datos. Por favor, verifique su conexión a internet.');
         return;
       }
       allData = q.data || [];
@@ -911,6 +1007,7 @@
       const q = await supabase.from('caracterizacion_desechos_daule').select('lugar');
       if (q.error) {
         console.error(q.error);
+        lugarInfo.textContent = 'Error al cargar ubicaciones';
         return;
       }
       const rows = q.data || [];
@@ -957,6 +1054,7 @@
       const r = await q;
       if (r.error) {
         console.error(r.error);
+        alert('Error al obtener los datos filtrados.');
         return [];
       }
       return r.data || [];
@@ -1042,7 +1140,7 @@
       
       // Colores más atractivos y consistentes
       const colors = [
-        '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+        '#0f766e', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
         '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#a855f7', '#6366f1',
         '#14b8a6', '#f43f5e', '#8b5cf6'
       ].slice(0, labels.length);
@@ -1116,6 +1214,13 @@
                   const percentage = totalSum > 0 ? (value / totalSum * 100).toFixed(1) : 0;
                   label += ` (${percentage}%)`;
                   return label;
+                },
+                afterLabel: function(context) {
+                  // Agregar información adicional para mayor claridad
+                  if (chartType === 'pie') {
+                    return `Categoría: ${context.label}`;
+                  }
+                  return null;
                 }
               }
             }
@@ -1305,26 +1410,60 @@
 
     // Mostrar modal de ayuda
     function mostrarModalAyuda() {
-      alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
+      const mensaje = `
+🎯 PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS
+
+Este panel permite analizar datos de desechos sólidos del Cantón Daule.
+
+📊 FUNCIONALIDADES PRINCIPALES:
+
+• FILTROS: Utilice el selector de ubicación para analizar datos específicos de una localidad
+• TIPOS DE GRÁFICOS: Cambie entre gráficos de barras, circulares o líneas según su preferencia
+• VISUALIZACIÓN: Los gráficos muestran porcentajes y valores en kilogramos
+• TABLA DETALLADA: Muestra el desglose completo por categorías y subcategorías
+
+📋 INTERPRETACIÓN DE LA TABLA:
+
+1. Categorías principales (fondo azul claro)
+2. Subcategorías (indicadas con flecha ↳)
+3. Porcentajes calculados sobre el total general
+4. Valores en kilogramos
+
+💡 CONSEJOS:
+
+• Haga clic en los elementos del gráfico para más detalles
+• Pase el cursor sobre las barras/líneas/segmentos para ver valores exactos
+• Utilice el botón "Restablecer Filtros" para volver a ver todos los datos
+
+Los datos se actualizan automáticamente al aplicar filtros.
+      `;
+      
+      alert(mensaje);
     }
 
-    // Rellenar tabla resumen y actualizar resúmenes
+    // Rellenar tabla resumen y actualizar resúmenes - MEJORADA
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
       
       // Actualizar resumen de encuestas y ubicaciones
-      summaryEncuestas.textContent = currentData.length;
+      summaryEncuestas.textContent = currentData.length.toLocaleString();
       
       // Calcular ubicaciones únicas
       const ubicacionesUnicas = [...new Set(currentData.map(r => r.lugar).filter(Boolean))];
-      summaryUbicaciones.textContent = ubicacionesUnicas.length;
+      summaryUbicaciones.textContent = ubicacionesUnicas.length.toLocaleString();
       
       // Actualizar total de kg
-      summaryTotalKg.textContent = currentSummary.totalSum.toFixed(2) + ' kg';
+      summaryTotalKg.textContent = currentSummary.totalSum.toLocaleString('es-ES', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + ' kg';
       
       // Calcular promedio por encuesta (total de kg / número de encuestas)
       const promedioPorEncuesta = currentData.length > 0 ? currentSummary.totalSum / currentData.length : 0;
-      summaryPromedio.textContent = promedioPorEncuesta.toFixed(2) + ' kg';
+      summaryPromedio.textContent = promedioPorEncuesta.toLocaleString('es-ES', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + ' kg';
       
       // Llenar tabla con categorías y subcategorías
       let totalGeneral = 0;
@@ -1339,7 +1478,10 @@
           trCategoria.className = 'category-header';
           trCategoria.innerHTML = `
             <td><strong>${detalle.categoria}</strong></td>
-            <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
+            <td style="text-align:right"><strong>${detalle.total.toLocaleString('es-ES', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}</strong></td>
             <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
           `;
           tbody.appendChild(trCategoria);
@@ -1355,7 +1497,10 @@
             trSubcategoria.className = 'subcategory-row';
             trSubcategoria.innerHTML = `
               <td>${subcategoria.nombre}</td>
-              <td style="text-align:right">${subcategoria.valor.toFixed(2)}</td>
+              <td style="text-align:right">${subcategoria.valor.toLocaleString('es-ES', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}</td>
               <td style="text-align:right">${porcentajeSubcategoria}</td>
             `;
             tbody.appendChild(trSubcategoria);
@@ -1368,15 +1513,41 @@
       totalRow.className = 'total-row';
       totalRow.innerHTML = `
         <td><strong>TOTAL GENERAL</strong></td>
-        <td style="text-align:right"><strong>${totalGeneral.toFixed(2)}</strong></td>
+        <td style="text-align:right"><strong>${totalGeneral.toLocaleString('es-ES', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}</strong></td>
         <td style="text-align:right"><strong>100.00%</strong></td>
       `;
       tbody.appendChild(totalRow);
+      
+      // Si no hay datos, mostrar mensaje
+      if (currentSummary.detalles.length === 0) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+          <td colspan="3" style="text-align: center; padding: 40px; color: var(--muted);">
+            <i class="fas fa-database" style="font-size: 24px; margin-bottom: 12px; display: block;"></i>
+            <strong>No hay datos disponibles</strong><br>
+            <small>No se encontraron registros con los filtros aplicados</small>
+          </td>
+        `;
+        tbody.appendChild(emptyRow);
+      }
     }
 
     // Acción principal: obtener datos, procesar y renderizar
     async function actualizar() {
       try {
+        // Mostrar indicador de carga
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" style="text-align: center; padding: 40px;">
+              <div class="spinner"></div>
+              <p style="margin-top: 12px; color: var(--muted);">Cargando datos...</p>
+            </td>
+          </tr>
+        `;
+        
         // Obtener datos del período actual
         currentData = await obtenerFiltrados();
         
@@ -1389,7 +1560,19 @@
         
       } catch (err) {
         console.error(err);
-        alert('Error al actualizar. Revisa la consola para más detalles.');
+        
+        // Mostrar mensaje de error en la tabla
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" style="text-align: center; padding: 40px; color: var(--danger);">
+              <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 12px; display: block;"></i>
+              <strong>Error al cargar los datos</strong><br>
+              <small>Por favor, intente nuevamente o verifique su conexión</small>
+            </td>
+          </tr>
+        `;
+        
+        alert('Error al actualizar los datos. Por favor, revise la consola para más detalles.');
       }
     }
 
