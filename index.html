@@ -324,6 +324,7 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 12px;
+      font-size: 14px;
     }
     
     th, td {
@@ -335,8 +336,10 @@
     th {
       font-weight: 600;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       background-color: #f8fafc;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
     tr:hover {
@@ -356,6 +359,18 @@
       background-color: #f0f9ff;
       font-weight: 600;
       color: var(--primary);
+    }
+    
+    .category-total {
+      background-color: #f0f9ff;
+      font-weight: 600;
+    }
+    
+    .category-total td:first-child {
+      text-align: right;
+      padding-right: 40px;
+      font-style: italic;
+      color: var(--primary-dark);
     }
     
     .subcategory-row {
@@ -602,11 +617,11 @@
         </div>
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-map-marked-alt"></i> Total de Ubicaciones
+            <i class="fas fa-map-marked-alt"></i> Ubicaciones Únicas
           </div>
           <div class="summary-value" id="summaryUbicaciones">0</div>
           <div class="summary-subtitle">
-            <span>Lugares únicos registrados</span>
+            <span>Lugares diferentes registrados</span>
           </div>
         </div>
         <div class="summary-card">
@@ -624,7 +639,7 @@
           </div>
           <div class="summary-value" id="summaryPromedio">0 kg</div>
           <div class="summary-subtitle">
-            <span>Promedio de kg por encuesta</span>
+            <span>Kilogramos promedio por encuesta</span>
           </div>
         </div>
       </div>
@@ -640,13 +655,13 @@
       <!-- Botones de tipo de gráfico mejorados -->
       <div class="chart-actions">
         <div class="chart-action-btn active" data-chart-type="bar">
-          <i class="fas fa-chart-bar"></i> Barras
+          <i class="fas fa-chart-bar"></i> Gráfico de Barras
         </div>
         <div class="chart-action-btn" data-chart-type="pie">
-          <i class="fas fa-chart-pie"></i> Torta
+          <i class="fas fa-chart-pie"></i> Gráfico Circular
         </div>
         <div class="chart-action-btn" data-chart-type="line">
-          <i class="fas fa-chart-line"></i> Líneas
+          <i class="fas fa-chart-line"></i> Gráfico de Líneas
         </div>
       </div>
       
@@ -727,9 +742,9 @@
     const categoriasPrincipales = [
       {
         id: 1,
-        nombre: "MATERIA ORGANICA",
+        nombre: "MATERIA ORGÁNICA",
         subcategorias: [
-          { campo: "materia_organica_jardin_kg", nombre: "De jardin" },
+          { campo: "materia_organica_jardin_kg", nombre: "De jardín" },
           { campo: "materia_organica_cocina_kg", nombre: "De cocina" }
         ]
       },
@@ -744,16 +759,16 @@
         id: 3,
         nombre: "MEDICINA",
         subcategorias: [
-          { campo: "medicina_jarabe_kg", nombre: "JARABE" },
-          { campo: "medicina_tabletas_kg", nombre: "TABLETAS" }
+          { campo: "medicina_jarabe_kg", nombre: "Jarabe" },
+          { campo: "medicina_tabletas_kg", nombre: "Tabletas" }
         ]
       },
       {
         id: 4,
-        nombre: "PAPELES Y CARTON",
+        nombre: "PAPELES Y CARTÓN",
         subcategorias: [
-          { campo: "papel_blanco_kg", nombre: "Papel Blanco" },
-          { campo: "papel_periodico_kg", nombre: "Papel periodico" },
+          { campo: "papel_blanco_kg", nombre: "Papel blanco" },
+          { campo: "papel_periodico_kg", nombre: "Papel periódico" },
           { campo: "papel_archivo_kg", nombre: "Papel archivo" },
           { campo: "carton_kg", nombre: "Cartón" },
           { campo: "tetra_brik_kg", nombre: "Tetra-brik" }
@@ -761,11 +776,11 @@
       },
       {
         id: 5,
-        nombre: "PLASTICOS",
+        nombre: "PLÁSTICOS",
         subcategorias: [
           { campo: "plastico_pet_kg", nombre: "PET" },
-          { campo: "plastico_mixto_kg", nombre: "Plastico mixto" },
-          { campo: "bot_aceite_kg", nombre: "Bot de aceite" },
+          { campo: "plastico_mixto_kg", nombre: "Plástico mixto" },
+          { campo: "bot_aceite_kg", nombre: "Botellas de aceite" },
           { campo: "bolsas_kg", nombre: "Bolsas" }
         ]
       },
@@ -811,9 +826,9 @@
       },
       {
         id: 11,
-        nombre: "RESTO SANITARIOS",
+        nombre: "RESIDUOS SANITARIOS",
         subcategorias: [
-          { campo: "papel_higienico_kg", nombre: "Papel Higienico" }
+          { campo: "papel_higienico_kg", nombre: "Papel higiénico" }
         ]
       },
       {
@@ -825,16 +840,16 @@
       },
       {
         id: 13,
-        nombre: "BATERIAS",
+        nombre: "BATERÍAS",
         subcategorias: [
-          { campo: "baterias_tel_lamparas_kg", nombre: "de telefóno, lamparas" }
+          { campo: "baterias_tel_lamparas_kg", nombre: "De teléfono, lámparas" }
         ]
       },
       {
         id: 14,
-        nombre: "EQUIPOS ELECTRONICOS",
+        nombre: "EQUIPOS ELECTRÓNICOS",
         subcategorias: [
-          { campo: "electronicos_electrodomesticos_kg", nombre: "Electrodomesticos" }
+          { campo: "electronicos_electrodomesticos_kg", nombre: "Electrodomésticos" }
         ]
       },
       {
@@ -1308,7 +1323,7 @@
       alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
-    // Rellenar tabla resumen y actualizar resúmenes
+    // Rellenar tabla resumen y actualizar resúmenes - MEJORADO
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
       
@@ -1326,7 +1341,7 @@
       const promedioPorEncuesta = currentData.length > 0 ? currentSummary.totalSum / currentData.length : 0;
       summaryPromedio.textContent = promedioPorEncuesta.toFixed(2) + ' kg';
       
-      // Llenar tabla con categorías y subcategorías
+      // Llenar tabla con categorías y subcategorías - MEJORADO
       let totalGeneral = 0;
       
       currentSummary.detalles.forEach(detalle => {
@@ -1360,6 +1375,16 @@
             `;
             tbody.appendChild(trSubcategoria);
           });
+          
+          // Agregar fila de "TOTAL" después de las subcategorías
+          const trTotalCategoria = document.createElement('tr');
+          trTotalCategoria.className = 'category-total';
+          trTotalCategoria.innerHTML = `
+            <td>TOTAL ${detalle.categoria}</td>
+            <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
+            <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
+          `;
+          tbody.appendChild(trTotalCategoria);
         }
       });
       
