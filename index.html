@@ -324,7 +324,6 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 12px;
-      font-size: 14px;
     }
     
     th, td {
@@ -336,10 +335,8 @@
     th {
       font-weight: 600;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 14px;
       background-color: #f8fafc;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
     
     tr:hover {
@@ -361,37 +358,12 @@
       color: var(--primary);
     }
     
-    .category-header td {
-      border-bottom: 2px solid var(--border);
-    }
-    
-    .category-total {
-      background-color: #e6f7f4;
-      font-weight: 600;
-    }
-    
-    .category-total td {
-      border-bottom: 2px solid var(--primary-light);
-    }
-    
-    .category-total td:first-child {
-      text-align: right;
-      padding-right: 40px;
-      color: var(--primary-dark);
-    }
-    
     .subcategory-row {
       background-color: #f8fafc;
     }
     
     .subcategory-row td:first-child {
       padding-left: 30px;
-    }
-    
-    .category-separator {
-      height: 1px;
-      background-color: var(--border);
-      margin: 8px 0;
     }
     
     footer {
@@ -457,38 +429,35 @@
       background: var(--bg1);
     }
     
-    .chart-type-selector {
+    .chart-actions {
       display: flex;
-      flex-wrap: wrap;
+      justify-content: flex-end;
       gap: 8px;
       margin-bottom: 16px;
-      align-items: center;
-      justify-content: flex-end;
     }
     
-    .chart-type-btn {
+    .chart-action-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
       background: white;
       border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 8px 12px;
-      border-radius: 6px;
+      font-size: 12px;
       cursor: pointer;
       transition: all 0.2s;
-      font-size: 13px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
     
-    .chart-type-btn.active {
+    .chart-action-btn:hover {
+      background: var(--bg1);
+      border-color: var(--primary-light);
+    }
+    
+    .chart-action-btn.active {
       background: var(--primary);
       color: white;
       border-color: var(--primary);
-    }
-    
-    .chart-type-btn:hover:not(.active) {
-      background: var(--bg1);
-      border-color: var(--primary-light);
     }
     
     /* Mejoras para gráficos más nítidos */
@@ -555,7 +524,7 @@
         grid-template-columns: 1fr;
       }
       
-      .chart-type-selector {
+      .chart-actions {
         justify-content: center;
       }
       
@@ -563,13 +532,9 @@
         grid-template-columns: 1fr;
       }
       
-      .chart-type-btn {
+      .chart-action-btn {
         padding: 8px 12px;
         font-size: 13px;
-      }
-      
-      .category-total td:first-child {
-        padding-right: 20px;
       }
     }
   </style>
@@ -637,11 +602,11 @@
         </div>
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-map-marked-alt"></i> Ubicaciones Únicas
+            <i class="fas fa-map-marked-alt"></i> Total de Ubicaciones
           </div>
           <div class="summary-value" id="summaryUbicaciones">0</div>
           <div class="summary-subtitle">
-            <span>Lugares diferentes registrados</span>
+            <span>Lugares únicos registrados</span>
           </div>
         </div>
         <div class="summary-card">
@@ -659,7 +624,7 @@
           </div>
           <div class="summary-value" id="summaryPromedio">0 kg</div>
           <div class="summary-subtitle">
-            <span>Kilogramos promedio por encuesta</span>
+            <span>Promedio de kg por encuesta</span>
           </div>
         </div>
       </div>
@@ -672,15 +637,15 @@
         Visualización de Datos
       </div>
       
-      <!-- Selector de tipo de gráfico al lado derecho -->
-      <div class="chart-type-selector">
-        <div class="chart-type-btn active" data-type="bar">
+      <!-- Botones de tipo de gráfico mejorados -->
+      <div class="chart-actions">
+        <div class="chart-action-btn active" data-chart-type="bar">
           <i class="fas fa-chart-bar"></i> Barras
         </div>
-        <div class="chart-type-btn" data-type="pie">
+        <div class="chart-action-btn" data-chart-type="pie">
           <i class="fas fa-chart-pie"></i> Torta
         </div>
-        <div class="chart-type-btn" data-type="line">
+        <div class="chart-action-btn" data-chart-type="line">
           <i class="fas fa-chart-line"></i> Líneas
         </div>
       </div>
@@ -762,9 +727,9 @@
     const categoriasPrincipales = [
       {
         id: 1,
-        nombre: "MATERIA ORGÁNICA",
+        nombre: "MATERIA ORGANICA",
         subcategorias: [
-          { campo: "materia_organica_jardin_kg", nombre: "De jardín" },
+          { campo: "materia_organica_jardin_kg", nombre: "De jardin" },
           { campo: "materia_organica_cocina_kg", nombre: "De cocina" }
         ]
       },
@@ -779,16 +744,16 @@
         id: 3,
         nombre: "MEDICINA",
         subcategorias: [
-          { campo: "medicina_jarabe_kg", nombre: "Jarabe" },
-          { campo: "medicina_tabletas_kg", nombre: "Tabletas" }
+          { campo: "medicina_jarabe_kg", nombre: "JARABE" },
+          { campo: "medicina_tabletas_kg", nombre: "TABLETAS" }
         ]
       },
       {
         id: 4,
-        nombre: "PAPELES Y CARTÓN",
+        nombre: "PAPELES Y CARTON",
         subcategorias: [
-          { campo: "papel_blanco_kg", nombre: "Papel blanco" },
-          { campo: "papel_periodico_kg", nombre: "Papel periódico" },
+          { campo: "papel_blanco_kg", nombre: "Papel Blanco" },
+          { campo: "papel_periodico_kg", nombre: "Papel periodico" },
           { campo: "papel_archivo_kg", nombre: "Papel archivo" },
           { campo: "carton_kg", nombre: "Cartón" },
           { campo: "tetra_brik_kg", nombre: "Tetra-brik" }
@@ -796,11 +761,11 @@
       },
       {
         id: 5,
-        nombre: "PLÁSTICOS",
+        nombre: "PLASTICOS",
         subcategorias: [
           { campo: "plastico_pet_kg", nombre: "PET" },
-          { campo: "plastico_mixto_kg", nombre: "Plástico mixto" },
-          { campo: "bot_aceite_kg", nombre: "Botellas de aceite" },
+          { campo: "plastico_mixto_kg", nombre: "Plastico mixto" },
+          { campo: "bot_aceite_kg", nombre: "Bot de aceite" },
           { campo: "bolsas_kg", nombre: "Bolsas" }
         ]
       },
@@ -846,9 +811,9 @@
       },
       {
         id: 11,
-        nombre: "RESIDUOS SANITARIOS",
+        nombre: "RESTO SANITARIOS",
         subcategorias: [
-          { campo: "papel_higienico_kg", nombre: "Papel higiénico" }
+          { campo: "papel_higienico_kg", nombre: "Papel Higienico" }
         ]
       },
       {
@@ -860,16 +825,16 @@
       },
       {
         id: 13,
-        nombre: "BATERÍAS",
+        nombre: "BATERIAS",
         subcategorias: [
-          { campo: "baterias_tel_lamparas_kg", nombre: "De teléfono, lámparas" }
+          { campo: "baterias_tel_lamparas_kg", nombre: "de telefóno, lamparas" }
         ]
       },
       {
         id: 14,
-        nombre: "EQUIPOS ELECTRÓNICOS",
+        nombre: "EQUIPOS ELECTRONICOS",
         subcategorias: [
-          { campo: "electronicos_electrodomesticos_kg", nombre: "Electrodomésticos" }
+          { campo: "electronicos_electrodomesticos_kg", nombre: "Electrodomesticos" }
         ]
       },
       {
@@ -896,15 +861,20 @@
         await actualizar();
       });
       
-      // Selector de tipo de gráfico (botones al lado derecho)
-      document.querySelectorAll('.chart-type-btn').forEach(btn => {
+      // Botones de tipo de gráfico - versión mejorada
+      document.querySelectorAll('.chart-action-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           // Remover clase activa de todos los botones
-          document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
-          // Agregar clase activa al botón clickeado
+          document.querySelectorAll('.chart-action-btn').forEach(b => {
+            b.classList.remove('active');
+          });
+          
+          // Agregar clase activa al botón seleccionado
           this.classList.add('active');
-          // Actualizar tipo de gráfico
-          currentChartType = this.getAttribute('data-type');
+          
+          // Cambiar tipo de gráfico
+          currentChartType = this.getAttribute('data-chart-type');
+          
           // Re-renderizar el gráfico
           if (currentData.length > 0) {
             const resumenCategorias = calcularResumenPorCategorias(currentData);
@@ -1062,7 +1032,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado
+    // Renderizar gráfico principal con tipo seleccionado - MEJORADO
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1070,8 +1040,12 @@
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
       
-      // Colores consistentes (HSL)
-      const colors = labels.map((_, i) => `hsl(${(i * 360 / labels.length) % 360} 70% 55%)`);
+      // Colores más atractivos y consistentes
+      const colors = [
+        '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+        '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#a855f7', '#6366f1',
+        '#14b8a6', '#f43f5e', '#8b5cf6'
+      ].slice(0, labels.length);
       
       // Configuración base para todos los gráficos
       const baseConfig = {
@@ -1081,14 +1055,17 @@
             label: 'Peso (kg)',
             data: values,
             backgroundColor: colors,
-            borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
+            borderColor: colors.map(c => c.replace(')', ', 0.8)')),
             borderWidth: chartType === 'line' ? 3 : 1,
             pointBackgroundColor: colors,
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
-            pointRadius: 6,
-            pointHoverRadius: 8,
-            fill: chartType === 'line' ? false : undefined,
+            pointRadius: chartType === 'line' ? 6 : 0,
+            pointHoverRadius: chartType === 'line' ? 8 : 0,
+            fill: chartType === 'line' ? {
+              target: 'origin',
+              above: 'rgba(15, 118, 110, 0.1)'
+            } : undefined,
             tension: chartType === 'line' ? 0.4 : 0
           }]
         },
@@ -1097,7 +1074,8 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: chartType === 'pie' ? 'right' : 'top',
+              display: chartType === 'pie',
+              position: 'right',
               labels: {
                 font: {
                   size: 11
@@ -1107,9 +1085,10 @@
                   if (chartType === 'pie') {
                     const original = Chart.defaults.plugins.legend.labels.generateLabels;
                     const labels = original.call(this, chart);
-                    // Agregar porcentaje a cada etiqueta
+                    // Agregar porcentaje y valor a cada etiqueta
                     labels.forEach((label, i) => {
-                      label.text += ` (${percentages[i]})`;
+                      const value = chart.data.datasets[0].data[i];
+                      label.text += ` (${percentages[i]} - ${value.toFixed(1)} kg)`;
                     });
                     return labels;
                   }
@@ -1131,9 +1110,10 @@
                 label: function(context) {
                   let label = context.dataset.label || '';
                   if (label) label += ': ';
-                  label += context.parsed !== undefined ? context.parsed.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
+                  const value = context.parsed !== undefined ? context.parsed : context.raw;
+                  label += value.toFixed(2) + ' kg';
                   // Agregar porcentaje al tooltip
-                  const percentage = totalSum > 0 ? ((context.parsed || context.raw) / totalSum * 100).toFixed(1) : 0;
+                  const percentage = totalSum > 0 ? (value / totalSum * 100).toFixed(1) : 0;
                   label += ` (${percentage}%)`;
                   return label;
                 }
@@ -1143,7 +1123,7 @@
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico
+      // Configuraciones específicas por tipo de gráfico - MEJORADAS
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1157,7 +1137,8 @@
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                }
+                },
+                padding: 15 // Espacio para evitar superposición
               }
             },
             x: {
@@ -1168,7 +1149,8 @@
               },
               ticks: {
                 maxRotation: 45,
-                minRotation: 45
+                minRotation: 45,
+                padding: 10 // Espacio para evitar superposición
               }
             }
           },
@@ -1185,7 +1167,7 @@
               },
               anchor: 'end',
               align: 'top',
-              offset: -5
+              offset: 2 // Reducido para mejor visualización
             }
           }
         },
@@ -1201,7 +1183,8 @@
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                }
+                },
+                padding: 15 // Espacio para evitar superposición
               }
             },
             x: {
@@ -1209,6 +1192,11 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45,
+                padding: 10 // Espacio para evitar superposición
               }
             }
           },
@@ -1226,47 +1214,47 @@
               },
               anchor: 'center',
               align: 'top', // ENCIMA del punto
-              offset: 20, // Negativo para colocar ENCIMA
+              offset: 10, // Optimizado para mejor visualización
               clamp: true
             }
           }
         },
         pie: {
-          // Configuración mejorada para gráfico circular
+          // Configuración MEJORADA para gráfico circular
           plugins: {
             datalabels: {
               display: true,
-              color: '#fff',
+              color: function(context) {
+                // Colores contrastantes para mejor legibilidad
+                const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
+                const rgb = hexToRgb(backgroundColor);
+                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+                return brightness > 128 ? '#1e293b' : '#ffffff';
+              },
               font: {
                 weight: 'bold',
-                size: 11
+                size: 12
               },
               formatter: function(value, context) {
-                // Mostrar porcentaje si es > 2%, de lo contrario omitir para evitar superposición
+                // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
                 const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
-                return percentage > 2 ? percentages[context.dataIndex] : '';
+                return percentage > 3 ? percentages[context.dataIndex] : '';
               },
               anchor: 'center',
               align: 'center',
               textAlign: 'center',
-              padding: {
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0
-              },
               textShadow: true,
-              shadowOffsetX: 1,
-              shadowOffsetY: 1,
-              shadowBlur: 2,
+              shadowBlur: 4,
               shadowColor: 'rgba(0,0,0,0.5)'
             }
           },
           // Separar segmentos pequeños para evitar superposición
           elements: {
             arc: {
-              borderWidth: 1,
-              borderColor: '#fff'
+              borderWidth: 1.5,
+              borderColor: '#ffffff',
+              hoverBorderWidth: 2.5,
+              hoverBorderColor: '#ffffff'
             }
           }
         }
@@ -1279,20 +1267,30 @@
         options: {
           ...baseConfig.options,
           ...(typeSpecificConfigs[chartType] || {}),
-          // Configuración común para evitar superposición en gráficos lineales
+          // Configuración común para evitar superposición en gráficos
           layout: {
             padding: {
               top: chartType === 'line' ? 50 : 20,
-              bottom: 20,
-              left: 10,
-              right: 10
+              bottom: 30,
+              left: 15,
+              right: 15
             }
           }
         },
-        plugins: [ChartDataLabels]
+        plugins: chartType === 'pie' || chartType === 'bar' || chartType === 'line' ? [ChartDataLabels] : []
       };
       
       mainChart = new Chart(mainCtx, finalConfig);
+    }
+    
+    // Función auxiliar para convertir HEX a RGB
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : { r: 0, g: 0, b: 0 };
     }
     
     // Obtener nombre legible del tipo de gráfico
@@ -1310,7 +1308,7 @@
       alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
-    // Rellenar tabla resumen y actualizar resúmenes - MEJORADO
+    // Rellenar tabla resumen y actualizar resúmenes
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
       
@@ -1328,18 +1326,21 @@
       const promedioPorEncuesta = currentData.length > 0 ? currentSummary.totalSum / currentData.length : 0;
       summaryPromedio.textContent = promedioPorEncuesta.toFixed(2) + ' kg';
       
-      // Llenar tabla con categorías y subcategorías - MEJORADO
+      // Llenar tabla con categorías y subcategorías
       let totalGeneral = 0;
       
-      currentSummary.detalles.forEach((detalle, index) => {
+      currentSummary.detalles.forEach(detalle => {
         if (detalle.total > 0) {
-          // Fila de categoría principal (SIN números ni porcentajes)
+          // Fila de categoría principal
+          const porcentajeCategoria = currentSummary.totalSum > 0 ? 
+            ((detalle.total / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
+          
           const trCategoria = document.createElement('tr');
           trCategoria.className = 'category-header';
           trCategoria.innerHTML = `
             <td><strong>${detalle.categoria}</strong></td>
-            <td style="text-align:right"></td>
-            <td style="text-align:right"></td>
+            <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
+            <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
           `;
           tbody.appendChild(trCategoria);
           
@@ -1359,26 +1360,6 @@
             `;
             tbody.appendChild(trSubcategoria);
           });
-          
-          // Agregar fila de "TOTAL" después de las subcategorías (CON números y porcentajes)
-          const porcentajeCategoria = currentSummary.totalSum > 0 ? 
-            ((detalle.total / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
-          
-          const trTotalCategoria = document.createElement('tr');
-          trTotalCategoria.className = 'category-total';
-          trTotalCategoria.innerHTML = `
-            <td>TOTAL ${detalle.categoria}</td>
-            <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
-            <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
-          `;
-          tbody.appendChild(trTotalCategoria);
-          
-          // Agregar separador entre categorías (excepto después de la última)
-          if (index < currentSummary.detalles.length - 1) {
-            const separator = document.createElement('tr');
-            separator.innerHTML = '<td colspan="3" style="padding: 8px 0; background-color: #f8fafc;"></td>';
-            tbody.appendChild(separator);
-          }
         }
       });
       
