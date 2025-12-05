@@ -359,22 +359,32 @@
       background-color: #f0f9ff;
       font-weight: 600;
       color: var(--primary);
+      border-top: 1px solid var(--border);
+    }
+    
+    .category-header td:first-child {
+      padding-left: 10px;
     }
     
     .category-total {
-      background-color: #f0f9ff;
+      background-color: #f8fafc;
       font-weight: 600;
     }
     
+    .category-total td {
+      border-top: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+    }
+    
     .category-total td:first-child {
-      text-align: right;
-      padding-right: 40px;
-      font-style: italic;
+      text-align: left;
+      font-style: normal;
       color: var(--primary-dark);
+      padding-left: 10px;
     }
     
     .subcategory-row {
-      background-color: #f8fafc;
+      background-color: #ffffff;
     }
     
     .subcategory-row td:first-child {
@@ -444,35 +454,37 @@
       background: var(--bg1);
     }
     
-    .chart-actions {
+    .chart-type-selector {
       display: flex;
-      justify-content: flex-end;
+      flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 16px;
+      align-items: center;
     }
     
-    .chart-action-btn {
-      padding: 6px 12px;
-      border-radius: 6px;
+    .chart-type-btn {
       background: white;
       border: 1px solid var(--border);
-      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 12px;
+      border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s;
+      font-size: 13px;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
     }
     
-    .chart-action-btn:hover {
-      background: var(--bg1);
-      border-color: var(--primary-light);
-    }
-    
-    .chart-action-btn.active {
+    .chart-type-btn.active {
       background: var(--primary);
       color: white;
       border-color: var(--primary);
+    }
+    
+    .chart-type-btn:hover:not(.active) {
+      background: var(--bg1);
+      border-color: var(--primary-light);
     }
     
     /* Mejoras para gráficos más nítidos */
@@ -485,34 +497,6 @@
     .chartjs-render-monitor {
       -webkit-filter: none !important;
       filter: none !important;
-    }
-    
-    .question-chart-container {
-      position: relative;
-      height: 400px;
-      margin-top: 20px;
-    }
-    
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-      gap: 24px;
-      margin-top: 20px;
-    }
-    
-    .chart-card {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--border);
-    }
-    
-    .chart-card h3 {
-      color: var(--primary);
-      margin-bottom: 16px;
-      font-size: 16px;
-      font-weight: 600;
     }
     
     @media (max-width: 768px) {
@@ -539,17 +523,8 @@
         grid-template-columns: 1fr;
       }
       
-      .chart-actions {
+      .chart-type-selector {
         justify-content: center;
-      }
-      
-      .charts-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .chart-action-btn {
-        padding: 8px 12px;
-        font-size: 13px;
       }
     }
   </style>
@@ -617,11 +592,11 @@
         </div>
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-map-marked-alt"></i> Ubicaciones Únicas
+            <i class="fas fa-map-marked-alt"></i> Total de Ubicaciones
           </div>
           <div class="summary-value" id="summaryUbicaciones">0</div>
           <div class="summary-subtitle">
-            <span>Lugares diferentes registrados</span>
+            <span>Lugares únicos registrados</span>
           </div>
         </div>
         <div class="summary-card">
@@ -639,7 +614,7 @@
           </div>
           <div class="summary-value" id="summaryPromedio">0 kg</div>
           <div class="summary-subtitle">
-            <span>Kilogramos promedio por encuesta</span>
+            <span>Promedio de kg por encuesta</span>
           </div>
         </div>
       </div>
@@ -652,16 +627,17 @@
         Visualización de Datos
       </div>
       
-      <!-- Botones de tipo de gráfico mejorados -->
-      <div class="chart-actions">
-        <div class="chart-action-btn active" data-chart-type="bar">
-          <i class="fas fa-chart-bar"></i> Gráfico de Barras
+      <!-- Selector de tipo de gráfico (regresamos al formato original) -->
+      <div class="chart-type-selector">
+        <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
+        <div class="chart-type-btn active" data-type="bar">
+          <i class="fas fa-chart-bar"></i> Barras
         </div>
-        <div class="chart-action-btn" data-chart-type="pie">
-          <i class="fas fa-chart-pie"></i> Gráfico Circular
+        <div class="chart-type-btn" data-type="pie">
+          <i class="fas fa-chart-pie"></i> Circular
         </div>
-        <div class="chart-action-btn" data-chart-type="line">
-          <i class="fas fa-chart-line"></i> Gráfico de Líneas
+        <div class="chart-type-btn" data-type="line">
+          <i class="fas fa-chart-line"></i> Líneas
         </div>
       </div>
       
@@ -738,7 +714,7 @@
       lugares: []
     };
 
-    // Definición de las 15 categorías principales con sus subcategorías (basado en la estructura real de la BD)
+    // Definición de las 15 categorías principales con sus subcategorías
     const categoriasPrincipales = [
       {
         id: 1,
@@ -876,20 +852,15 @@
         await actualizar();
       });
       
-      // Botones de tipo de gráfico - versión mejorada
-      document.querySelectorAll('.chart-action-btn').forEach(btn => {
+      // Selector de tipo de gráfico (regresamos al formato original)
+      document.querySelectorAll('.chart-type-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           // Remover clase activa de todos los botones
-          document.querySelectorAll('.chart-action-btn').forEach(b => {
-            b.classList.remove('active');
-          });
-          
-          // Agregar clase activa al botón seleccionado
+          document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+          // Agregar clase activa al botón clickeado
           this.classList.add('active');
-          
-          // Cambiar tipo de gráfico
-          currentChartType = this.getAttribute('data-chart-type');
-          
+          // Actualizar tipo de gráfico
+          currentChartType = this.getAttribute('data-type');
           // Re-renderizar el gráfico
           if (currentData.length > 0) {
             const resumenCategorias = calcularResumenPorCategorias(currentData);
@@ -1047,7 +1018,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - MEJORADO
+    // Renderizar gráfico principal con tipo seleccionado
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1055,12 +1026,8 @@
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
       
-      // Colores más atractivos y consistentes
-      const colors = [
-        '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-        '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#a855f7', '#6366f1',
-        '#14b8a6', '#f43f5e', '#8b5cf6'
-      ].slice(0, labels.length);
+      // Colores consistentes (HSL)
+      const colors = labels.map((_, i) => `hsl(${(i * 360 / labels.length) % 360} 70% 55%)`);
       
       // Configuración base para todos los gráficos
       const baseConfig = {
@@ -1070,17 +1037,14 @@
             label: 'Peso (kg)',
             data: values,
             backgroundColor: colors,
-            borderColor: colors.map(c => c.replace(')', ', 0.8)')),
+            borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
             borderWidth: chartType === 'line' ? 3 : 1,
             pointBackgroundColor: colors,
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
-            pointRadius: chartType === 'line' ? 6 : 0,
-            pointHoverRadius: chartType === 'line' ? 8 : 0,
-            fill: chartType === 'line' ? {
-              target: 'origin',
-              above: 'rgba(15, 118, 110, 0.1)'
-            } : undefined,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            fill: chartType === 'line' ? false : undefined,
             tension: chartType === 'line' ? 0.4 : 0
           }]
         },
@@ -1089,8 +1053,7 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: chartType === 'pie',
-              position: 'right',
+              position: chartType === 'pie' ? 'right' : 'top',
               labels: {
                 font: {
                   size: 11
@@ -1100,10 +1063,9 @@
                   if (chartType === 'pie') {
                     const original = Chart.defaults.plugins.legend.labels.generateLabels;
                     const labels = original.call(this, chart);
-                    // Agregar porcentaje y valor a cada etiqueta
+                    // Agregar porcentaje a cada etiqueta
                     labels.forEach((label, i) => {
-                      const value = chart.data.datasets[0].data[i];
-                      label.text += ` (${percentages[i]} - ${value.toFixed(1)} kg)`;
+                      label.text += ` (${percentages[i]})`;
                     });
                     return labels;
                   }
@@ -1125,10 +1087,9 @@
                 label: function(context) {
                   let label = context.dataset.label || '';
                   if (label) label += ': ';
-                  const value = context.parsed !== undefined ? context.parsed : context.raw;
-                  label += value.toFixed(2) + ' kg';
+                  label += context.parsed !== undefined ? context.parsed.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
                   // Agregar porcentaje al tooltip
-                  const percentage = totalSum > 0 ? (value / totalSum * 100).toFixed(1) : 0;
+                  const percentage = totalSum > 0 ? ((context.parsed || context.raw) / totalSum * 100).toFixed(1) : 0;
                   label += ` (${percentage}%)`;
                   return label;
                 }
@@ -1138,7 +1099,7 @@
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS
+      // Configuraciones específicas por tipo de gráfico
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1152,8 +1113,7 @@
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                },
-                padding: 15 // Espacio para evitar superposición
+                }
               }
             },
             x: {
@@ -1164,8 +1124,7 @@
               },
               ticks: {
                 maxRotation: 45,
-                minRotation: 45,
-                padding: 10 // Espacio para evitar superposición
+                minRotation: 45
               }
             }
           },
@@ -1182,7 +1141,7 @@
               },
               anchor: 'end',
               align: 'top',
-              offset: 2 // Reducido para mejor visualización
+              offset: -5
             }
           }
         },
@@ -1198,8 +1157,7 @@
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                },
-                padding: 15 // Espacio para evitar superposición
+                }
               }
             },
             x: {
@@ -1207,11 +1165,6 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' }
-              },
-              ticks: {
-                maxRotation: 45,
-                minRotation: 45,
-                padding: 10 // Espacio para evitar superposición
               }
             }
           },
@@ -1229,47 +1182,47 @@
               },
               anchor: 'center',
               align: 'top', // ENCIMA del punto
-              offset: 10, // Optimizado para mejor visualización
+              offset: 20, // Negativo para colocar ENCIMA
               clamp: true
             }
           }
         },
         pie: {
-          // Configuración MEJORADA para gráfico circular
+          // Configuración mejorada para gráfico circular
           plugins: {
             datalabels: {
               display: true,
-              color: function(context) {
-                // Colores contrastantes para mejor legibilidad
-                const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
-                const rgb = hexToRgb(backgroundColor);
-                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-                return brightness > 128 ? '#1e293b' : '#ffffff';
-              },
+              color: '#fff',
               font: {
                 weight: 'bold',
-                size: 12
+                size: 11
               },
               formatter: function(value, context) {
-                // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
+                // Mostrar porcentaje si es > 2%, de lo contrario omitir para evitar superposición
                 const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
-                return percentage > 3 ? percentages[context.dataIndex] : '';
+                return percentage > 2 ? percentages[context.dataIndex] : '';
               },
               anchor: 'center',
               align: 'center',
               textAlign: 'center',
+              padding: {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0
+              },
               textShadow: true,
-              shadowBlur: 4,
+              shadowOffsetX: 1,
+              shadowOffsetY: 1,
+              shadowBlur: 2,
               shadowColor: 'rgba(0,0,0,0.5)'
             }
           },
           // Separar segmentos pequeños para evitar superposición
           elements: {
             arc: {
-              borderWidth: 1.5,
-              borderColor: '#ffffff',
-              hoverBorderWidth: 2.5,
-              hoverBorderColor: '#ffffff'
+              borderWidth: 1,
+              borderColor: '#fff'
             }
           }
         }
@@ -1282,30 +1235,20 @@
         options: {
           ...baseConfig.options,
           ...(typeSpecificConfigs[chartType] || {}),
-          // Configuración común para evitar superposición en gráficos
+          // Configuración común para evitar superposición en gráficos lineales
           layout: {
             padding: {
               top: chartType === 'line' ? 50 : 20,
-              bottom: 30,
-              left: 15,
-              right: 15
+              bottom: 20,
+              left: 10,
+              right: 10
             }
           }
         },
-        plugins: chartType === 'pie' || chartType === 'bar' || chartType === 'line' ? [ChartDataLabels] : []
+        plugins: [ChartDataLabels]
       };
       
       mainChart = new Chart(mainCtx, finalConfig);
-    }
-    
-    // Función auxiliar para convertir HEX a RGB
-    function hexToRgb(hex) {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : { r: 0, g: 0, b: 0 };
     }
     
     // Obtener nombre legible del tipo de gráfico
@@ -1320,7 +1263,7 @@
 
     // Mostrar modal de ayuda
     function mostrarModalAyuda() {
-      alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
+      alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Explore las diferentes pestañas para ver visualizaciones específicas por categoría\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Consulte las tablas resumen para datos detallados\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
     // Rellenar tabla resumen y actualizar resúmenes - MEJORADO
@@ -1346,16 +1289,13 @@
       
       currentSummary.detalles.forEach(detalle => {
         if (detalle.total > 0) {
-          // Fila de categoría principal
-          const porcentajeCategoria = currentSummary.totalSum > 0 ? 
-            ((detalle.total / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
-          
+          // Fila de categoría principal (SIN kg y %)
           const trCategoria = document.createElement('tr');
           trCategoria.className = 'category-header';
           trCategoria.innerHTML = `
             <td><strong>${detalle.categoria}</strong></td>
-            <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
-            <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
+            <td style="text-align:right"></td>
+            <td style="text-align:right"></td>
           `;
           tbody.appendChild(trCategoria);
           
@@ -1376,11 +1316,14 @@
             tbody.appendChild(trSubcategoria);
           });
           
-          // Agregar fila de "TOTAL" después de las subcategorías
+          // Agregar fila de "TOTAL" después de las subcategorías con línea horizontal
+          const porcentajeCategoria = currentSummary.totalSum > 0 ? 
+            ((detalle.total / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
+          
           const trTotalCategoria = document.createElement('tr');
           trTotalCategoria.className = 'category-total';
           trTotalCategoria.innerHTML = `
-            <td>TOTAL ${detalle.categoria}</td>
+            <td><strong>TOTAL ${detalle.categoria}</strong></td>
             <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
             <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
           `;
