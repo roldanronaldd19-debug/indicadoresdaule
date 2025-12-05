@@ -389,35 +389,33 @@
       100% { transform: rotate(360deg); }
     }
     
-    .export-options {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 40px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      padding: 8px;
-      z-index: 10;
-      min-width: 150px;
-    }
-    
-    .export-options.show {
-      display: block;
-    }
-    
-    .export-option {
-      padding: 8px 12px;
-      cursor: pointer;
-      border-radius: 4px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .export-option:hover {
-      background: var(--bg1);
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 12px;
+        height: auto;
+        padding: 16px 0;
+      }
+      
+      .controls {
+        grid-template-columns: 1fr;
+      }
+      
+      .action-buttons {
+        justify-content: center;
+      }
+      
+      .chart-container {
+        height: 400px;
+      }
+      
+      .summary-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .chart-type-selector {
+        justify-content: center;
+      }
     }
     
     .chart-type-selector {
@@ -451,35 +449,6 @@
     .chart-type-btn:hover:not(.active) {
       background: var(--bg1);
       border-color: var(--primary-light);
-    }
-    
-    @media (max-width: 768px) {
-      .header-content {
-        flex-direction: column;
-        gap: 12px;
-        height: auto;
-        padding: 16px 0;
-      }
-      
-      .controls {
-        grid-template-columns: 1fr;
-      }
-      
-      .action-buttons {
-        justify-content: center;
-      }
-      
-      .chart-container {
-        height: 400px;
-      }
-      
-      .summary-cards {
-        grid-template-columns: 1fr;
-      }
-      
-      .chart-type-selector {
-        justify-content: center;
-      }
     }
   </style>
 </head>
@@ -979,9 +948,6 @@
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
       
-      // Colores consistentes (HSL)
-      const colors = labels.map((_, i) => `hsl(${(i * 360 / labels.length) % 360} 70% 55%)`);
-      
       // Configuración base para todos los gráficos
       const baseConfig = {
         data: {
@@ -989,16 +955,16 @@
           datasets: [{
             label: 'Peso (kg)',
             data: values,
-            backgroundColor: colors,
-            borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-            borderWidth: chartType === 'line' ? 3 : 1,
-            pointBackgroundColor: colors,
+            backgroundColor: chartType === 'line' ? 'transparent' : `hsl(${currentChartType === 'bar' ? '200' : '220'} 70% 55%)`,
+            borderColor: chartType === 'line' ? 'rgba(15, 118, 110, 0.8)' : 'rgba(15, 118, 110, 0.8)',
+            borderWidth: chartType === 'line' ? 2 : 1,
+            pointBackgroundColor: chartType === 'line' ? 'rgba(15, 118, 110, 1)' : 'rgba(15, 118, 110, 0.8)',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
-            pointRadius: 6,
-            pointHoverRadius: 8,
-            fill: chartType === 'line' ? false : undefined,
-            tension: chartType === 'line' ? 0.4 : 0
+            pointRadius: chartType === 'line' ? 8 : 4,
+            pointHoverRadius: chartType === 'line' ? 12 : 6,
+            fill: false,
+            tension: 0
           }]
         },
         options: {
@@ -1111,7 +1077,12 @@
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                }
+                },
+                stepSize: totalSum > 0 ? Math.ceil(totalSum / 10) : 10
+              },
+              grid: {
+                drawBorder: true,
+                color: 'rgba(0, 0, 0, 0.1)'
               }
             },
             x: {
@@ -1119,28 +1090,35 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' }
+              },
+              grid: {
+                display: false
               }
             }
           },
-          // Configuración específica para líneas - porcentajes ENCIMA del punto
+          // Configuración específica para líneas - como en la imagen
           plugins: {
             datalabels: {
               display: true,
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11
+                size: 12
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'center',
-              align: 'bottom', // ENCIMA del punto
-              offset: 10, // Positivo para colocar ENCIMA
+              align: 'top', // ENCIMA del punto
+              offset: -25, // Ajustado para estar bien encima
               clamp: true,
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 4,
               padding: {
-                top: 5,
-                bottom: 5
+                top: 4,
+                bottom: 4,
+                left: 6,
+                right: 6
               }
             }
           }
@@ -1164,9 +1142,27 @@
         }
       };
       
+      // Configuración especial para gráfico de líneas como en la imagen
+      if (chartType === 'line') {
+        // Crear gradiente para la línea
+        const gradient = mainCtx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(15, 118, 110, 0.3)');
+        gradient.addColorStop(1, 'rgba(15, 118, 110, 0.05)');
+        
+        baseConfig.data.datasets[0].backgroundColor = gradient;
+        baseConfig.data.datasets[0].fill = true;
+        baseConfig.data.datasets[0].borderColor = 'rgba(15, 118, 110, 0.8)';
+        baseConfig.data.datasets[0].pointBackgroundColor = 'rgba(15, 118, 110, 1)';
+        baseConfig.data.datasets[0].pointBorderColor = '#ffffff';
+        baseConfig.data.datasets[0].pointBorderWidth = 3;
+        baseConfig.data.datasets[0].pointRadius = 8;
+        baseConfig.data.datasets[0].pointHoverRadius = 12;
+        baseConfig.data.datasets[0].tension = 0.2;
+      }
+      
       // Combinar configuración base con configuración específica del tipo
       const finalConfig = {
-        type: chartType,
+        type: chartType === 'line' ? 'line' : chartType,
         data: baseConfig.data,
         options: {
           ...baseConfig.options,
