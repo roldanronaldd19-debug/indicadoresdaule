@@ -453,6 +453,33 @@
       border-color: var(--primary-light);
     }
     
+    .area-toggle {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .area-toggle input {
+      cursor: pointer;
+    }
+    
+    .chart-options {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--bg1);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -479,6 +506,15 @@
       
       .chart-type-selector {
         justify-content: center;
+      }
+      
+      .chart-options {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .area-toggle {
+        margin-left: 0;
       }
     }
   </style>
@@ -586,17 +622,28 @@
       </div>
       
       <div class="tab-content active" id="main-chart">
-        <!-- Selector de tipo de gráfico -->
-        <div class="chart-type-selector">
-          <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
-          <div class="chart-type-btn active" data-type="bar">
-            <i class="fas fa-chart-bar"></i> Barras
+        <!-- Opciones de gráfico mejoradas -->
+        <div class="chart-options">
+          <div class="chart-type-selector">
+            <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
+            <div class="chart-type-btn active" data-type="bar">
+              <i class="fas fa-chart-bar"></i> Barras
+            </div>
+            <div class="chart-type-btn" data-type="pie">
+              <i class="fas fa-chart-pie"></i> Circular
+            </div>
+            <div class="chart-type-btn" data-type="line">
+              <i class="fas fa-chart-line"></i> Líneas
+            </div>
+            <div class="chart-type-btn" data-type="area">
+              <i class="fas fa-chart-area"></i> Área
+            </div>
           </div>
-          <div class="chart-type-btn" data-type="pie">
-            <i class="fas fa-chart-pie"></i> Circular
-          </div>
-          <div class="chart-type-btn" data-type="line">
-            <i class="fas fa-chart-line"></i> Líneas
+          
+          <!-- Toggle para área rellena (solo para gráficos de líneas) -->
+          <div class="area-toggle" id="areaToggle" style="display: none;">
+            <input type="checkbox" id="toggleFillArea" checked>
+            <label for="toggleFillArea">Área rellena</label>
           </div>
         </div>
         
@@ -642,6 +689,8 @@
     // ---------- SELECTORES ----------
     const selectLugar = document.getElementById('selectLugar');
     const btnResetFilters = document.getElementById('btnResetFilters');
+    const areaToggle = document.getElementById('areaToggle');
+    const toggleFillArea = document.getElementById('toggleFillArea');
 
     // Elementos de información de filtros
     const lugarInfo = document.getElementById('lugarInfo');
@@ -666,6 +715,7 @@
     let filterOptions = {
       lugares: []
     };
+    let fillArea = true;
 
     // Definición de las 15 categorías principales con sus subcategorías (basado en la estructura real de la BD)
     const categoriasPrincipales = [
@@ -814,12 +864,29 @@
           this.classList.add('active');
           // Actualizar tipo de gráfico
           currentChartType = this.getAttribute('data-type');
+          
+          // Mostrar/ocultar toggle de área según el tipo de gráfico
+          if (currentChartType === 'line' || currentChartType === 'area') {
+            areaToggle.style.display = 'flex';
+          } else {
+            areaToggle.style.display = 'none';
+          }
+          
           // Re-renderizar el gráfico
           if (currentData.length > 0) {
             const resumenCategorias = calcularResumenPorCategorias(currentData);
             renderChart(resumenCategorias.categorias, resumenCategorias.valores, currentChartType);
           }
         });
+      });
+      
+      // Toggle de área rellena
+      toggleFillArea.addEventListener('change', function() {
+        fillArea = this.checked;
+        if (currentData.length > 0 && (currentChartType === 'line' || currentChartType === 'area')) {
+          const resumenCategorias = calcularResumenPorCategorias(currentData);
+          renderChart(resumenCategorias.categorias, resumenCategorias.valores, currentChartType);
+        }
       });
       
       // Botón para restablecer filtros
@@ -980,7 +1047,17 @@
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
       
       // Colores consistentes (HSL)
-      const colors = labels.map((_, i) => `hsl(${(i * 360 / labels.length) % 360} 70% 55%)`);
+      const colors = labels.map((_, i) => {
+        const hue = (i * 360 / labels.length) % 360;
+        return `hsl(${hue} 70% 55%)`;
+      });
+      
+      // Colores más claros para el área
+      const areaColors = colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.2)'));
+      const borderColors = colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)'));
+      
+      // Determinar el tipo real de gráfico (si es área, usar línea con fill)
+      const actualChartType = chartType === 'area' ? 'line' : chartType;
       
       // Configuración base para todos los gráficos
       const baseConfig = {
@@ -989,31 +1066,51 @@
           datasets: [{
             label: 'Peso (kg)',
             data: values,
-            backgroundColor: colors,
-            borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-            borderWidth: chartType === 'line' ? 3 : 1,
-            pointBackgroundColor: colors,
+            backgroundColor: actualChartType === 'line' || actualChartType === 'area' 
+              ? (fillArea ? areaColors : 'transparent')
+              : colors,
+            borderColor: borderColors,
+            borderWidth: actualChartType === 'line' || actualChartType === 'area' ? 3 : 2,
+            pointBackgroundColor: borderColors,
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
             pointRadius: 6,
-            pointHoverRadius: 8,
-            fill: chartType === 'line' ? false : undefined,
-            tension: chartType === 'line' ? 0.4 : 0
+            pointHoverRadius: 10,
+            pointHoverBorderWidth: 3,
+            fill: actualChartType === 'line' || actualChartType === 'area' ? fillArea : (actualChartType !== 'pie'),
+            tension: actualChartType === 'line' || actualChartType === 'area' ? 0.4 : 0,
+            borderCapStyle: 'round',
+            borderJoinStyle: 'round',
+            pointStyle: 'circle',
+            hoverRadius: 12,
+            hoverBackgroundColor: borderColors.map(c => c.replace(', 0.8)', ', 1)')),
+            // Para gráficos de línea, añadir sombra
+            shadowColor: actualChartType === 'line' || actualChartType === 'area' ? 'rgba(0, 0, 0, 0.1)' : undefined,
+            shadowBlur: actualChartType === 'line' || actualChartType === 'area' ? 8 : 0,
+            shadowOffsetX: actualChartType === 'line' || actualChartType === 'area' ? 2 : 0,
+            shadowOffsetY: actualChartType === 'line' || actualChartType === 'area' ? 2 : 0
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
           plugins: {
             legend: {
-              position: chartType === 'pie' ? 'right' : 'top',
+              position: actualChartType === 'pie' ? 'right' : 'top',
               labels: {
                 font: {
-                  size: 11
+                  size: 12,
+                  family: "'Inter', sans-serif"
                 },
+                padding: 20,
+                usePointStyle: true,
                 // Mostrar porcentajes en la leyenda del gráfico circular
                 generateLabels: function(chart) {
-                  if (chartType === 'pie') {
+                  if (actualChartType === 'pie') {
                     const original = Chart.defaults.plugins.legend.labels.generateLabels;
                     const labels = original.call(this, chart);
                     // Agregar porcentaje a cada etiqueta
@@ -1031,11 +1128,23 @@
               text: `Distribución de Desechos Sólidos por Categoría - ${getChartTypeName(chartType)}`,
               font: {
                 size: 16,
-                weight: 'bold'
+                weight: 'bold',
+                family: "'Inter', sans-serif"
               },
-              padding: 20
+              padding: 20,
+              color: '#1e293b'
             },
             tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#1e293b',
+              bodyColor: '#1e293b',
+              borderColor: var(--border),
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12,
+              displayColors: true,
+              boxPadding: 6,
+              usePointStyle: true,
               callbacks: {
                 label: function(context) {
                   let label = context.dataset.label || '';
@@ -1045,6 +1154,14 @@
                   const percentage = totalSum > 0 ? ((context.parsed || context.raw) / totalSum * 100).toFixed(1) : 0;
                   label += ` (${percentage}%)`;
                   return label;
+                },
+                labelColor: function(context) {
+                  return {
+                    borderColor: borderColors[context.dataIndex],
+                    backgroundColor: borderColors[context.dataIndex],
+                    borderWidth: 2,
+                    borderRadius: 2
+                  };
                 }
               }
             }
@@ -1061,23 +1178,36 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' }
+                font: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
+                color: var(--muted)
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                }
+                },
+                font: { size: 11 },
+                color: var(--muted)
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)',
+                drawBorder: false
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' }
+                font: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
+                color: var(--muted)
               },
               ticks: {
                 maxRotation: 45,
-                minRotation: 45
+                minRotation: 45,
+                font: { size: 11 },
+                color: var(--muted)
+              },
+              grid: {
+                display: false
               }
             }
           },
@@ -1087,14 +1217,15 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11
+                size: 11,
+                family: "'Inter', sans-serif"
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'end',
               align: 'top',
-              offset: -5
+              offset: 2
             }
           }
         },
@@ -1105,19 +1236,34 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' }
+                font: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
+                color: var(--muted)
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                }
+                },
+                font: { size: 11 },
+                color: var(--muted)
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)',
+                drawBorder: false
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' }
+                font: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
+                color: var(--muted)
+              },
+              ticks: {
+                font: { size: 11 },
+                color: var(--muted)
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.03)'
               }
             }
           },
@@ -1128,32 +1274,44 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11
+                size: 11,
+                family: "'Inter', sans-serif"
               },
               formatter: function(value, context) {
-                return percentages[context.dataIndex];
+                // Mostrar valor y porcentaje
+                return `${value.toFixed(1)} kg\n${percentages[context.dataIndex]}`;
               },
               anchor: 'center',
-              align: 'top', // ENCIMA del punto
-              offset: 20, // Negativo para colocar ENCIMA
-              clamp: true
+              align: 'top',
+              offset: 15,
+              clamp: true,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              borderColor: borderColors[context.dataIndex],
+              borderWidth: 1,
+              borderRadius: 4,
+              padding: {
+                left: 6,
+                right: 6,
+                top: 4,
+                bottom: 4
+              }
             }
           }
         },
         pie: {
-          // Configuración mejorada para gráfico circular
           plugins: {
             datalabels: {
               display: true,
               color: '#fff',
               font: {
                 weight: 'bold',
-                size: 11
+                size: 11,
+                family: "'Inter', sans-serif"
               },
               formatter: function(value, context) {
-                // Mostrar porcentaje si es > 2%, de lo contrario omitir para evitar superposición
                 const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
-                return percentage > 2 ? percentages[context.dataIndex] : '';
+                // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
+                return percentage > 3 ? percentages[context.dataIndex] : '';
               },
               anchor: 'center',
               align: 'center',
@@ -1164,17 +1322,14 @@
                 top: 0,
                 bottom: 0
               },
-              textShadow: true,
-              shadowOffsetX: 1,
-              shadowOffsetY: 1,
-              shadowBlur: 2,
-              shadowColor: 'rgba(0,0,0,0.5)'
+              textStrokeColor: 'rgba(0,0,0,0.3)',
+              textStrokeWidth: 1
             }
           },
           // Separar segmentos pequeños para evitar superposición
           elements: {
             arc: {
-              borderWidth: 1,
+              borderWidth: 2,
               borderColor: '#fff'
             }
           }
@@ -1183,18 +1338,30 @@
       
       // Combinar configuración base con configuración específica del tipo
       const finalConfig = {
-        type: chartType,
+        type: actualChartType,
         data: baseConfig.data,
         options: {
           ...baseConfig.options,
-          ...(typeSpecificConfigs[chartType] || {}),
-          // Configuración común para evitar superposición en gráficos lineales
+          ...(typeSpecificConfigs[actualChartType] || {}),
+          // Configuración común para evitar superposición
           layout: {
             padding: {
-              top: chartType === 'line' ? 50 : 20,
+              top: actualChartType === 'line' ? 60 : 20,
               bottom: 20,
               left: 10,
               right: 10
+            }
+          },
+          // Animaciones mejoradas
+          animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
+          },
+          transitions: {
+            active: {
+              animation: {
+                duration: 300
+              }
             }
           }
         },
@@ -1209,7 +1376,8 @@
       const names = {
         'bar': 'Gráfico de Barras',
         'pie': 'Gráfico Circular',
-        'line': 'Gráfico de Líneas'
+        'line': 'Gráfico de Líneas',
+        'area': 'Gráfico de Área'
       };
       return names[type] || type;
     }
@@ -1289,6 +1457,13 @@
         // Procesar datos por categorías
         const currentSummary = calcularResumenPorCategorias(currentData);
         
+        // Mostrar/ocultar toggle de área según el tipo de gráfico
+        if (currentChartType === 'line' || currentChartType === 'area') {
+          areaToggle.style.display = 'flex';
+        } else {
+          areaToggle.style.display = 'none';
+        }
+        
         // Renderizar gráfico y tabla
         renderChart(currentSummary.categorias, currentSummary.valores, currentChartType);
         renderResumen(currentSummary);
@@ -1306,6 +1481,3 @@
   </script>
 </body>
 </html>
-
-
-
