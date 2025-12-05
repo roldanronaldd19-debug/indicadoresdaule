@@ -1049,8 +1049,7 @@
               }
             }
           }
-        },
-        plugins: [ChartDataLabels]
+        }
       };
       
       // Configuraciones específicas por tipo de gráfico
@@ -1135,30 +1134,48 @@
                 return percentages[context.dataIndex];
               },
               anchor: 'center',
-              align: 'bottom', // ENCIMA del punto
-              offset: -30, // Positivo para colocar ENCIMA
-              clamp: true,
-              padding: {
-                top: 10,
-                bottom: 5
-              }
+              align: 'top', // ENCIMA del punto
+              offset: -20, // Negativo para colocar ENCIMA
+              clamp: true
             }
           }
         },
         pie: {
+          // Configuración mejorada para gráfico circular
           plugins: {
             datalabels: {
               display: true,
               color: '#fff',
               font: {
                 weight: 'bold',
-                size: 12
+                size: 11
               },
               formatter: function(value, context) {
-                return percentages[context.dataIndex];
+                // Mostrar porcentaje si es > 2%, de lo contrario omitir para evitar superposición
+                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
+                return percentage > 2 ? percentages[context.dataIndex] : '';
               },
               anchor: 'center',
-              align: 'center'
+              align: 'center',
+              textAlign: 'center',
+              padding: {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0
+              },
+              textShadow: true,
+              shadowOffsetX: 1,
+              shadowOffsetY: 1,
+              shadowBlur: 2,
+              shadowColor: 'rgba(0,0,0,0.5)'
+            }
+          },
+          // Separar segmentos pequeños para evitar superposición
+          elements: {
+            arc: {
+              borderWidth: 1,
+              borderColor: '#fff'
             }
           }
         }
@@ -1170,9 +1187,18 @@
         data: baseConfig.data,
         options: {
           ...baseConfig.options,
-          ...(typeSpecificConfigs[chartType] || {})
+          ...(typeSpecificConfigs[chartType] || {}),
+          // Configuración común para evitar superposición en gráficos lineales
+          layout: {
+            padding: {
+              top: chartType === 'line' ? 50 : 20,
+              bottom: 20,
+              left: 10,
+              right: 10
+            }
+          }
         },
-        plugins: baseConfig.plugins
+        plugins: [ChartDataLabels]
       };
       
       mainChart = new Chart(mainCtx, finalConfig);
@@ -1280,6 +1306,3 @@
   </script>
 </body>
 </html>
-
-
-
