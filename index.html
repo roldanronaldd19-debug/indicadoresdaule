@@ -47,6 +47,8 @@
       color: #1e293b;
       line-height: 1.6;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     
     header {
@@ -60,7 +62,7 @@
     }
     
     .header-content {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       display: flex;
       align-items: center;
@@ -103,7 +105,7 @@
     }
     
     main {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 32px auto;
       padding: 0 20px;
     }
@@ -283,10 +285,17 @@
       margin-top: 20px;
     }
     
+    .chart-container-sm {
+      position: relative;
+      height: 350px;
+      margin-top: 20px;
+    }
+    
     .tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
       margin-bottom: 16px;
+      flex-wrap: wrap;
     }
     
     .tab {
@@ -420,64 +429,75 @@
       background: var(--bg1);
     }
     
-    .chart-type-selector {
+    .chart-actions {
       display: flex;
-      flex-wrap: wrap;
+      justify-content: flex-end;
       gap: 8px;
       margin-bottom: 16px;
-      align-items: center;
     }
     
-    .chart-type-btn {
+    .chart-action-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
       background: white;
       border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 8px 12px;
-      border-radius: 6px;
+      font-size: 12px;
       cursor: pointer;
       transition: all 0.2s;
-      font-size: 13px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
     
-    .chart-type-btn.active {
+    .chart-action-btn:hover {
+      background: var(--bg1);
+      border-color: var(--primary-light);
+    }
+    
+    .chart-action-btn.active {
       background: var(--primary);
       color: white;
       border-color: var(--primary);
     }
     
-    .chart-type-btn:hover:not(.active) {
-      background: var(--bg1);
-      border-color: var(--primary-light);
+    /* Mejoras para gráficos más nítidos */
+    canvas {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
     }
     
-    .area-toggle {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--muted);
-      cursor: pointer;
-      user-select: none;
+    .chartjs-render-monitor {
+      -webkit-filter: none !important;
+      filter: none !important;
     }
     
-    .area-toggle input {
-      cursor: pointer;
+    .question-chart-container {
+      position: relative;
+      height: 400px;
+      margin-top: 20px;
     }
     
-    .chart-options {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-      padding: 12px;
-      background: var(--bg1);
-      border-radius: var(--radius);
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
+    }
+    
+    .chart-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       border: 1px solid var(--border);
+    }
+    
+    .chart-card h3 {
+      color: var(--primary);
+      margin-bottom: 16px;
+      font-size: 16px;
+      font-weight: 600;
     }
     
     @media (max-width: 768px) {
@@ -504,17 +524,17 @@
         grid-template-columns: 1fr;
       }
       
-      .chart-type-selector {
+      .chart-actions {
         justify-content: center;
       }
       
-      .chart-options {
-        flex-direction: column;
-        align-items: flex-start;
+      .charts-grid {
+        grid-template-columns: 1fr;
       }
       
-      .area-toggle {
-        margin-left: 0;
+      .chart-action-btn {
+        padding: 8px 12px;
+        font-size: 13px;
       }
     }
   </style>
@@ -617,36 +637,24 @@
         Visualización de Datos
       </div>
       
+      <!-- Botones de tipo de gráfico mejorados -->
+      <div class="chart-actions">
+        <div class="chart-action-btn active" data-chart-type="bar">
+          <i class="fas fa-chart-bar"></i> Barras
+        </div>
+        <div class="chart-action-btn" data-chart-type="pie">
+          <i class="fas fa-chart-pie"></i> Torta
+        </div>
+        <div class="chart-action-btn" data-chart-type="line">
+          <i class="fas fa-chart-line"></i> Líneas
+        </div>
+      </div>
+      
       <div class="tabs">
         <div class="tab active" data-tab="main-chart">Distribución por Categoría</div>
       </div>
       
       <div class="tab-content active" id="main-chart">
-        <!-- Opciones de gráfico mejoradas -->
-        <div class="chart-options">
-          <div class="chart-type-selector">
-            <span style="font-size: 14px; color: var(--muted); margin-right: 8px;">Tipo de gráfico:</span>
-            <div class="chart-type-btn active" data-type="bar">
-              <i class="fas fa-chart-bar"></i> Barras
-            </div>
-            <div class="chart-type-btn" data-type="pie">
-              <i class="fas fa-chart-pie"></i> Circular
-            </div>
-            <div class="chart-type-btn" data-type="line">
-              <i class="fas fa-chart-line"></i> Líneas
-            </div>
-            <div class="chart-type-btn" data-type="area">
-              <i class="fas fa-chart-area"></i> Área
-            </div>
-          </div>
-          
-          <!-- Toggle para área rellena (solo para gráficos de líneas) -->
-          <div class="area-toggle" id="areaToggle" style="display: none;">
-            <input type="checkbox" id="toggleFillArea" checked>
-            <label for="toggleFillArea">Área rellena</label>
-          </div>
-        </div>
-        
         <div class="chart-container">
           <canvas id="mainChart"></canvas>
         </div>
@@ -689,8 +697,7 @@
     // ---------- SELECTORES ----------
     const selectLugar = document.getElementById('selectLugar');
     const btnResetFilters = document.getElementById('btnResetFilters');
-    const areaToggle = document.getElementById('areaToggle');
-    const toggleFillArea = document.getElementById('toggleFillArea');
+    const btnHelp = document.getElementById('btnHelp');
 
     // Elementos de información de filtros
     const lugarInfo = document.getElementById('lugarInfo');
@@ -715,7 +722,6 @@
     let filterOptions = {
       lugares: []
     };
-    let fillArea = true;
 
     // Definición de las 15 categorías principales con sus subcategorías (basado en la estructura real de la BD)
     const categoriasPrincipales = [
@@ -855,22 +861,19 @@
         await actualizar();
       });
       
-      // Selector de tipo de gráfico
-      document.querySelectorAll('.chart-type-btn').forEach(btn => {
+      // Botones de tipo de gráfico - versión mejorada
+      document.querySelectorAll('.chart-action-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           // Remover clase activa de todos los botones
-          document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
-          // Agregar clase activa al botón clickeado
-          this.classList.add('active');
-          // Actualizar tipo de gráfico
-          currentChartType = this.getAttribute('data-type');
+          document.querySelectorAll('.chart-action-btn').forEach(b => {
+            b.classList.remove('active');
+          });
           
-          // Mostrar/ocultar toggle de área según el tipo de gráfico
-          if (currentChartType === 'line' || currentChartType === 'area') {
-            areaToggle.style.display = 'flex';
-          } else {
-            areaToggle.style.display = 'none';
-          }
+          // Agregar clase activa al botón seleccionado
+          this.classList.add('active');
+          
+          // Cambiar tipo de gráfico
+          currentChartType = this.getAttribute('data-chart-type');
           
           // Re-renderizar el gráfico
           if (currentData.length > 0) {
@@ -880,15 +883,6 @@
         });
       });
       
-      // Toggle de área rellena
-      toggleFillArea.addEventListener('change', function() {
-        fillArea = this.checked;
-        if (currentData.length > 0 && (currentChartType === 'line' || currentChartType === 'area')) {
-          const resumenCategorias = calcularResumenPorCategorias(currentData);
-          renderChart(resumenCategorias.categorias, resumenCategorias.valores, currentChartType);
-        }
-      });
-      
       // Botón para restablecer filtros
       btnResetFilters.addEventListener('click', function() {
         selectLugar.value = '';
@@ -896,8 +890,8 @@
       });
       
       // Ayuda
-      document.getElementById('btnHelp').addEventListener('click', () => {
-        alert('Este panel permite analizar datos de desechos sólidos del Cantón Daule. Utilice el filtro de ubicación para analizar datos específicos. Los gráficos muestran porcentajes directamente en las visualizaciones.');
+      btnHelp.addEventListener('click', () => {
+        mostrarModalAyuda();
       });
     }
 
@@ -1038,7 +1032,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado
+    // Renderizar gráfico principal con tipo seleccionado - MEJORADO
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1046,18 +1040,12 @@
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
       
-      // Colores consistentes (HSL)
-      const colors = labels.map((_, i) => {
-        const hue = (i * 360 / labels.length) % 360;
-        return `hsl(${hue} 70% 55%)`;
-      });
-      
-      // Colores más claros para el área
-      const areaColors = colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.2)'));
-      const borderColors = colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)'));
-      
-      // Determinar el tipo real de gráfico (si es área, usar línea con fill)
-      const actualChartType = chartType === 'area' ? 'line' : chartType;
+      // Colores más atractivos y consistentes
+      const colors = [
+        '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+        '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#a855f7', '#6366f1',
+        '#14b8a6', '#f43f5e', '#8b5cf6'
+      ].slice(0, labels.length);
       
       // Configuración base para todos los gráficos
       const baseConfig = {
@@ -1066,56 +1054,41 @@
           datasets: [{
             label: 'Peso (kg)',
             data: values,
-            backgroundColor: actualChartType === 'line' || actualChartType === 'area' 
-              ? (fillArea ? areaColors : 'transparent')
-              : colors,
-            borderColor: borderColors,
-            borderWidth: actualChartType === 'line' || actualChartType === 'area' ? 3 : 2,
-            pointBackgroundColor: borderColors,
+            backgroundColor: colors,
+            borderColor: colors.map(c => c.replace(')', ', 0.8)')),
+            borderWidth: chartType === 'line' ? 3 : 1,
+            pointBackgroundColor: colors,
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
-            pointRadius: 6,
-            pointHoverRadius: 10,
-            pointHoverBorderWidth: 3,
-            fill: actualChartType === 'line' || actualChartType === 'area' ? fillArea : (actualChartType !== 'pie'),
-            tension: actualChartType === 'line' || actualChartType === 'area' ? 0.4 : 0,
-            borderCapStyle: 'round',
-            borderJoinStyle: 'round',
-            pointStyle: 'circle',
-            hoverRadius: 12,
-            hoverBackgroundColor: borderColors.map(c => c.replace(', 0.8)', ', 1)')),
-            // Para gráficos de línea, añadir sombra
-            shadowColor: actualChartType === 'line' || actualChartType === 'area' ? 'rgba(0, 0, 0, 0.1)' : undefined,
-            shadowBlur: actualChartType === 'line' || actualChartType === 'area' ? 8 : 0,
-            shadowOffsetX: actualChartType === 'line' || actualChartType === 'area' ? 2 : 0,
-            shadowOffsetY: actualChartType === 'line' || actualChartType === 'area' ? 2 : 0
+            pointRadius: chartType === 'line' ? 6 : 0,
+            pointHoverRadius: chartType === 'line' ? 8 : 0,
+            fill: chartType === 'line' ? {
+              target: 'origin',
+              above: 'rgba(15, 118, 110, 0.1)'
+            } : undefined,
+            tension: chartType === 'line' ? 0.4 : 0
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: {
-            intersect: false,
-            mode: 'index'
-          },
           plugins: {
             legend: {
-              position: actualChartType === 'pie' ? 'right' : 'top',
+              display: chartType === 'pie',
+              position: 'right',
               labels: {
                 font: {
-                  size: 12,
-                  family: "'Inter', sans-serif"
+                  size: 11
                 },
-                padding: 20,
-                usePointStyle: true,
                 // Mostrar porcentajes en la leyenda del gráfico circular
                 generateLabels: function(chart) {
-                  if (actualChartType === 'pie') {
+                  if (chartType === 'pie') {
                     const original = Chart.defaults.plugins.legend.labels.generateLabels;
                     const labels = original.call(this, chart);
-                    // Agregar porcentaje a cada etiqueta
+                    // Agregar porcentaje y valor a cada etiqueta
                     labels.forEach((label, i) => {
-                      label.text += ` (${percentages[i]})`;
+                      const value = chart.data.datasets[0].data[i];
+                      label.text += ` (${percentages[i]} - ${value.toFixed(1)} kg)`;
                     });
                     return labels;
                   }
@@ -1128,40 +1101,21 @@
               text: `Distribución de Desechos Sólidos por Categoría - ${getChartTypeName(chartType)}`,
               font: {
                 size: 16,
-                weight: 'bold',
-                family: "'Inter', sans-serif"
+                weight: 'bold'
               },
-              padding: 20,
-              color: '#1e293b'
+              padding: 20
             },
             tooltip: {
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              titleColor: '#1e293b',
-              bodyColor: '#1e293b',
-              borderColor: var(--border),
-              borderWidth: 1,
-              cornerRadius: 8,
-              padding: 12,
-              displayColors: true,
-              boxPadding: 6,
-              usePointStyle: true,
               callbacks: {
                 label: function(context) {
                   let label = context.dataset.label || '';
                   if (label) label += ': ';
-                  label += context.parsed !== undefined ? context.parsed.toFixed(2) + ' kg' : context.raw.toFixed(2) + ' kg';
+                  const value = context.parsed !== undefined ? context.parsed : context.raw;
+                  label += value.toFixed(2) + ' kg';
                   // Agregar porcentaje al tooltip
-                  const percentage = totalSum > 0 ? ((context.parsed || context.raw) / totalSum * 100).toFixed(1) : 0;
+                  const percentage = totalSum > 0 ? (value / totalSum * 100).toFixed(1) : 0;
                   label += ` (${percentage}%)`;
                   return label;
-                },
-                labelColor: function(context) {
-                  return {
-                    borderColor: borderColors[context.dataIndex],
-                    backgroundColor: borderColors[context.dataIndex],
-                    borderWidth: 2,
-                    borderRadius: 2
-                  };
                 }
               }
             }
@@ -1169,7 +1123,7 @@
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico
+      // Configuraciones específicas por tipo de gráfico - MEJORADAS
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1178,36 +1132,25 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
-                color: var(--muted)
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                font: { size: 11 },
-                color: var(--muted)
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)',
-                drawBorder: false
+                padding: 15 // Espacio para evitar superposición
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
-                color: var(--muted)
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                font: { size: 11 },
-                color: var(--muted)
-              },
-              grid: {
-                display: false
+                padding: 10 // Espacio para evitar superposición
               }
             }
           },
@@ -1217,15 +1160,14 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11,
-                family: "'Inter', sans-serif"
+                size: 11
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'end',
               align: 'top',
-              offset: 2
+              offset: 2 // Reducido para mejor visualización
             }
           }
         },
@@ -1236,34 +1178,25 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
-                color: var(--muted)
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                font: { size: 11 },
-                color: var(--muted)
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)',
-                drawBorder: false
+                padding: 15 // Espacio para evitar superposición
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
-                color: var(--muted)
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
-                font: { size: 11 },
-                color: var(--muted)
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.03)'
+                maxRotation: 45,
+                minRotation: 45,
+                padding: 10 // Espacio para evitar superposición
               }
             }
           },
@@ -1274,63 +1207,54 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11,
-                family: "'Inter', sans-serif"
+                size: 11
               },
               formatter: function(value, context) {
-                // Mostrar valor y porcentaje
-                return `${value.toFixed(1)} kg\n${percentages[context.dataIndex]}`;
+                return percentages[context.dataIndex];
               },
               anchor: 'center',
-              align: 'top',
-              offset: 15,
-              clamp: true,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              borderColor: borderColors[context.dataIndex],
-              borderWidth: 1,
-              borderRadius: 4,
-              padding: {
-                left: 6,
-                right: 6,
-                top: 4,
-                bottom: 4
-              }
+              align: 'top', // ENCIMA del punto
+              offset: 10, // Optimizado para mejor visualización
+              clamp: true
             }
           }
         },
         pie: {
+          // Configuración MEJORADA para gráfico circular
           plugins: {
             datalabels: {
               display: true,
-              color: '#fff',
+              color: function(context) {
+                // Colores contrastantes para mejor legibilidad
+                const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
+                const rgb = hexToRgb(backgroundColor);
+                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+                return brightness > 128 ? '#1e293b' : '#ffffff';
+              },
               font: {
                 weight: 'bold',
-                size: 11,
-                family: "'Inter', sans-serif"
+                size: 12
               },
               formatter: function(value, context) {
-                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
                 // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
+                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
                 return percentage > 3 ? percentages[context.dataIndex] : '';
               },
               anchor: 'center',
               align: 'center',
               textAlign: 'center',
-              padding: {
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0
-              },
-              textStrokeColor: 'rgba(0,0,0,0.3)',
-              textStrokeWidth: 1
+              textShadow: true,
+              shadowBlur: 4,
+              shadowColor: 'rgba(0,0,0,0.5)'
             }
           },
           // Separar segmentos pequeños para evitar superposición
           elements: {
             arc: {
-              borderWidth: 2,
-              borderColor: '#fff'
+              borderWidth: 1.5,
+              borderColor: '#ffffff',
+              hoverBorderWidth: 2.5,
+              hoverBorderColor: '#ffffff'
             }
           }
         }
@@ -1338,37 +1262,35 @@
       
       // Combinar configuración base con configuración específica del tipo
       const finalConfig = {
-        type: actualChartType,
+        type: chartType,
         data: baseConfig.data,
         options: {
           ...baseConfig.options,
-          ...(typeSpecificConfigs[actualChartType] || {}),
-          // Configuración común para evitar superposición
+          ...(typeSpecificConfigs[chartType] || {}),
+          // Configuración común para evitar superposición en gráficos
           layout: {
             padding: {
-              top: actualChartType === 'line' ? 60 : 20,
-              bottom: 20,
-              left: 10,
-              right: 10
-            }
-          },
-          // Animaciones mejoradas
-          animation: {
-            duration: 1000,
-            easing: 'easeOutQuart'
-          },
-          transitions: {
-            active: {
-              animation: {
-                duration: 300
-              }
+              top: chartType === 'line' ? 50 : 20,
+              bottom: 30,
+              left: 15,
+              right: 15
             }
           }
         },
-        plugins: [ChartDataLabels]
+        plugins: chartType === 'pie' || chartType === 'bar' || chartType === 'line' ? [ChartDataLabels] : []
       };
       
       mainChart = new Chart(mainCtx, finalConfig);
+    }
+    
+    // Función auxiliar para convertir HEX a RGB
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : { r: 0, g: 0, b: 0 };
     }
     
     // Obtener nombre legible del tipo de gráfico
@@ -1376,10 +1298,14 @@
       const names = {
         'bar': 'Gráfico de Barras',
         'pie': 'Gráfico Circular',
-        'line': 'Gráfico de Líneas',
-        'area': 'Gráfico de Área'
+        'line': 'Gráfico de Líneas'
       };
       return names[type] || type;
+    }
+
+    // Mostrar modal de ayuda
+    function mostrarModalAyuda() {
+      alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
     // Rellenar tabla resumen y actualizar resúmenes
@@ -1456,13 +1382,6 @@
         
         // Procesar datos por categorías
         const currentSummary = calcularResumenPorCategorias(currentData);
-        
-        // Mostrar/ocultar toggle de área según el tipo de gráfico
-        if (currentChartType === 'line' || currentChartType === 'area') {
-          areaToggle.style.display = 'flex';
-        } else {
-          areaToggle.style.display = 'none';
-        }
         
         // Renderizar gráfico y tabla
         renderChart(currentSummary.categorias, currentSummary.valores, currentChartType);
