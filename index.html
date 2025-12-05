@@ -13,37 +13,26 @@
   <!-- Iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --primary: #0f766e;
       --primary-light: #14b8a6;
       --primary-dark: #0d5d57;
-      --primary-gradient: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
       --secondary: #2d4cc8;
       --accent: #7c3aed;
-      --accent-light: #a78bfa;
-      --bg-gradient: linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%);
-      --card-gradient: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      --bg1: #f8fafc;
+      --bg2: #f0fdfa;
       --card: #ffffff;
-      --card-hover: #f8fafc;
       --muted: #64748b;
-      --muted-light: #94a3b8;
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
-      --info: #3b82f6;
       --border: #e2e8f0;
-      --border-light: #f1f5f9;
-      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
-      --shadow-hover: 0 10px 40px rgba(15, 118, 110, 0.12), 0 4px 12px rgba(15, 118, 110, 0.05);
-      --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.05);
-      --radius: 16px;
-      --radius-sm: 10px;
-      --radius-lg: 20px;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+      --radius: 12px;
       --header-height: 80px;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     * {
@@ -54,26 +43,22 @@
     
     body {
       font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
-      background: var(--bg-gradient);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
       color: #1e293b;
       line-height: 1.6;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
     }
     
-    /* Header mejorado */
     header {
-      background: var(--primary-gradient);
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       padding: 0 20px;
-      box-shadow: 0 4px 20px rgba(15, 118, 110, 0.15);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       position: sticky;
       top: 0;
-      z-index: 1000;
-      backdrop-filter: blur(10px);
-      background-color: rgba(15, 118, 110, 0.98);
+      z-index: 100;
     }
     
     .header-content {
@@ -83,36 +68,16 @@
       align-items: center;
       justify-content: space-between;
       height: var(--header-height);
-      padding: 0 10px;
     }
     
     .logo {
       display: flex;
       align-items: center;
-      gap: 16px;
-      transition: var(--transition);
-    }
-    
-    .logo:hover {
-      transform: translateX(-2px);
-    }
-    
-    .logo-icon {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(5px);
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      gap: 12px;
     }
     
     .logo i {
-      font-size: 28px;
-      color: white;
+      font-size: 32px;
     }
     
     .logo-text {
@@ -121,20 +86,17 @@
     }
     
     h1 {
-      font-family: 'Montserrat', 'Inter', sans-serif;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
       margin: 0;
       line-height: 1.2;
-      letter-spacing: -0.02em;
     }
     
     .subtitle {
       opacity: 0.9;
       font-size: 14px;
-      margin-top: 4px;
+      margin-top: 2px;
       font-weight: 400;
-      color: rgba(255, 255, 255, 0.85);
     }
     
     .header-actions {
@@ -142,189 +104,82 @@
       gap: 12px;
     }
     
-    /* Botones mejorados */
-    button {
-      background: var(--primary-gradient);
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: var(--transition);
-      padding: 14px 22px;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.7s;
-    }
-    
-    button:hover::before {
-      left: 100%;
-    }
-    
-    button:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(15, 118, 110, 0.3);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    button.secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(5px);
-    }
-    
-    button.secondary:hover {
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-    
-    /* Main container */
     main {
       max-width: 1400px;
-      margin: 40px auto;
+      margin: 32px auto;
       padding: 0 20px;
     }
     
-    /* Cards mejoradas */
     .card {
-      background: var(--card-gradient);
+      background: var(--card);
       border-radius: var(--radius);
-      padding: 32px;
+      padding: 24px;
       box-shadow: var(--shadow);
-      margin-bottom: 32px;
+      margin-bottom: 24px;
       border: 1px solid var(--border);
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: var(--primary-gradient);
-      opacity: 0;
-      transition: opacity 0.3s;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
     
     .card:hover {
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-hover);
-    }
-    
-    .card:hover::before {
-      opacity: 1;
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
     
     .card-title {
       color: var(--primary);
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 24px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border-light);
-      position: relative;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
     }
     
-    .card-title::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 60px;
-      height: 2px;
-      background: var(--primary-gradient);
-      border-radius: 2px;
-    }
-    
-    .card-title i {
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-size: 20px;
-    }
-    
-    /* Controls mejorados */
     .controls {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
       margin-bottom: 20px;
     }
     
     .control-group {
       display: flex;
       flex-direction: column;
-      position: relative;
     }
     
     .control-group label {
       font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: var(--primary);
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--muted);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     
     .filter-info {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
-      margin-top: 6px;
-      font-style: normal;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      margin-top: 4px;
+      font-style: italic;
     }
     
     select {
-      padding: 14px 16px;
-      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      border-radius: 8px;
       border: 1px solid var(--border);
       background: white;
       font-family: inherit;
       font-size: 14px;
-      transition: var(--transition);
+      transition: all 0.2s;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230f766e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 16px center;
+      background-position: right 12px center;
       background-size: 16px;
       appearance: none;
-      padding-right: 50px;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-    }
-    
-    select:hover {
-      border-color: var(--primary-light);
-      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.1);
+      padding-right: 40px;
     }
     
     select:focus {
@@ -333,236 +188,164 @@
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
     }
     
-    .action-buttons {
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
       display: flex;
-      gap: 12px;
-      margin-top: 24px;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 14px;
     }
     
-    /* Summary cards mejoradas */
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    
+    button.secondary {
+      background: white;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    
+    button.secondary:hover {
+      background: var(--bg1);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
     .summary-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
       margin-bottom: 24px;
     }
     
     .summary-card {
-      background: var(--card-gradient);
-      padding: 28px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-card);
-      transition: var(--transition);
+      background: linear-gradient(135deg, #fff, #f7fffb);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #eef7f4;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
       display: flex;
       flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .summary-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--primary-gradient);
-      opacity: 0.7;
     }
     
     .summary-card:hover {
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-hover);
-      border-color: var(--primary-light);
+      transform: translateY(-2px);
     }
     
     .summary-title {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--muted);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-    
-    .summary-title i {
-      font-size: 18px;
-      color: var(--primary);
-      background: rgba(15, 118, 110, 0.1);
-      padding: 8px;
-      border-radius: 10px;
-    }
-    
-    .summary-value {
-      font-size: 36px;
-      font-weight: 800;
-      color: var(--primary);
       margin-bottom: 8px;
-      font-family: 'Montserrat', 'Inter', sans-serif;
-      line-height: 1;
-    }
-    
-    .summary-subtitle {
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--muted-light);
-    }
-    
-    /* Chart container mejorado */
-    .chart-container {
-      position: relative;
-      height: 500px;
-      margin-top: 20px;
-      background: white;
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      box-shadow: var(--shadow-card);
-    }
-    
-    /* Chart actions mejorados */
-    .chart-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    
-    .chart-action-btn {
-      padding: 10px 16px;
-      border-radius: var(--radius-sm);
-      background: white;
-      border: 1px solid var(--border);
-      font-size: 13px;
-      cursor: pointer;
-      transition: var(--transition);
       display: flex;
       align-items: center;
       gap: 6px;
       font-weight: 500;
     }
     
-    .chart-action-btn:hover {
-      background: var(--primary-light);
-      border-color: var(--primary-light);
-      color: white;
-      transform: translateY(-2px);
+    .summary-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
     }
     
-    .chart-action-btn.active {
-      background: var(--primary-gradient);
-      color: white;
-      border-color: transparent;
-      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);
+    .summary-subtitle {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     
-    /* Tabs mejorados */
+    .positive {
+      color: var(--success);
+    }
+    
+    .negative {
+      color: var(--danger);
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 500px;
+      margin-top: 20px;
+    }
+    
+    .chart-container-sm {
+      position: relative;
+      height: 350px;
+      margin-top: 20px;
+    }
+    
     .tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 24px;
-      background: white;
-      border-radius: var(--radius-sm);
-      padding: 4px;
-      box-shadow: var(--shadow-card);
+      margin-bottom: 16px;
+      flex-wrap: wrap;
     }
     
     .tab {
-      padding: 14px 28px;
+      padding: 12px 20px;
       cursor: pointer;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--muted);
-      border-radius: var(--radius-sm);
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-      margin: 0 2px;
-    }
-    
-    .tab::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--primary-gradient);
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: -1;
-    }
-    
-    .tab:hover {
-      color: var(--primary);
-      background: rgba(15, 118, 110, 0.05);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
     }
     
     .tab.active {
       color: var(--primary);
-      background: white;
-      box-shadow: 0 2px 8px rgba(15, 118, 110, 0.1);
-    }
-    
-    .tab.active::before {
-      opacity: 1;
+      border-bottom: 2px solid var(--primary);
     }
     
     .tab-content {
       display: none;
-      animation: fadeIn 0.4s ease-in-out;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     
     .tab-content.active {
       display: block;
     }
     
-    /* Table mejorada */
     table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
+      border-collapse: collapse;
       margin-top: 12px;
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      box-shadow: var(--shadow-card);
     }
     
     th, td {
-      padding: 18px 16px;
+      padding: 14px 12px;
       text-align: left;
-      border-bottom: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border);
     }
     
     th {
-      font-weight: 700;
-      color: var(--primary);
+      font-weight: 600;
+      color: var(--muted);
       font-size: 14px;
-      background-color: rgba(15, 118, 110, 0.05);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    
-    tr {
-      transition: var(--transition);
+      background-color: #f8fafc;
     }
     
     tr:hover {
-      background-color: rgba(15, 118, 110, 0.02);
+      background-color: #f8fafc;
     }
     
     .total-row {
-      background-color: rgba(15, 118, 110, 0.05);
-      font-weight: 700;
+      background-color: #f0f9ff;
+      font-weight: 600;
     }
     
     .total-row td {
@@ -570,83 +353,42 @@
     }
     
     .category-header {
-      background-color: rgba(15, 118, 110, 0.08);
-      font-weight: 700;
+      background-color: #f0f9ff;
+      font-weight: 600;
       color: var(--primary);
-      position: relative;
-    }
-    
-    .category-header::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 4px;
-      background: var(--primary-gradient);
     }
     
     .subcategory-row {
-      background-color: rgba(15, 118, 110, 0.02);
+      background-color: #f8fafc;
     }
     
     .subcategory-row td:first-child {
-      padding-left: 36px;
+      padding-left: 30px;
     }
     
-    /* Footer mejorado */
     footer {
       text-align: center;
       color: var(--muted);
       font-size: 13px;
-      margin: 40px 0 20px;
-      padding: 24px;
+      margin: 24px 0;
+      padding: 16px;
       border-top: 1px solid var(--border);
-      position: relative;
     }
     
-    footer::before {
-      content: '';
-      position: absolute;
-      top: -1px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100px;
-      height: 2px;
-      background: var(--primary-gradient);
-    }
-    
-    footer p {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    
-    footer code {
-      background: rgba(15, 118, 110, 0.1);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      color: var(--primary);
-      font-weight: 600;
-    }
-    
-    /* Loading spinner mejorado */
     .loading {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 200px;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
     
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid rgba(15, 118, 110, 0.1);
-      border-top: 4px solid var(--primary);
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(15, 118, 110, 0.2);
+      border-left: 4px solid var(--primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -656,86 +398,114 @@
       100% { transform: rotate(360deg); }
     }
     
-    /* Notifications y tooltips */
-    .notification {
-      position: fixed;
-      top: 100px;
-      right: 20px;
-      background: var(--primary-gradient);
-      color: white;
-      padding: 16px 24px;
-      border-radius: var(--radius-sm);
-      box-shadow: var(--shadow-hover);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      z-index: 1000;
-      animation: slideIn 0.3s ease-out;
+    .export-options {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 40px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 8px;
+      z-index: 10;
+      min-width: 150px;
     }
     
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+    .export-options.show {
+      display: block;
     }
     
-    /* Progress bars */
-    .progress-bar {
-      height: 6px;
-      background: var(--border);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: var(--primary-gradient);
-      border-radius: 3px;
-      transition: width 0.6s ease-in-out;
-    }
-    
-    /* Stats indicators */
-    .stat-indicator {
+    .export-option {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+    
+    .export-option:hover {
+      background: var(--bg1);
+    }
+    
+    .chart-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .chart-action-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: white;
+      border: 1px solid var(--border);
       font-size: 12px;
-      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     
-    .stat-indicator.up::before {
-      content: '↗';
-      color: var(--success);
-      font-weight: bold;
+    .chart-action-btn:hover {
+      background: var(--bg1);
+      border-color: var(--primary-light);
     }
     
-    .stat-indicator.down::before {
-      content: '↘';
-      color: var(--danger);
-      font-weight: bold;
+    .chart-action-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
     }
     
-    /* Responsive design mejorado */
-    @media (max-width: 1200px) {
-      .controls {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      }
-      
-      .summary-cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    /* Mejoras para gráficos más nítidos */
+    canvas {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+    }
+    
+    .chartjs-render-monitor {
+      -webkit-filter: none !important;
+      filter: none !important;
+    }
+    
+    .question-chart-container {
+      position: relative;
+      height: 400px;
+      margin-top: 20px;
+    }
+    
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
+    }
+    
+    .chart-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+    
+    .chart-card h3 {
+      color: var(--primary);
+      margin-bottom: 16px;
+      font-size: 16px;
+      font-weight: 600;
     }
     
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
         height: auto;
-        padding: 20px 0;
-      }
-      
-      .logo {
-        margin-bottom: 8px;
+        padding: 16px 0;
       }
       
       .controls {
@@ -748,7 +518,6 @@
       
       .chart-container {
         height: 400px;
-        padding: 15px;
       }
       
       .summary-cards {
@@ -757,215 +526,16 @@
       
       .chart-actions {
         justify-content: center;
-        flex-wrap: wrap;
       }
       
-      .tabs {
-        flex-wrap: wrap;
-      }
-      
-      .tab {
-        flex: 1;
-        min-width: 120px;
-        text-align: center;
-        padding: 12px 16px;
-      }
-      
-      .card {
-        padding: 24px;
-      }
-      
-      .summary-value {
-        font-size: 32px;
+      .charts-grid {
+        grid-template-columns: 1fr;
       }
       
       .chart-action-btn {
         padding: 8px 12px;
-        font-size: 12px;
-      }
-      
-      th, td {
-        padding: 12px 8px;
         font-size: 13px;
       }
-    }
-    
-    @media (max-width: 480px) {
-      main {
-        padding: 0 15px;
-      }
-      
-      .card {
-        padding: 20px;
-      }
-      
-      .summary-card {
-        padding: 20px;
-      }
-      
-      .chart-container {
-        height: 350px;
-      }
-      
-      .tab {
-        min-width: 100%;
-        margin: 2px 0;
-      }
-      
-      button {
-        padding: 12px 16px;
-        font-size: 13px;
-      }
-      
-      h1 {
-        font-size: 20px;
-      }
-      
-      .subtitle {
-        font-size: 13px;
-      }
-    }
-    
-    /* Scrollbar personalizada */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: var(--border-light);
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--primary-dark);
-    }
-    
-    /* Animaciones de entrada */
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .fade-up {
-      animation: fadeUp 0.6s ease-out forwards;
-    }
-    
-    /* Badges y tags */
-    .badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    
-    .badge-primary {
-      background: var(--primary-gradient);
-      color: white;
-    }
-    
-    .badge-success {
-      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-      color: white;
-    }
-    
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-    }
-    
-    .empty-state i {
-      font-size: 48px;
-      margin-bottom: 16px;
-      opacity: 0.5;
-    }
-    
-    /* Grid layout mejorado */
-    .grid {
-      display: grid;
-      gap: 24px;
-    }
-    
-    .grid-2 {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .grid-3 {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .grid-4 {
-      grid-template-columns: repeat(4, 1fr);
-    }
-    
-    /* Status indicators */
-    .status-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-    
-    .status-active {
-      background: var(--success);
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-    }
-    
-    .status-inactive {
-      background: var(--muted);
-      box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.2);
-    }
-    
-    /* Tooltips nativos */
-    [data-tooltip] {
-      position: relative;
-      cursor: help;
-    }
-    
-    [data-tooltip]:hover::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--primary);
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      white-space: nowrap;
-      z-index: 1000;
-      margin-bottom: 8px;
-      box-shadow: var(--shadow);
-    }
-    
-    [data-tooltip]:hover::before {
-      content: '';
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 6px solid transparent;
-      border-top-color: var(--primary);
-      margin-bottom: 2px;
-      z-index: 1000;
     }
   </style>
 </head>
@@ -973,12 +543,10 @@
   <header>
     <div class="header-content">
       <div class="logo">
-        <div class="logo-icon">
-          <i class="fas fa-recycle"></i>
-        </div>
+        <i class="fas fa-recycle"></i>
         <div class="logo-text">
           <h1>Análisis de Desechos Sólidos</h1>
-          <div class="subtitle">Cantón Daule - Panel de Indicadores Ambientales</div>
+          <div class="subtitle">Cantón Daule - Panel de Indicadores</div>
         </div>
       </div>
       <div class="header-actions">
@@ -991,7 +559,7 @@
 
   <main>
     <!-- Panel de control principal -->
-    <div class="card fade-up" style="animation-delay: 0.1s">
+    <div class="card">
       <div class="card-title">
         <i class="fas fa-sliders-h"></i>
         Filtros de Análisis
@@ -1000,18 +568,11 @@
       <!-- Controles simplificados -->
       <div class="controls" id="controls">
         <div class="control-group">
-          <label for="selectLugar">
-            <i class="fas fa-map-marker-alt"></i> 
-            <span>Ubicación</span>
-            <span class="badge badge-primary" id="badgeLugar">0</span>
-          </label>
+          <label for="selectLugar"><i class="fas fa-map-marker-alt"></i> Ubicación</label>
           <select id="selectLugar">
             <option value="">Todas las ubicaciones</option>
           </select>
-          <div class="filter-info">
-            <i class="fas fa-info-circle"></i>
-            <span id="lugarInfo">Cargando ubicaciones disponibles...</span>
-          </div>
+          <div class="filter-info" id="lugarInfo">Cargando...</div>
         </div>
       </div>
 
@@ -1019,14 +580,11 @@
         <button id="btnResetFilters" class="secondary">
           <i class="fas fa-undo"></i> Restablecer Filtros
         </button>
-        <button id="btnExportData">
-          <i class="fas fa-file-export"></i> Exportar Datos
-        </button>
       </div>
     </div>
 
     <!-- Tarjetas de resumen actualizado -->
-    <div class="card fade-up" style="animation-delay: 0.2s">
+    <div class="card">
       <div class="card-title">
         <i class="fas fa-chart-line"></i>
         Resumen General
@@ -1035,45 +593,37 @@
       <div class="summary-cards" id="summaryCards">
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-clipboard-list"></i> 
-            <span>Total de Encuestas</span>
+            <i class="fas fa-clipboard-list"></i> Total de Encuestas
           </div>
           <div class="summary-value" id="summaryEncuestas">0</div>
           <div class="summary-subtitle">
-            <i class="fas fa-database"></i>
             <span>Registros en la base de datos</span>
           </div>
         </div>
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-map-marked-alt"></i> 
-            <span>Total de Ubicaciones</span>
+            <i class="fas fa-map-marked-alt"></i> Total de Ubicaciones
           </div>
           <div class="summary-value" id="summaryUbicaciones">0</div>
           <div class="summary-subtitle">
-            <i class="fas fa-location-dot"></i>
             <span>Lugares únicos registrados</span>
           </div>
         </div>
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-weight-hanging"></i> 
-            <span>Total de Desechos</span>
+            <i class="fas fa-weight-hanging"></i> Total de Desechos
           </div>
           <div class="summary-value" id="summaryTotalKg">0 kg</div>
           <div class="summary-subtitle">
-            <i class="fas fa-scale-balanced"></i>
             <span>Suma total de kilogramos</span>
           </div>
         </div>
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-balance-scale"></i> 
-            <span>Promedio por Encuesta</span>
+            <i class="fas fa-balance-scale"></i> Promedio por Encuesta
           </div>
           <div class="summary-value" id="summaryPromedio">0 kg</div>
           <div class="summary-subtitle">
-            <i class="fas fa-calculator"></i>
             <span>Promedio de kg por encuesta</span>
           </div>
         </div>
@@ -1081,7 +631,7 @@
     </div>
 
     <!-- Gráficos y visualizaciones -->
-    <div class="card fade-up" style="animation-delay: 0.3s">
+    <div class="card">
       <div class="card-title">
         <i class="fas fa-chart-bar"></i>
         Visualización de Datos
@@ -1112,7 +662,7 @@
     </div>
 
     <!-- Tabla resumen con categorías y subcategorías -->
-    <div class="card fade-up" style="animation-delay: 0.4s">
+    <div class="card">
       <div class="card-title">
         <i class="fas fa-table"></i>
         Tabla Resumen por Categorías
@@ -1133,11 +683,7 @@
     </div>
 
     <footer>
-      <p>
-        <i class="fas fa-database"></i>
-        Fuente: Base de datos <code>caracterizacion_desechos_daule</code> | 
-        Última actualización: <span id="currentDate"></span>
-      </p>
+      <p>Fuente: Base de datos <code>caracterizacion_desechos_daule</code> | Última actualización: 25 de noviembre de 2025</p>
     </footer>
   </main>
 
@@ -1152,12 +698,9 @@
     const selectLugar = document.getElementById('selectLugar');
     const btnResetFilters = document.getElementById('btnResetFilters');
     const btnHelp = document.getElementById('btnHelp');
-    const btnExportData = document.getElementById('btnExportData');
-    const badgeLugar = document.getElementById('badgeLugar');
 
     // Elementos de información de filtros
     const lugarInfo = document.getElementById('lugarInfo');
-    const currentDate = document.getElementById('currentDate');
 
     // Elementos de resumen
     const summaryEncuestas = document.getElementById('summaryEncuestas');
@@ -1180,7 +723,7 @@
       lugares: []
     };
 
-    // Definición de las 15 categorías principales con sus subcategorías
+    // Definición de las 15 categorías principales con sus subcategorías (basado en la estructura real de la BD)
     const categoriasPrincipales = [
       {
         id: 1,
@@ -1305,14 +848,6 @@
 
     // Inicializar la aplicación
     async function initApp() {
-      // Establecer fecha actual
-      const now = new Date();
-      currentDate.textContent = now.toLocaleDateString('es-ES', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
-      
       await cargarTodosLosDatos();
       await inicializarFiltros();
       await actualizar();
@@ -1324,10 +859,6 @@
       // Actualización automática al cambiar filtros
       selectLugar.addEventListener('change', async function() {
         await actualizar();
-        // Mostrar notificación de filtro aplicado
-        if (selectLugar.value) {
-          mostrarNotificacion(`Filtro aplicado: ${selectLugar.value}`, 'info');
-        }
       });
       
       // Botones de tipo de gráfico - versión mejorada
@@ -1349,14 +880,6 @@
             const resumenCategorias = calcularResumenPorCategorias(currentData);
             renderChart(resumenCategorias.categorias, resumenCategorias.valores, currentChartType);
           }
-          
-          // Mostrar notificación
-          const chartNames = {
-            'bar': 'Barras',
-            'pie': 'Circular',
-            'line': 'Líneas'
-          };
-          mostrarNotificacion(`Gráfico cambiado a: ${chartNames[currentChartType]}`, 'success');
         });
       });
       
@@ -1364,73 +887,22 @@
       btnResetFilters.addEventListener('click', function() {
         selectLugar.value = '';
         actualizar();
-        mostrarNotificacion('Filtros restablecidos', 'success');
       });
       
       // Ayuda
-      btnHelp.addEventListener('click', mostrarModalAyuda);
-      
-      // Exportar datos
-      btnExportData.addEventListener('click', exportarDatos);
-      
-      // Efectos hover en tarjetas
-      document.querySelectorAll('.summary-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-          this.style.transform = 'translateY(-6px)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-          this.style.transform = 'translateY(0)';
-        });
+      btnHelp.addEventListener('click', () => {
+        mostrarModalAyuda();
       });
-    }
-
-    // Mostrar notificación
-    function mostrarNotificacion(mensaje, tipo = 'info') {
-      // Eliminar notificaciones anteriores
-      const notificacionesAnteriores = document.querySelectorAll('.notification');
-      notificacionesAnteriores.forEach(n => n.remove());
-      
-      // Crear nueva notificación
-      const notification = document.createElement('div');
-      notification.className = 'notification';
-      
-      // Icono según tipo
-      const iconos = {
-        'info': 'fas fa-info-circle',
-        'success': 'fas fa-check-circle',
-        'warning': 'fas fa-exclamation-triangle',
-        'error': 'fas fa-times-circle'
-      };
-      
-      notification.innerHTML = `
-        <i class="${iconos[tipo] || iconos.info}"></i>
-        <span>${mensaje}</span>
-      `;
-      
-      document.body.appendChild(notification);
-      
-      // Remover automáticamente después de 3 segundos
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.style.opacity = '0';
-          notification.style.transform = 'translateX(100%)';
-          setTimeout(() => notification.remove(), 300);
-        }
-      }, 3000);
     }
 
     // Cargar todos los datos para análisis comparativos
     async function cargarTodosLosDatos() {
-      mostrarNotificacion('Cargando datos...', 'info');
       const q = await supabase.from('caracterizacion_desechos_daule').select('*');
       if (q.error) {
         console.error(q.error);
-        mostrarNotificacion('Error al cargar datos', 'error');
         return;
       }
       allData = q.data || [];
-      mostrarNotificacion(`Datos cargados: ${allData.length} registros`, 'success');
     }
 
     // Cargar lista de filtros desde la BD
@@ -1448,7 +920,6 @@
 
       // Actualizar información de filtros
       lugarInfo.textContent = `${filterOptions.lugares.length} ubicaciones disponibles`;
-      badgeLugar.textContent = filterOptions.lugares.length;
 
       // Llenar selectores con todas las opciones iniciales
       llenarSelector(selectLugar, filterOptions.lugares);
@@ -1486,7 +957,6 @@
       const r = await q;
       if (r.error) {
         console.error(r.error);
-        mostrarNotificacion('Error al filtrar datos', 'error');
         return [];
       }
       return r.data || [];
@@ -1572,9 +1042,9 @@
       
       // Colores más atractivos y consistentes
       const colors = [
-        '#0f766e', '#14b8a6', '#0ea5e9', '#10b981', '#f59e0b', 
-        '#8b5cf6', '#ec4899', '#3b82f6', '#84cc16', '#f97316',
-        '#6366f1', '#a855f7', '#06b6d4', '#22c55e', '#ef4444'
+        '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+        '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#a855f7', '#6366f1',
+        '#14b8a6', '#f43f5e', '#8b5cf6'
       ].slice(0, labels.length);
       
       // Configuración base para todos los gráficos
@@ -1584,20 +1054,19 @@
           datasets: [{
             label: 'Peso (kg)',
             data: values,
-            backgroundColor: colors.map(c => chartType === 'line' ? 'transparent' : c),
-            borderColor: colors,
+            backgroundColor: colors,
+            borderColor: colors.map(c => c.replace(')', ', 0.8)')),
             borderWidth: chartType === 'line' ? 3 : 1,
             pointBackgroundColor: colors,
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
             pointRadius: chartType === 'line' ? 6 : 0,
-            pointHoverRadius: chartType === 'line' ? 10 : 0,
+            pointHoverRadius: chartType === 'line' ? 8 : 0,
             fill: chartType === 'line' ? {
               target: 'origin',
-              above: 'rgba(15, 118, 110, 0.05)'
+              above: 'rgba(15, 118, 110, 0.1)'
             } : undefined,
-            tension: chartType === 'line' ? 0.4 : 0,
-            hoverOffset: chartType === 'pie' ? 15 : 0
+            tension: chartType === 'line' ? 0.4 : 0
           }]
         },
         options: {
@@ -1609,12 +1078,8 @@
               position: 'right',
               labels: {
                 font: {
-                  size: 12,
-                  family: 'Inter'
+                  size: 11
                 },
-                padding: 20,
-                usePointStyle: true,
-                pointStyle: 'circle',
                 // Mostrar porcentajes en la leyenda del gráfico circular
                 generateLabels: function(chart) {
                   if (chartType === 'pie') {
@@ -1623,7 +1088,7 @@
                     // Agregar porcentaje y valor a cada etiqueta
                     labels.forEach((label, i) => {
                       const value = chart.data.datasets[0].data[i];
-                      label.text = `${label.text} (${percentages[i]} - ${value.toFixed(1)} kg)`;
+                      label.text += ` (${percentages[i]} - ${value.toFixed(1)} kg)`;
                     });
                     return labels;
                   }
@@ -1635,25 +1100,12 @@
               display: true,
               text: `Distribución de Desechos Sólidos por Categoría - ${getChartTypeName(chartType)}`,
               font: {
-                size: 18,
-                weight: 'bold',
-                family: 'Montserrat'
+                size: 16,
+                weight: 'bold'
               },
-              padding: 20,
-              color: '#1e293b'
+              padding: 20
             },
             tooltip: {
-              backgroundColor: 'rgba(15, 22, 41, 0.95)',
-              titleFont: {
-                size: 14,
-                family: 'Montserrat'
-              },
-              bodyFont: {
-                size: 13,
-                family: 'Inter'
-              },
-              padding: 12,
-              cornerRadius: 8,
               callbacks: {
                 label: function(context) {
                   let label = context.dataset.label || '';
@@ -1680,47 +1132,25 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { 
-                  size: 14, 
-                  weight: 'bold',
-                  family: 'Montserrat'
-                },
-                color: '#1e293b'
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 15,
-                font: {
-                  family: 'Inter'
-                }
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
+                padding: 15 // Espacio para evitar superposición
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { 
-                  size: 14, 
-                  weight: 'bold',
-                  family: 'Montserrat'
-                },
-                color: '#1e293b'
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10,
-                font: {
-                  family: 'Inter'
-                }
-              },
-              grid: {
-                display: false
+                padding: 10 // Espacio para evitar superposición
               }
             }
           },
@@ -1730,15 +1160,14 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11,
-                family: 'Inter'
+                size: 11
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'end',
               align: 'top',
-              offset: 2
+              offset: 2 // Reducido para mejor visualización
             }
           }
         },
@@ -1749,74 +1178,54 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { 
-                  size: 14, 
-                  weight: 'bold',
-                  family: 'Montserrat'
-                },
-                color: '#1e293b'
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 15,
-                font: {
-                  family: 'Inter'
-                }
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
+                padding: 15 // Espacio para evitar superposición
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { 
-                  size: 14, 
-                  weight: 'bold',
-                  family: 'Montserrat'
-                },
-                color: '#1e293b'
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10,
-                font: {
-                  family: 'Inter'
-                }
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
+                padding: 10 // Espacio para evitar superposición
               }
             }
           },
+          // Configuración específica para líneas - porcentajes ENCIMA del punto
           plugins: {
             datalabels: {
               display: true,
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11,
-                family: 'Inter'
+                size: 11
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'center',
-              align: 'top',
-              offset: 10,
+              align: 'top', // ENCIMA del punto
+              offset: 10, // Optimizado para mejor visualización
               clamp: true
             }
           }
         },
         pie: {
+          // Configuración MEJORADA para gráfico circular
           plugins: {
             datalabels: {
               display: true,
               color: function(context) {
+                // Colores contrastantes para mejor legibilidad
                 const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
                 const rgb = hexToRgb(backgroundColor);
                 const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
@@ -1824,10 +1233,10 @@
               },
               font: {
                 weight: 'bold',
-                size: 12,
-                family: 'Montserrat'
+                size: 12
               },
               formatter: function(value, context) {
+                // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
                 const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
                 return percentage > 3 ? percentages[context.dataIndex] : '';
               },
@@ -1839,6 +1248,7 @@
               shadowColor: 'rgba(0,0,0,0.5)'
             }
           },
+          // Separar segmentos pequeños para evitar superposición
           elements: {
             arc: {
               borderWidth: 1.5,
@@ -1857,12 +1267,13 @@
         options: {
           ...baseConfig.options,
           ...(typeSpecificConfigs[chartType] || {}),
+          // Configuración común para evitar superposición en gráficos
           layout: {
             padding: {
               top: chartType === 'line' ? 50 : 20,
               bottom: 30,
               left: 15,
-              right: chartType === 'pie' ? 100 : 15
+              right: 15
             }
           }
         },
@@ -1894,158 +1305,7 @@
 
     // Mostrar modal de ayuda
     function mostrarModalAyuda() {
-      const modalHTML = `
-        <div style="
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(5px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 2000;
-          animation: fadeIn 0.3s ease-out;
-        ">
-          <div style="
-            background: white;
-            border-radius: var(--radius);
-            padding: 40px;
-            max-width: 600px;
-            width: 90%;
-            box-shadow: var(--shadow-hover);
-            animation: slideUp 0.4s ease-out;
-          ">
-            <div style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 30px;
-            ">
-              <h2 style="
-                color: var(--primary);
-                font-family: 'Montserrat';
-                font-size: 24px;
-                margin: 0;
-              ">
-                <i class="fas fa-question-circle"></i>
-                Guía del Panel
-              </h2>
-              <button id="closeHelp" style="
-                background: none;
-                border: none;
-                font-size: 24px;
-                color: var(--muted);
-                cursor: pointer;
-                padding: 8px;
-                border-radius: 50%;
-                transition: var(--transition);
-              ">&times;</button>
-            </div>
-            
-            <div style="line-height: 1.8; color: #1e293b;">
-              <p><strong>Panel de Análisis de Desechos Sólidos - Cantón Daule</strong></p>
-              
-              <div style="margin: 25px 0;">
-                <h3 style="color: var(--primary); margin-bottom: 12px;">Funcionalidades principales:</h3>
-                <ul style="list-style: none; padding: 0;">
-                  <li style="margin-bottom: 12px; display: flex; align-items: start; gap: 12px;">
-                    <i class="fas fa-filter" style="color: var(--primary); margin-top: 4px;"></i>
-                    <span><strong>Filtros:</strong> Use el selector de ubicación para analizar datos específicos</span>
-                  </li>
-                  <li style="margin-bottom: 12px; display: flex; align-items: start; gap: 12px;">
-                    <i class="fas fa-chart-pie" style="color: var(--primary); margin-top: 4px;"></i>
-                    <span><strong>Visualizaciones:</strong> Cambie entre gráficos de barras, torta y líneas</span>
-                  </li>
-                  <li style="margin-bottom: 12px; display: flex; align-items: start; gap: 12px;">
-                    <i class="fas fa-table" style="color: var(--primary); margin-top: 4px;"></i>
-                    <span><strong>Tabla detallada:</strong> Vea el desglose por categorías y subcategorías</span>
-                  </li>
-                  <li style="margin-bottom: 12px; display: flex; align-items: start; gap: 12px;">
-                    <i class="fas fa-download" style="color: var(--primary); margin-top: 4px;"></i>
-                    <span><strong>Exportación:</strong> Descargue los datos filtrados en formato CSV</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <div style="background: rgba(15, 118, 110, 0.05); padding: 20px; border-radius: var(--radius-sm); margin: 25px 0;">
-                <h4 style="color: var(--primary); margin-bottom: 10px;">Tipos de gráficos recomendados:</h4>
-                <ul style="margin: 0; padding-left: 20px;">
-                  <li><strong>Barras:</strong> Para comparación directa entre categorías</li>
-                  <li><strong>Torta:</strong> Para ver proporciones y porcentajes</li>
-                  <li><strong>Líneas:</strong> Para analizar tendencias (si hubiera datos temporales)</li>
-                </ul>
-              </div>
-              
-              <p style="font-size: 13px; color: var(--muted); text-align: center; margin-top: 30px;">
-                <i class="fas fa-info-circle"></i>
-                Los datos se actualizan automáticamente al aplicar filtros
-              </p>
-            </div>
-            
-            <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
-              <button id="gotItButton" style="
-                background: var(--primary-gradient);
-                color: white;
-                border: none;
-                padding: 12px 24px;
-                border-radius: var(--radius-sm);
-                font-weight: 600;
-                cursor: pointer;
-                transition: var(--transition);
-              ">Entendido</button>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      const modal = document.createElement('div');
-      modal.innerHTML = modalHTML;
-      document.body.appendChild(modal);
-      
-      // Cerrar modal
-      modal.querySelector('#closeHelp').addEventListener('click', () => modal.remove());
-      modal.querySelector('#gotItButton').addEventListener('click', () => modal.remove());
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-      });
-    }
-
-    // Exportar datos
-    function exportarDatos() {
-      if (currentData.length === 0) {
-        mostrarNotificacion('No hay datos para exportar', 'warning');
-        return;
-      }
-      
-      try {
-        // Convertir datos a CSV
-        const headers = Object.keys(currentData[0]).join(',');
-        const rows = currentData.map(row => 
-          Object.values(row).map(value => 
-            typeof value === 'string' ? `"${value}"` : value
-          ).join(',')
-        );
-        const csv = [headers, ...rows].join('\n');
-        
-        // Crear archivo
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `desechos_solidos_daule_${new Date().toISOString().slice(0,10)}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        mostrarNotificacion(`Datos exportados: ${currentData.length} registros`, 'success');
-      } catch (error) {
-        console.error('Error al exportar:', error);
-        mostrarNotificacion('Error al exportar datos', 'error');
-      }
+      alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
     // Rellenar tabla resumen y actualizar resúmenes
@@ -2117,12 +1377,6 @@
     // Acción principal: obtener datos, procesar y renderizar
     async function actualizar() {
       try {
-        // Mostrar carga
-        const loadingMsg = selectLugar.value 
-          ? `Cargando datos de ${selectLugar.value}...` 
-          : 'Cargando datos globales...';
-        mostrarNotificacion(loadingMsg, 'info');
-        
         // Obtener datos del período actual
         currentData = await obtenerFiltrados();
         
@@ -2133,15 +1387,9 @@
         renderChart(currentSummary.categorias, currentSummary.valores, currentChartType);
         renderResumen(currentSummary);
         
-        // Notificación de éxito
-        const successMsg = currentData.length > 0
-          ? `${currentData.length} registros cargados correctamente`
-          : 'No se encontraron registros con los filtros aplicados';
-        mostrarNotificacion(successMsg, currentData.length > 0 ? 'success' : 'warning');
-        
       } catch (err) {
         console.error(err);
-        mostrarNotificacion('Error al actualizar los datos', 'error');
+        alert('Error al actualizar. Revisa la consola para más detalles.');
       }
     }
 
