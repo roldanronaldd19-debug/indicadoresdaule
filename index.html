@@ -343,12 +343,6 @@
       border-top: 2px solid var(--primary);
     }
     
-    .average-row {
-      background-color: #f8fafc;
-      font-weight: 500;
-      font-style: italic;
-    }
-    
     footer {
       text-align: center;
       color: var(--muted);
@@ -538,7 +532,7 @@
       </div>
     </div>
 
-    <!-- Tarjetas de resumen simplificado -->
+    <!-- Tarjetas de resumen actualizado -->
     <div class="card">
       <div class="card-title">
         <i class="fas fa-chart-line"></i>
@@ -562,6 +556,24 @@
           <div class="summary-value" id="summaryUbicaciones">0</div>
           <div class="summary-subtitle">
             <span>Lugares únicos registrados</span>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-title">
+            <i class="fas fa-weight-hanging"></i> Total de Desechos
+          </div>
+          <div class="summary-value" id="summaryTotalKg">0 kg</div>
+          <div class="summary-subtitle">
+            <span>Suma total de kilogramos</span>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-title">
+            <i class="fas fa-balance-scale"></i> Promedio por Categoría
+          </div>
+          <div class="summary-value" id="summaryPromedio">0 kg</div>
+          <div class="summary-subtitle">
+            <span>Promedio de kg por categoría</span>
           </div>
         </div>
       </div>
@@ -642,6 +654,8 @@
     // Elementos de resumen
     const summaryEncuestas = document.getElementById('summaryEncuestas');
     const summaryUbicaciones = document.getElementById('summaryUbicaciones');
+    const summaryTotalKg = document.getElementById('summaryTotalKg');
+    const summaryPromedio = document.getElementById('summaryPromedio');
     
     // Tabla
     const tbody = document.querySelector('#tableResumen tbody');
@@ -804,7 +818,10 @@
       const numDias = fechasUnicas.size || 1;
       const avgPerDay = totalSum / numDias;
       
-      return { labels, values, totalesObj: totales, totalSum, lastDate, avgPerDay, numDias };
+      // Promedio por categoría
+      const avgPerCategory = values.length > 0 ? totalSum / values.length : 0;
+      
+      return { labels, values, totalesObj: totales, totalSum, lastDate, avgPerDay, numDias, avgPerCategory };
     }
 
     // Renderizar gráfico principal con tipo seleccionado
@@ -849,7 +866,6 @@
       // Calcular porcentajes para mostrar en los gráficos
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
-      const percentageValues = values.map(v => totalSum > 0 ? (v / totalSum) * 100 : 0);
       
       // Configuración base para todos los gráficos
       const baseConfig = {
@@ -860,8 +876,12 @@
             data: values,
             backgroundColor: colors,
             borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-            borderWidth: chartType === 'line' ? 2 : 1,
-            tension: chartType === 'line' ? 0.1 : 0 // Suavizado para líneas
+            borderWidth: chartType === 'line' ? 3 : 1,
+            pointBackgroundColor: colors,
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
           }]
         },
         options: {
@@ -872,7 +892,7 @@
               position: chartType === 'pie' ? 'right' : 'top',
               labels: {
                 font: {
-                  size: 12
+                  size: 11
                 },
                 // Mostrar porcentajes en la leyenda del gráfico circular
                 generateLabels: function(chart) {
@@ -912,7 +932,8 @@
               }
             }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       };
       
       // Configuraciones específicas por tipo de gráfico
@@ -944,6 +965,7 @@
               }
             }
           },
+          // Configuración específica para barras
           plugins: {
             datalabels: {
               display: true,
@@ -973,8 +995,7 @@
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                },
-                padding: 15
+                }
               }
             },
             x: {
@@ -982,12 +1003,10 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' }
-              },
-              ticks: {
-                padding: 10
               }
             }
           },
+          // Configuración específica para líneas - porcentajes más arriba
           plugins: {
             datalabels: {
               display: true,
@@ -999,13 +1018,15 @@
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
-              anchor: 'top',
-              align: 'center',
-              offset: 10
+              anchor: 'center',
+              align: 'top',
+              offset: -25, // Más arriba del punto
+              clamp: true // Evita que se salga del gráfico
             }
           }
         },
         pie: {
+          // Configuración específica para gráfico circular
           plugins: {
             datalabels: {
               display: true,
@@ -1017,8 +1038,8 @@
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
-              textShadowBlur: 10,
-              textShadowColor: 'rgba(0,0,0,0.8)'
+              anchor: 'center',
+              align: 'center'
             }
           }
         }
@@ -1032,7 +1053,7 @@
           ...baseConfig.options,
           ...(typeSpecificConfigs[chartType] || {})
         },
-        plugins: typeSpecificConfigs[chartType] && typeSpecificConfigs[chartType].plugins ? [ChartDataLabels] : []
+        plugins: baseConfig.plugins
       };
       
       mainChart = new Chart(mainCtx, finalConfig);
@@ -1090,15 +1111,17 @@
       const ubicacionesUnicas = [...new Set(currentData.map(r => r.lugar).filter(Boolean))];
       summaryUbicaciones.textContent = ubicacionesUnicas.length;
       
+      // Actualizar total de kg y promedio
+      summaryTotalKg.textContent = currentSummary.totalSum.toFixed(2) + ' kg';
+      summaryPromedio.textContent = currentSummary.avgPerCategory.toFixed(2) + ' kg';
+      
       // Llenar tabla
       let totalKg = 0;
-      let rowCount = 0;
       friendlyLabels.forEach((lab, i) => {
         const v = currentSummary.values[i];
         if (v <= 0) return;
         
         totalKg += v;
-        rowCount++;
         const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
         
         const tr = document.createElement('tr');
@@ -1119,19 +1142,6 @@
         <td style="text-align:right"><strong>100.00%</strong></td>
       `;
       tbody.appendChild(totalRow);
-      
-      // Calcular y agregar promedio si hay datos
-      if (currentData.length > 0 && totalKg > 0) {
-        const promedioKg = totalKg / currentData.length;
-        const averageRow = document.createElement('tr');
-        averageRow.className = 'average-row';
-        averageRow.innerHTML = `
-          <td><strong>PROMEDIO POR ENCUESTA</strong></td>
-          <td style="text-align:right"><strong>${promedioKg.toFixed(2)} kg</strong></td>
-          <td style="text-align:right"><strong>-</strong></td>
-        `;
-        tbody.appendChild(averageRow);
-      }
     }
 
     // Acción principal: obtener datos, procesar y renderizar
