@@ -324,7 +324,6 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 12px;
-      font-size: 14px;
     }
     
     th, td {
@@ -336,10 +335,8 @@
     th {
       font-weight: 600;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 14px;
       background-color: #f8fafc;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
     
     tr:hover {
@@ -353,24 +350,14 @@
     
     .total-row td {
       border-top: 2px solid var(--primary);
+      border-bottom: 2px solid var(--primary);
     }
     
     .category-header {
       background-color: #f0f9ff;
       font-weight: 600;
       color: var(--primary);
-    }
-    
-    .category-total {
-      background-color: #f0f9ff;
-      font-weight: 600;
-    }
-    
-    .category-total td:first-child {
-      text-align: right;
-      padding-right: 40px;
-      font-style: italic;
-      color: var(--primary-dark);
+      border-top: 2px solid var(--primary-light);
     }
     
     .subcategory-row {
@@ -378,7 +365,29 @@
     }
     
     .subcategory-row td:first-child {
-      padding-left: 30px;
+      padding-left: 40px;
+    }
+    
+    .category-total-row {
+      background-color: #e6f7f4;
+      font-weight: 600;
+      color: var(--primary-dark);
+      border-bottom: 1px solid var(--primary-light);
+    }
+    
+    .category-total-row td:first-child {
+      padding-left: 20px;
+    }
+    
+    .separator-row {
+      height: 16px;
+      background-color: #f8fafc;
+    }
+    
+    .separator-row td {
+      border: none;
+      padding: 0;
+      height: 16px;
     }
     
     footer {
@@ -551,6 +560,14 @@
         padding: 8px 12px;
         font-size: 13px;
       }
+      
+      .subcategory-row td:first-child {
+        padding-left: 30px;
+      }
+      
+      .category-total-row td:first-child {
+        padding-left: 15px;
+      }
     }
   </style>
 </head>
@@ -617,11 +634,11 @@
         </div>
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-map-marked-alt"></i> Ubicaciones Únicas
+            <i class="fas fa-map-marked-alt"></i> Total de Ubicaciones
           </div>
           <div class="summary-value" id="summaryUbicaciones">0</div>
           <div class="summary-subtitle">
-            <span>Lugares diferentes registrados</span>
+            <span>Lugares únicos registrados</span>
           </div>
         </div>
         <div class="summary-card">
@@ -639,7 +656,7 @@
           </div>
           <div class="summary-value" id="summaryPromedio">0 kg</div>
           <div class="summary-subtitle">
-            <span>Kilogramos promedio por encuesta</span>
+            <span>Promedio de kg por encuesta</span>
           </div>
         </div>
       </div>
@@ -655,13 +672,13 @@
       <!-- Botones de tipo de gráfico mejorados -->
       <div class="chart-actions">
         <div class="chart-action-btn active" data-chart-type="bar">
-          <i class="fas fa-chart-bar"></i> Gráfico de Barras
+          <i class="fas fa-chart-bar"></i> Barras
         </div>
         <div class="chart-action-btn" data-chart-type="pie">
-          <i class="fas fa-chart-pie"></i> Gráfico Circular
+          <i class="fas fa-chart-pie"></i> Torta
         </div>
         <div class="chart-action-btn" data-chart-type="line">
-          <i class="fas fa-chart-line"></i> Gráfico de Líneas
+          <i class="fas fa-chart-line"></i> Líneas
         </div>
       </div>
       
@@ -780,7 +797,7 @@
         subcategorias: [
           { campo: "plastico_pet_kg", nombre: "PET" },
           { campo: "plastico_mixto_kg", nombre: "Plástico mixto" },
-          { campo: "bot_aceite_kg", nombre: "Botellas de aceite" },
+          { campo: "bot_aceite_kg", nombre: "Botella de aceite" },
           { campo: "bolsas_kg", nombre: "Bolsas" }
         ]
       },
@@ -1323,7 +1340,7 @@
       alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
-    // Rellenar tabla resumen y actualizar resúmenes - MEJORADO
+    // Rellenar tabla resumen y actualizar resúmenes - MEJORADA
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
       
@@ -1341,21 +1358,27 @@
       const promedioPorEncuesta = currentData.length > 0 ? currentSummary.totalSum / currentData.length : 0;
       summaryPromedio.textContent = promedioPorEncuesta.toFixed(2) + ' kg';
       
-      // Llenar tabla con categorías y subcategorías - MEJORADO
+      // Llenar tabla con categorías y subcategorías
       let totalGeneral = 0;
+      let esPrimeraCategoria = true;
       
-      currentSummary.detalles.forEach(detalle => {
+      currentSummary.detalles.forEach((detalle, index) => {
         if (detalle.total > 0) {
-          // Fila de categoría principal
-          const porcentajeCategoria = currentSummary.totalSum > 0 ? 
-            ((detalle.total / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
+          // Si no es la primera categoría, agregar una fila separadora
+          if (!esPrimeraCategoria) {
+            const separador = document.createElement('tr');
+            separador.className = 'separator-row';
+            separador.innerHTML = `<td colspan="3"></td>`;
+            tbody.appendChild(separador);
+          }
           
+          // Fila de categoría principal - SIN kg ni porcentaje
           const trCategoria = document.createElement('tr');
           trCategoria.className = 'category-header';
           trCategoria.innerHTML = `
             <td><strong>${detalle.categoria}</strong></td>
-            <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
-            <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
+            <td style="text-align:right"></td>
+            <td style="text-align:right"></td>
           `;
           tbody.appendChild(trCategoria);
           
@@ -1376,27 +1399,43 @@
             tbody.appendChild(trSubcategoria);
           });
           
-          // Agregar fila de "TOTAL" después de las subcategorías
+          // Fila de TOTAL de la categoría
+          const porcentajeCategoria = currentSummary.totalSum > 0 ? 
+            ((detalle.total / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
+          
           const trTotalCategoria = document.createElement('tr');
-          trTotalCategoria.className = 'category-total';
+          trTotalCategoria.className = 'category-total-row';
           trTotalCategoria.innerHTML = `
-            <td>TOTAL ${detalle.categoria}</td>
+            <td><strong>TOTAL ${detalle.categoria}</strong></td>
             <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
             <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
           `;
           tbody.appendChild(trTotalCategoria);
+          
+          esPrimeraCategoria = false;
         }
       });
       
-      // Agregar fila de total general al final de la tabla
-      const totalRow = document.createElement('tr');
-      totalRow.className = 'total-row';
-      totalRow.innerHTML = `
-        <td><strong>TOTAL GENERAL</strong></td>
-        <td style="text-align:right"><strong>${totalGeneral.toFixed(2)}</strong></td>
-        <td style="text-align:right"><strong>100.00%</strong></td>
-      `;
-      tbody.appendChild(totalRow);
+      // Si no hay datos, mostrar mensaje
+      if (currentSummary.detalles.length === 0) {
+        const trVacio = document.createElement('tr');
+        trVacio.innerHTML = `
+          <td colspan="3" style="text-align:center; padding:40px; color:var(--muted);">
+            No hay datos disponibles para los filtros seleccionados
+          </td>
+        `;
+        tbody.appendChild(trVacio);
+      } else {
+        // Agregar fila de total general al final de la tabla
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+          <td><strong>TOTAL GENERAL</strong></td>
+          <td style="text-align:right"><strong>${totalGeneral.toFixed(2)}</strong></td>
+          <td style="text-align:right"><strong>100.00%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+      }
     }
 
     // Acción principal: obtener datos, procesar y renderizar
