@@ -343,6 +343,20 @@
       border-top: 2px solid var(--primary);
     }
     
+    .category-header {
+      background-color: #f0f9ff;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .subcategory-row {
+      background-color: #f8fafc;
+    }
+    
+    .subcategory-row td:first-child {
+      padding-left: 30px;
+    }
+    
     footer {
       text-align: center;
       color: var(--muted);
@@ -569,11 +583,11 @@
         </div>
         <div class="summary-card">
           <div class="summary-title">
-            <i class="fas fa-balance-scale"></i> Promedio por Categoría
+            <i class="fas fa-balance-scale"></i> Promedio por Encuesta
           </div>
           <div class="summary-value" id="summaryPromedio">0 kg</div>
           <div class="summary-subtitle">
-            <span>Promedio de kg por categoría</span>
+            <span>Promedio de kg por encuesta</span>
           </div>
         </div>
       </div>
@@ -611,18 +625,18 @@
       </div>
     </div>
 
-    <!-- Tabla resumen -->
+    <!-- Tabla resumen con categorías y subcategorías -->
     <div class="card">
       <div class="card-title">
         <i class="fas fa-table"></i>
-        Tabla Resumen Detallada
+        Tabla Resumen por Categorías
       </div>
       
       <div class="table-responsive">
         <table id="tableResumen">
           <thead>
             <tr>
-              <th>Tipo de Desecho</th>
+              <th>Categoría / Subcategoría</th>
               <th style="text-align:right">Peso (kg)</th>
               <th style="text-align:right">% del Total</th>
             </tr>
@@ -672,6 +686,129 @@
       lugares: []
     };
 
+    // Definición de las 15 categorías principales con sus subcategorías
+    const categoriasPrincipales = [
+      {
+        id: 1,
+        nombre: "MATERIA ORGANICA",
+        subcategorias: [
+          { campo: "de_jardin_kg", nombre: "De jardin" },
+          { campo: "de_cocina_kg", nombre: "De cocina" }
+        ]
+      },
+      {
+        id: 2,
+        nombre: "GRASAS Y ACEITES",
+        subcategorias: [
+          { campo: "aceite_comestible_kg", nombre: "Aceite comestible" }
+        ]
+      },
+      {
+        id: 3,
+        nombre: "MEDICINA",
+        subcategorias: [
+          { campo: "jarabe_kg", nombre: "JARABE" },
+          { campo: "tabletas_kg", nombre: "TABLETAS" }
+        ]
+      },
+      {
+        id: 4,
+        nombre: "PAPELES Y CARTON",
+        subcategorias: [
+          { campo: "papel_blanco_kg", nombre: "Papel Blanco" },
+          { campo: "papel_periodico_kg", nombre: "Papel periodico" },
+          { campo: "papel_archivo_kg", nombre: "Papel archivo" },
+          { campo: "carton_kg", nombre: "Cartón" },
+          { campo: "tetra_brik_kg", nombre: "Tetra-brik" }
+        ]
+      },
+      {
+        id: 5,
+        nombre: "PLASTICOS",
+        subcategorias: [
+          { campo: "pet_kg", nombre: "PET" },
+          { campo: "plastico_mixto_kg", nombre: "Plastico mixto" },
+          { campo: "bot_aceite_kg", nombre: "Bot de aceite" },
+          { campo: "bolsas_kg", nombre: "Bolsas" }
+        ]
+      },
+      {
+        id: 6,
+        nombre: "VIDRIOS",
+        subcategorias: [
+          { campo: "vidrio_blanco_kg", nombre: "Blanco" },
+          { campo: "vidrio_verde_kg", nombre: "Verde" },
+          { campo: "vidrio_otros_kg", nombre: "Otros" }
+        ]
+      },
+      {
+        id: 7,
+        nombre: "METAL",
+        subcategorias: [
+          { campo: "latas_ferrosas_kg", nombre: "Latas ferrosas" },
+          { campo: "aluminio_kg", nombre: "Aluminio" },
+          { campo: "acero_kg", nombre: "Acero" },
+          { campo: "metal_otros_kg", nombre: "Otros" }
+        ]
+      },
+      {
+        id: 8,
+        nombre: "TEXTILES",
+        subcategorias: [
+          { campo: "ropa_kg", nombre: "Ropa, mantas, manteles, etc." }
+        ]
+      },
+      {
+        id: 9,
+        nombre: "CAUCHO",
+        subcategorias: [
+          { campo: "zapatos_neumaticos_kg", nombre: "Zapatos, neumáticos" }
+        ]
+      },
+      {
+        id: 10,
+        nombre: "CUERO",
+        subcategorias: [
+          { campo: "cuero_kg", nombre: "Zapatos, carteras, etc." }
+        ]
+      },
+      {
+        id: 11,
+        nombre: "RESTO SANITARIOS",
+        subcategorias: [
+          { campo: "papel_higienico_kg", nombre: "Papel Higienico" }
+        ]
+      },
+      {
+        id: 12,
+        nombre: "MADERAS",
+        subcategorias: [
+          { campo: "maderas_kg", nombre: "Maderas" }
+        ]
+      },
+      {
+        id: 13,
+        nombre: "BATERIAS",
+        subcategorias: [
+          { campo: "baterias_kg", nombre: "de telefóno, lamparas" }
+        ]
+      },
+      {
+        id: 14,
+        nombre: "EQUIPOS ELECTRONICOS",
+        subcategorias: [
+          { campo: "electronicos_kg", nombre: "Electrodomesticos" }
+        ]
+      },
+      {
+        id: 15,
+        nombre: "ESCOMBROS",
+        subcategorias: [
+          { campo: "escombros_kg", nombre: "Otros" }
+        ]
+      }
+    ];
+
     // Inicializar la aplicación
     async function initApp() {
       await cargarTodosLosDatos();
@@ -698,8 +835,8 @@
           currentChartType = this.getAttribute('data-type');
           // Re-renderizar el gráfico
           if (currentData.length > 0) {
-            const currentSummary = resumenPorCategorias(currentData);
-            renderChart(currentSummary.labels, currentSummary.values, currentChartType);
+            const resumenCategorias = calcularResumenPorCategorias(currentData);
+            renderChart(resumenCategorias.categorias, resumenCategorias.valores, currentChartType);
           }
         });
       });
@@ -783,94 +920,91 @@
       return r.data || [];
     }
 
-    // Procesa filas y calcula totales por columna *_kg
-    function resumenPorCategorias(rows) {
-      if (!rows || rows.length === 0) return { labels: [], values: [], totalesObj: {}, totalSum: 0, lastDate: null, avgPerDay: 0 };
+    // Calcular resumen por las 15 categorías principales
+    function calcularResumenPorCategorias(rows) {
+      if (!rows || rows.length === 0) {
+        return {
+          categorias: [],
+          valores: [],
+          totalSum: 0,
+          detalles: []
+        };
+      }
       
-      const totales = {};
-      const fechasUnicas = new Set();
+      const valoresPorCategoria = Array(categoriasPrincipales.length).fill(0);
+      const detallesPorCategoria = [];
       
+      // Calcular totales por categoría
       rows.forEach(row => {
-        Object.entries(row).forEach(([k, v]) => {
-          if (k.endsWith('_kg')) {
-            const val = parseFloat(v) || 0;
-            totales[k] = (totales[k] || 0) + val;
-          }
+        categoriasPrincipales.forEach((categoria, idx) => {
+          categoria.subcategorias.forEach(subcategoria => {
+            const valor = parseFloat(row[subcategoria.campo]) || 0;
+            valoresPorCategoria[idx] += valor;
+          });
         });
+      });
+      
+      // Preparar detalles para la tabla
+      categoriasPrincipales.forEach((categoria, idx) => {
+        const totalCategoria = valoresPorCategoria[idx];
         
-        // Registrar fecha para cálculo de promedio diario
-        if (row.fecha_registro) {
-          const fecha = new Date(row.fecha_registro).toISOString().slice(0, 10);
-          fechasUnicas.add(fecha);
+        // Calcular subtotales por subcategoría
+        const subcategoriasConValores = categoria.subcategorias.map(subcategoria => {
+          let subtotal = 0;
+          rows.forEach(row => {
+            subtotal += parseFloat(row[subcategoria.campo]) || 0;
+          });
+          return {
+            nombre: subcategoria.nombre,
+            valor: subtotal
+          };
+        }).filter(sub => sub.valor > 0);
+        
+        if (totalCategoria > 0 || subcategoriasConValores.length > 0) {
+          detallesPorCategoria.push({
+            categoria: categoria.nombre,
+            total: totalCategoria,
+            subcategorias: subcategoriasConValores
+          });
         }
       });
       
-      const labels = Object.keys(totales).sort();
-      const values = labels.map(l => totales[l]);
-      const totalSum = values.reduce((a, b) => a + b, 0);
+      const totalSum = valoresPorCategoria.reduce((a, b) => a + b, 0);
       
-      // Fecha última en el conjunto
-      const lastDate = rows.map(r => r.fecha_registro ? new Date(r.fecha_registro) : null)
-        .filter(Boolean)
-        .sort((a, b) => b - a)[0] || null;
+      // Filtrar categorías con valores > 0
+      const categoriasConValores = [];
+      const valoresFiltrados = [];
       
-      // Promedio diario
-      const numDias = fechasUnicas.size || 1;
-      const avgPerDay = totalSum / numDias;
+      detallesPorCategoria.forEach((detalle, idx) => {
+        if (detalle.total > 0) {
+          categoriasConValores.push(detalle.categoria);
+          valoresFiltrados.push(detalle.total);
+        }
+      });
       
-      // Promedio por categoría
-      const avgPerCategory = values.length > 0 ? totalSum / values.length : 0;
-      
-      return { labels, values, totalesObj: totales, totalSum, lastDate, avgPerDay, numDias, avgPerCategory };
+      return {
+        categorias: categoriasConValores,
+        valores: valoresFiltrados,
+        totalSum: totalSum,
+        detalles: detallesPorCategoria
+      };
     }
 
     // Renderizar gráfico principal con tipo seleccionado
     function renderChart(labels, values, chartType) {
-      const friendlyLabels = labels.map(l => {
-        // Mejorar nombres de categorías basados en el documento
-        const nameMap = {
-          'de_jardin_kg': 'Desechos de Jardín',
-          'de_cocina_kg': 'Desechos de Cocina',
-          'aceite_comestible_kg': 'Aceite Comestible',
-          'papel_blanco_kg': 'Papel Blanco',
-          'papel_periodico_kg': 'Papel Periódico',
-          'papel_archivo_kg': 'Papel de Archivo',
-          'carton_kg': 'Cartón',
-          'tetra_brik_kg': 'Tetra Brik',
-          'pet_kg': 'PET',
-          'plastico_mixto_kg': 'Plástico Mixto',
-          'bot_aceite_kg': 'Botellas de Aceite',
-          'bolsas_kg': 'Bolsas Plásticas',
-          'vidrio_blanco_kg': 'Vidrio Blanco',
-          'vidrio_verde_kg': 'Vidrio Verde',
-          'vidrio_otros_kg': 'Otros Vidrios',
-          'latas_ferrosas_kg': 'Latas Ferrosas',
-          'aluminio_kg': 'Aluminio',
-          'acero_kg': 'Acero',
-          'metal_otros_kg': 'Otros Metales',
-          'ropa_kg': 'Ropa y Textiles',
-          'zapatos_neumaticos_kg': 'Zapatos y Neumáticos',
-          'papel_higienico_kg': 'Papel Higiénico',
-          'maderas_kg': 'Maderas',
-          'electronicos_kg': 'Electrónicos'
-        };
-        
-        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
-      });
-      
-      // Colores consistentes (HSL)
-      const colors = friendlyLabels.map((_, i) => `hsl(${(i * 360 / friendlyLabels.length) % 360} 70% 55%)`);
-      
       if (mainChart) mainChart.destroy();
       
       // Calcular porcentajes para mostrar en los gráficos
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
       
+      // Colores consistentes (HSL)
+      const colors = labels.map((_, i) => `hsl(${(i * 360 / labels.length) % 360} 70% 55%)`);
+      
       // Configuración base para todos los gráficos
       const baseConfig = {
         data: {
-          labels: friendlyLabels,
+          labels: labels,
           datasets: [{
             label: 'Peso (kg)',
             data: values,
@@ -881,7 +1015,9 @@
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
             pointRadius: 6,
-            pointHoverRadius: 8
+            pointHoverRadius: 8,
+            fill: chartType === 'line' ? false : undefined,
+            tension: chartType === 'line' ? 0.4 : 0
           }]
         },
         options: {
@@ -930,6 +1066,23 @@
                   return label;
                 }
               }
+            },
+            // Plugin para mostrar etiquetas de datos
+            datalabels: {
+              display: chartType !== 'line', // No mostrar en gráfico de líneas por defecto
+              color: function(context) {
+                return chartType === 'pie' ? '#fff' : '#1e293b';
+              },
+              font: {
+                weight: 'bold',
+                size: chartType === 'pie' ? 12 : 11
+              },
+              formatter: function(value, context) {
+                return percentages[context.dataIndex];
+              },
+              anchor: chartType === 'pie' ? 'center' : 'end',
+              align: chartType === 'pie' ? 'center' : 'top',
+              offset: chartType === 'pie' ? 0 : -5
             }
           }
         },
@@ -964,23 +1117,6 @@
                 minRotation: 45
               }
             }
-          },
-          // Configuración específica para barras
-          plugins: {
-            datalabels: {
-              display: true,
-              color: '#1e293b',
-              font: {
-                weight: 'bold',
-                size: 11
-              },
-              formatter: function(value, context) {
-                return percentages[context.dataIndex];
-              },
-              anchor: 'end',
-              align: 'top',
-              offset: -5
-            }
           }
         },
         line: {
@@ -1006,7 +1142,7 @@
               }
             }
           },
-          // Configuración específica para líneas - porcentajes más arriba
+          // Configuración específica para líneas - porcentajes arriba y sin tocar otros objetos
           plugins: {
             datalabels: {
               display: true,
@@ -1020,28 +1156,18 @@
               },
               anchor: 'center',
               align: 'top',
-              offset: -25, // Más arriba del punto
-              clamp: true // Evita que se salga del gráfico
+              offset: -35, // Más arriba para evitar tocar el punto
+              clamp: true,
+              // Configuración para evitar superposición
+              padding: {
+                top: 5,
+                bottom: 5
+              }
             }
           }
         },
         pie: {
           // Configuración específica para gráfico circular
-          plugins: {
-            datalabels: {
-              display: true,
-              color: '#fff',
-              font: {
-                weight: 'bold',
-                size: 12
-              },
-              formatter: function(value, context) {
-                return percentages[context.dataIndex];
-              },
-              anchor: 'center',
-              align: 'center'
-            }
-          }
         }
       };
       
@@ -1073,37 +1199,6 @@
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
       
-      const friendlyLabels = currentSummary.labels.map(l => {
-        const nameMap = {
-          'de_jardin_kg': 'Desechos de Jardín',
-          'de_cocina_kg': 'Desechos de Cocina',
-          'aceite_comestible_kg': 'Aceite Comestible',
-          'papel_blanco_kg': 'Papel Blanco',
-          'papel_periodico_kg': 'Papel Periódico',
-          'papel_archivo_kg': 'Papel de Archivo',
-          'carton_kg': 'Cartón',
-          'tetra_brik_kg': 'Tetra Brik',
-          'pet_kg': 'PET',
-          'plastico_mixto_kg': 'Plástico Mixto',
-          'bot_aceite_kg': 'Botellas de Aceite',
-          'bolsas_kg': 'Bolsas Plásticas',
-          'vidrio_blanco_kg': 'Vidrio Blanco',
-          'vidrio_verde_kg': 'Vidrio Verde',
-          'vidrio_otros_kg': 'Otros Vidrios',
-          'latas_ferrosas_kg': 'Latas Ferrosas',
-          'aluminio_kg': 'Aluminio',
-          'acero_kg': 'Acero',
-          'metal_otros_kg': 'Otros Metales',
-          'ropa_kg': 'Ropa y Textiles',
-          'zapatos_neumaticos_kg': 'Zapatos y Neumáticos',
-          'papel_higienico_kg': 'Papel Higiénico',
-          'maderas_kg': 'Maderas',
-          'electronicos_kg': 'Electrónicos'
-        };
-        
-        return nameMap[l] || l.replace(/_/g, ' ').replace('kg', '').replace(/\b\w/g, l => l.toUpperCase());
-      });
-      
       // Actualizar resumen de encuestas y ubicaciones
       summaryEncuestas.textContent = currentData.length;
       
@@ -1111,34 +1206,56 @@
       const ubicacionesUnicas = [...new Set(currentData.map(r => r.lugar).filter(Boolean))];
       summaryUbicaciones.textContent = ubicacionesUnicas.length;
       
-      // Actualizar total de kg y promedio
+      // Actualizar total de kg
       summaryTotalKg.textContent = currentSummary.totalSum.toFixed(2) + ' kg';
-      summaryPromedio.textContent = currentSummary.avgPerCategory.toFixed(2) + ' kg';
       
-      // Llenar tabla
-      let totalKg = 0;
-      friendlyLabels.forEach((lab, i) => {
-        const v = currentSummary.values[i];
-        if (v <= 0) return;
-        
-        totalKg += v;
-        const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${lab}</td>
-          <td style="text-align:right">${v.toFixed(2)}</td>
-          <td style="text-align:right">${pct}</td>
-        `;
-        tbody.appendChild(tr);
+      // Calcular promedio por encuesta (total de kg / número de encuestas)
+      const promedioPorEncuesta = currentData.length > 0 ? currentSummary.totalSum / currentData.length : 0;
+      summaryPromedio.textContent = promedioPorEncuesta.toFixed(2) + ' kg';
+      
+      // Llenar tabla con categorías y subcategorías
+      let totalGeneral = 0;
+      
+      currentSummary.detalles.forEach(detalle => {
+        if (detalle.total > 0) {
+          // Fila de categoría principal
+          const porcentajeCategoria = currentSummary.totalSum > 0 ? 
+            ((detalle.total / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
+          
+          const trCategoria = document.createElement('tr');
+          trCategoria.className = 'category-header';
+          trCategoria.innerHTML = `
+            <td><strong>${detalle.categoria}</strong></td>
+            <td style="text-align:right"><strong>${detalle.total.toFixed(2)}</strong></td>
+            <td style="text-align:right"><strong>${porcentajeCategoria}</strong></td>
+          `;
+          tbody.appendChild(trCategoria);
+          
+          totalGeneral += detalle.total;
+          
+          // Filas de subcategorías
+          detalle.subcategorias.forEach(subcategoria => {
+            const porcentajeSubcategoria = currentSummary.totalSum > 0 ? 
+              ((subcategoria.valor / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
+            
+            const trSubcategoria = document.createElement('tr');
+            trSubcategoria.className = 'subcategory-row';
+            trSubcategoria.innerHTML = `
+              <td>${subcategoria.nombre}</td>
+              <td style="text-align:right">${subcategoria.valor.toFixed(2)}</td>
+              <td style="text-align:right">${porcentajeSubcategoria}</td>
+            `;
+            tbody.appendChild(trSubcategoria);
+          });
+        }
       });
       
-      // Agregar fila de total al final de la tabla
+      // Agregar fila de total general al final de la tabla
       const totalRow = document.createElement('tr');
       totalRow.className = 'total-row';
       totalRow.innerHTML = `
-        <td><strong>TOTAL</strong></td>
-        <td style="text-align:right"><strong>${totalKg.toFixed(2)}</strong></td>
+        <td><strong>TOTAL GENERAL</strong></td>
+        <td style="text-align:right"><strong>${totalGeneral.toFixed(2)}</strong></td>
         <td style="text-align:right"><strong>100.00%</strong></td>
       `;
       tbody.appendChild(totalRow);
@@ -1150,11 +1267,11 @@
         // Obtener datos del período actual
         currentData = await obtenerFiltrados();
         
-        // Procesar datos
-        const currentSummary = resumenPorCategorias(currentData);
+        // Procesar datos por categorías
+        const currentSummary = calcularResumenPorCategorias(currentData);
         
-        // Renderizar
-        renderChart(currentSummary.labels, currentSummary.values, currentChartType);
+        // Renderizar gráfico y tabla
+        renderChart(currentSummary.categorias, currentSummary.valores, currentChartType);
         renderResumen(currentSummary);
         
       } catch (err) {
