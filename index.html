@@ -343,6 +343,12 @@
       border-top: 2px solid var(--primary);
     }
     
+    .average-row {
+      background-color: #f8fafc;
+      font-weight: 500;
+      font-style: italic;
+    }
+    
     footer {
       text-align: center;
       color: var(--muted);
@@ -843,6 +849,7 @@
       // Calcular porcentajes para mostrar en los gráficos
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
+      const percentageValues = values.map(v => totalSum > 0 ? (v / totalSum) * 100 : 0);
       
       // Configuración base para todos los gráficos
       const baseConfig = {
@@ -853,7 +860,8 @@
             data: values,
             backgroundColor: colors,
             borderColor: colors.map(c => c.replace('hsl', 'hsla').replace(')', ', 0.8)')),
-            borderWidth: chartType === 'line' ? 2 : 1
+            borderWidth: chartType === 'line' ? 2 : 1,
+            tension: chartType === 'line' ? 0.1 : 0 // Suavizado para líneas
           }]
         },
         options: {
@@ -902,57 +910,9 @@
                   return label;
                 }
               }
-            },
-            // Plugin para mostrar etiquetas de datos
-            datalabels: {
-              display: true,
-              color: '#fff',
-              font: {
-                weight: 'bold',
-                size: 12
-              },
-              // Formato diferente según el tipo de gráfico
-              formatter: function(value, context) {
-                if (chartType === 'pie') {
-                  return percentages[context.dataIndex];
-                } else if (chartType === 'bar' || chartType === 'line') {
-                  return percentages[context.dataIndex];
-                }
-                return null;
-              },
-              // Posición diferente según el tipo de gráfico
-              anchor: function(context) {
-                if (chartType === 'pie') {
-                  return 'center';
-                } else if (chartType === 'bar') {
-                  return 'end';
-                } else if (chartType === 'line') {
-                  return 'center';
-                }
-                return 'center';
-              },
-              align: function(context) {
-                if (chartType === 'pie') {
-                  return 'center';
-                } else if (chartType === 'bar') {
-                  return 'top';
-                } else if (chartType === 'line') {
-                  return 'top';
-                }
-                return 'center';
-              },
-              offset: function(context) {
-                if (chartType === 'bar') {
-                  return -10;
-                } else if (chartType === 'line') {
-                  return -15;
-                }
-                return 0;
-              }
             }
           }
-        },
-        plugins: [ChartDataLabels]
+        }
       };
       
       // Configuraciones específicas por tipo de gráfico
@@ -984,10 +944,10 @@
               }
             }
           },
-          // Configuración específica para barras
           plugins: {
             datalabels: {
-              color: '#1e293b', // Color oscuro para mejor contraste
+              display: true,
+              color: '#1e293b',
               font: {
                 weight: 'bold',
                 size: 11
@@ -1013,7 +973,8 @@
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
-                }
+                },
+                padding: 15
               }
             },
             x: {
@@ -1021,12 +982,15 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                padding: 10
               }
             }
           },
-          // Configuración específica para líneas
           plugins: {
             datalabels: {
+              display: true,
               color: '#1e293b',
               font: {
                 weight: 'bold',
@@ -1035,16 +999,16 @@
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
-              anchor: 'center',
-              align: 'top',
-              offset: -15
+              anchor: 'top',
+              align: 'center',
+              offset: 10
             }
           }
         },
         pie: {
-          // Configuración específica para gráfico circular
           plugins: {
             datalabels: {
+              display: true,
               color: '#fff',
               font: {
                 weight: 'bold',
@@ -1052,7 +1016,9 @@
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
-              }
+              },
+              textShadowBlur: 10,
+              textShadowColor: 'rgba(0,0,0,0.8)'
             }
           }
         }
@@ -1066,7 +1032,7 @@
           ...baseConfig.options,
           ...(typeSpecificConfigs[chartType] || {})
         },
-        plugins: baseConfig.plugins
+        plugins: typeSpecificConfigs[chartType] && typeSpecificConfigs[chartType].plugins ? [ChartDataLabels] : []
       };
       
       mainChart = new Chart(mainCtx, finalConfig);
@@ -1126,11 +1092,13 @@
       
       // Llenar tabla
       let totalKg = 0;
+      let rowCount = 0;
       friendlyLabels.forEach((lab, i) => {
         const v = currentSummary.values[i];
         if (v <= 0) return;
         
         totalKg += v;
+        rowCount++;
         const pct = currentSummary.totalSum > 0 ? ((v / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
         
         const tr = document.createElement('tr');
@@ -1151,6 +1119,19 @@
         <td style="text-align:right"><strong>100.00%</strong></td>
       `;
       tbody.appendChild(totalRow);
+      
+      // Calcular y agregar promedio si hay datos
+      if (currentData.length > 0 && totalKg > 0) {
+        const promedioKg = totalKg / currentData.length;
+        const averageRow = document.createElement('tr');
+        averageRow.className = 'average-row';
+        averageRow.innerHTML = `
+          <td><strong>PROMEDIO POR ENCUESTA</strong></td>
+          <td style="text-align:right"><strong>${promedioKg.toFixed(2)} kg</strong></td>
+          <td style="text-align:right"><strong>-</strong></td>
+        `;
+        tbody.appendChild(averageRow);
+      }
     }
 
     // Acción principal: obtener datos, procesar y renderizar
