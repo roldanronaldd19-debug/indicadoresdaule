@@ -851,7 +851,7 @@
       lugares: []
     };
 
-    // Definición de las 15 categorías principales con sus subcategorías
+    // Definición de las 15 categorías principales con sus subcategorías (basado en la estructura real de la BD)
     const categoriasPrincipales = [
       {
         id: 1,
@@ -974,7 +974,7 @@
       }
     ];
 
-    // Mapeo de nombres abreviados para gráficos
+    // Mapeo de nombres abreviados para gráficos (para evitar truncamiento)
     const nombresCortos = {
       "MATERIA ORGÁNICA": "Materia Orgánica",
       "GRASAS Y ACEITES": "Grasas/Aceites",
@@ -1003,19 +1003,26 @@
 
     // Configurar event listeners
     function setupEventListeners() {
+      // Actualización automática al cambiar filtros
       selectLugar.addEventListener('change', async function() {
         await actualizar();
       });
       
+      // Botones de tipo de gráfico - versión mejorada
       document.querySelectorAll('.chart-action-btn').forEach(btn => {
         btn.addEventListener('click', function() {
+          // Remover clase activa de todos los botones
           document.querySelectorAll('.chart-action-btn').forEach(b => {
             b.classList.remove('active');
           });
           
+          // Agregar clase activa al botón seleccionado
           this.classList.add('active');
+          
+          // Cambiar tipo de gráfico
           currentChartType = this.getAttribute('data-chart-type');
           
+          // Re-renderizar el gráfico
           if (currentData.length > 0) {
             const resumenCategorias = calcularResumenPorCategorias(currentData);
             renderChart(resumenCategorias.categorias, resumenCategorias.valores, currentChartType);
@@ -1023,19 +1030,23 @@
         });
       });
       
+      // Botón para restablecer filtros
       btnResetFilters.addEventListener('click', function() {
         selectLugar.value = '';
         actualizar();
       });
       
+      // Ayuda - Modal
       btnHelp.addEventListener('click', () => {
         helpModal.classList.add('active');
       });
       
+      // Cerrar modal
       closeModal.addEventListener('click', () => {
         helpModal.classList.remove('active');
       });
       
+      // Cerrar modal al hacer clic fuera
       helpModal.addEventListener('click', (e) => {
         if (e.target === helpModal) {
           helpModal.classList.remove('active');
@@ -1055,6 +1066,7 @@
 
     // Cargar lista de filtros desde la BD
     async function inicializarFiltros() {
+      // Obtener todos los datos para construir los filtros
       const q = await supabase.from('caracterizacion_desechos_daule').select('lugar');
       if (q.error) {
         console.error(q.error);
@@ -1062,19 +1074,27 @@
       }
       const rows = q.data || [];
 
+      // Construir opciones de filtro
       filterOptions.lugares = [...new Set(rows.map(r => r.lugar).filter(Boolean))].sort();
+
+      // Actualizar información de filtros
       lugarInfo.textContent = `${filterOptions.lugares.length} ubicaciones disponibles`;
+
+      // Llenar selectores con todas las opciones iniciales
       llenarSelector(selectLugar, filterOptions.lugares);
     }
 
     // Función para llenar un selector con opciones
     function llenarSelector(selector, opciones) {
+      // Guardar la opción seleccionada actualmente
       const valorActual = selector.value;
       
+      // Limpiar selector (excepto la primera opción)
       while (selector.options.length > 1) {
         selector.remove(1);
       }
       
+      // Agregar nuevas opciones
       opciones.forEach(opcion => {
         const option = document.createElement('option');
         option.value = opcion;
@@ -1082,6 +1102,7 @@
         selector.appendChild(option);
       });
       
+      // Restaurar la selección anterior si todavía existe
       if (valorActual && opciones.includes(valorActual)) {
         selector.value = valorActual;
       }
@@ -1114,6 +1135,7 @@
       const valoresPorCategoria = Array(categoriasPrincipales.length).fill(0);
       const detallesPorCategoria = [];
       
+      // Calcular totales por categoría
       rows.forEach(row => {
         categoriasPrincipales.forEach((categoria, idx) => {
           categoria.subcategorias.forEach(subcategoria => {
@@ -1123,9 +1145,11 @@
         });
       });
       
+      // Preparar detalles para la tabla
       categoriasPrincipales.forEach((categoria, idx) => {
         const totalCategoria = valoresPorCategoria[idx];
         
+        // Calcular subtotales por subcategoría
         const subcategoriasConValores = categoria.subcategorias.map(subcategoria => {
           let subtotal = 0;
           rows.forEach(row => {
@@ -1148,11 +1172,13 @@
       
       const totalSum = valoresPorCategoria.reduce((a, b) => a + b, 0);
       
+      // Filtrar categorías con valores > 0 y usar nombres cortos para gráficos
       const categoriasConValores = [];
       const valoresFiltrados = [];
       
       detallesPorCategoria.forEach((detalle, idx) => {
         if (detalle.total > 0) {
+          // Usar nombres cortos para gráficos, nombres completos para tabla
           categoriasConValores.push(nombresCortos[detalle.categoria] || detalle.categoria);
           valoresFiltrados.push(detalle.total);
         }
@@ -1166,23 +1192,24 @@
       };
     }
 
-    // Renderizar gráfico principal - CONFIGURACIÓN ESPECÍFICA POR TIPO
+    // Renderizar gráfico principal con tipo seleccionado - POSICIONES ESPECÍFICAS SIN SUPERPOSICIÓN
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
+      // Calcular porcentajes para mostrar en los gráficos
       const totalSum = values.reduce((a, b) => a + b, 0);
       const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100) : 0);
       const percentageLabels = percentages.map(p => p.toFixed(1) + '%');
       
+      // Colores más atractivos y consistentes
       const colors = [
         '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
         '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#a855f7', '#6366f1',
         '#14b8a6', '#f43f5e', '#8b5cf6'
       ].slice(0, labels.length);
       
-      // CONFIGURACIÓN BASE COMÚN
+      // Configuración base para todos los gráficos
       const baseConfig = {
-        type: chartType,
         data: {
           labels: labels,
           datasets: [{
@@ -1211,11 +1238,15 @@
               display: chartType === 'pie',
               position: 'right',
               labels: {
-                font: { size: 11 },
+                font: {
+                  size: 11
+                },
+                // Mostrar porcentajes en la leyenda del gráfico circular
                 generateLabels: function(chart) {
                   if (chartType === 'pie') {
                     const original = Chart.defaults.plugins.legend.labels.generateLabels;
                     const labels = original.call(this, chart);
+                    // Agregar porcentaje a cada etiqueta
                     labels.forEach((label, i) => {
                       label.text += ` (${percentageLabels[i]})`;
                     });
@@ -1228,7 +1259,10 @@
             title: {
               display: true,
               text: `Distribución de Desechos Sólidos por Categoría - ${getChartTypeName(chartType)}`,
-              font: { size: 16, weight: 'bold' },
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
               padding: 20
             },
             tooltip: {
@@ -1238,195 +1272,234 @@
                   if (label) label += ': ';
                   const value = context.parsed !== undefined ? context.parsed : context.raw;
                   label += value.toFixed(2) + ' kg';
+                  // Agregar porcentaje al tooltip
                   const percentage = totalSum > 0 ? (value / totalSum * 100).toFixed(1) : 0;
                   label += ` (${percentage}%)`;
                   return label;
                 }
               }
             }
+          }
+        }
+      };
+      
+      // CONFIGURACIÓN ESPECÍFICA PARA CADA TIPO DE GRÁFICO SIN SUPERPOSICIÓN
+      const typeSpecificConfigs = {
+        bar: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Peso (kg)',
+                font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                callback: function(value) {
+                  return value.toFixed(1) + ' kg';
+                },
+                padding: 15 // Más espacio para evitar choque con porcentajes
+              },
+              grid: {
+                drawBorder: false
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Categorías de Desechos',
+                font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45,
+                padding: 5,
+                font: {
+                  size: 11
+                },
+                autoSkip: true,
+                maxTicksLimit: 15
+              },
+              grid: {
+                display: false
+              }
+            }
           },
-          layout: {
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
+          plugins: {
+            datalabels: {
+              display: true,
+              color: '#1e293b',
+              font: {
+                weight: 'bold',
+                size: 11
+              },
+              formatter: function(value, context) {
+                return percentageLabels[context.dataIndex];
+              },
+              anchor: 'end',
+              align: 'top',
+              offset: 8, // Ajustado para estar justo encima de la barra
+              clamp: true
+            }
+          }
+        },
+        line: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Peso (kg)',
+                font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                callback: function(value) {
+                  return value.toFixed(1) + ' kg';
+                },
+                padding: 15 // Más espacio para evitar choque con porcentajes
+              },
+              grid: {
+                drawBorder: false
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Categorías de Desechos',
+                font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45,
+                padding: 5,
+                font: {
+                  size: 11
+                },
+                autoSkip: true,
+                maxTicksLimit: 15
+              },
+              grid: {
+                display: false
+              }
+            }
+          },
+          plugins: {
+            datalabels: {
+              display: true,
+              color: '#1e293b',
+              font: {
+                weight: 'bold',
+                size: 11
+              },
+              formatter: function(value, context) {
+                return percentageLabels[context.dataIndex];
+              },
+              anchor: 'center',
+              align: 'top',
+              offset: 15, // Ajustado para estar claramente encima del punto
+              clamp: true,
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 4,
+              padding: 4
+            }
+          }
+        },
+        pie: {
+          // Configuración para gráfico circular con porcentajes DENTRO
+          elements: {
+            arc: {
+              borderWidth: 1.5,
+              borderColor: '#ffffff',
+              hoverBorderWidth: 2.5,
+              hoverBorderColor: '#ffffff'
+            }
+          },
+          plugins: {
+            datalabels: {
+              display: true,
+              color: function(context) {
+                // Colores contrastantes para mejor legibilidad
+                const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
+                const rgb = hexToRgb(backgroundColor);
+                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+                return brightness > 128 ? '#1e293b' : '#ffffff';
+              },
+              font: {
+                weight: 'bold',
+                size: 12
+              },
+              formatter: function(value, context) {
+                // Mostrar porcentaje dentro del segmento
+                const percentage = percentages[context.dataIndex];
+                // Solo mostrar si el segmento es lo suficientemente grande
+                if (percentage > 3) {
+                  return percentageLabels[context.dataIndex];
+                }
+                return ''; // Ocultar en segmentos muy pequeños
+              },
+              anchor: 'center',
+              align: 'center',
+              offset: 0, // Dentro del segmento
+              textAlign: 'center',
+              textShadow: true,
+              shadowBlur: 3,
+              shadowColor: 'rgba(0,0,0,0.5)',
+              clamp: false
+            }
+          }
+        }
+      };
+      
+      // Ajustes de layout específicos para evitar superposición
+      const layoutConfigs = {
+        bar: {
+          padding: {
+            top: 40,
+            bottom: 60,
+            left: 20,
+            right: 20
+          }
+        },
+        line: {
+          padding: {
+            top: 60,
+            bottom: 60,
+            left: 20,
+            right: 20
+          }
+        },
+        pie: {
+          padding: {
+            top: 20,
+            bottom: 20,
+            left: 10,
+            right: 10
+          }
+        }
+      };
+      
+      // Combinar configuración base con configuración específica del tipo
+      const finalConfig = {
+        type: chartType,
+        data: baseConfig.data,
+        options: {
+          ...baseConfig.options,
+          ...(typeSpecificConfigs[chartType] || {}),
+          layout: layoutConfigs[chartType] || {
             padding: {
-              top: 50,
-              bottom: 60,
+              top: 40,
+              bottom: 50,
               left: 20,
-              right: chartType === 'pie' ? 40 : 20
+              right: 20
             }
           }
         },
         plugins: [ChartDataLabels]
       };
       
-      // CONFIGURACIÓN ESPECÍFICA PARA GRÁFICO DE BARRAS
-      if (chartType === 'bar') {
-        baseConfig.options.scales = {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Peso (kg)',
-              font: { size: 14, weight: 'bold' }
-            },
-            ticks: {
-              callback: function(value) {
-                return value.toFixed(1) + ' kg';
-              },
-              padding: 10
-            },
-            grid: { drawBorder: false }
-          },
-          x: {
-            title: {
-              display: true,
-              text: 'Categorías de Desechos',
-              font: { size: 14, weight: 'bold' }
-            },
-            ticks: {
-              maxRotation: 45,
-              minRotation: 45,
-              padding: 5,
-              font: { size: 11 }
-            },
-            grid: { display: false }
-          }
-        };
-        
-        baseConfig.options.plugins.datalabels = {
-          display: true,
-          color: '#1e293b',
-          font: {
-            weight: 'bold',
-            size: 11
-          },
-          formatter: function(value, context) {
-            return percentageLabels[context.dataIndex];
-          },
-          anchor: 'end',
-          align: 'top',
-          offset: 8,
-          clamp: true,
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          borderColor: '#e2e8f0',
-          borderWidth: 1,
-          borderRadius: 4,
-          padding: {
-            top: 4,
-            bottom: 4,
-            left: 6,
-            right: 6
-          }
-        };
-        
-        baseConfig.options.barPercentage = 0.7;
-        baseConfig.options.categoryPercentage = 0.8;
-      }
-      
-      // CONFIGURACIÓN ESPECÍFICA PARA GRÁFICO DE LÍNEAS
-      if (chartType === 'line') {
-        baseConfig.options.scales = {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Peso (kg)',
-              font: { size: 14, weight: 'bold' }
-            },
-            ticks: {
-              callback: function(value) {
-                return value.toFixed(1) + ' kg';
-              },
-              padding: 10
-            },
-            grid: { drawBorder: false }
-          },
-          x: {
-            title: {
-              display: true,
-              text: 'Categorías de Desechos',
-              font: { size: 14, weight: 'bold' }
-            },
-            ticks: {
-              maxRotation: 45,
-              minRotation: 45,
-              padding: 5,
-              font: { size: 11 }
-            },
-            grid: { display: false }
-          }
-        };
-        
-        baseConfig.options.plugins.datalabels = {
-          display: true,
-          color: '#1e293b',
-          font: {
-            weight: 'bold',
-            size: 11
-          },
-          formatter: function(value, context) {
-            return percentageLabels[context.dataIndex];
-          },
-          anchor: 'center',
-          align: 'top',
-          offset: 15,
-          clamp: true,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          borderColor: '#0f766e',
-          borderWidth: 1,
-          borderRadius: 4,
-          padding: {
-            top: 4,
-            bottom: 4,
-            left: 6,
-            right: 6
-          }
-        };
-        
-        baseConfig.options.layout.padding.top = 70;
-      }
-      
-      // CONFIGURACIÓN ESPECÍFICA PARA GRÁFICO CIRCULAR
-      if (chartType === 'pie') {
-        baseConfig.options.elements = {
-          arc: {
-            borderWidth: 1.5,
-            borderColor: '#ffffff',
-            hoverBorderWidth: 2.5,
-            hoverBorderColor: '#ffffff'
-          }
-        };
-        
-        baseConfig.options.plugins.datalabels = {
-          display: true,
-          color: function(context) {
-            const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
-            const rgb = hexToRgb(backgroundColor);
-            const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-            return brightness > 128 ? '#1e293b' : '#ffffff';
-          },
-          font: {
-            weight: 'bold',
-            size: 12
-          },
-          formatter: function(value, context) {
-            const percentage = percentages[context.dataIndex];
-            // Mostrar solo si el segmento es lo suficientemente grande
-            return percentage > 3 ? percentageLabels[context.dataIndex] : '';
-          },
-          anchor: 'center',
-          align: 'center',
-          offset: 0,
-          clamp: true,
-          textShadow: true,
-          shadowBlur: 3,
-          shadowColor: 'rgba(0,0,0,0.5)'
-        };
-        
-        baseConfig.options.plugins.legend.position = 'right';
-        baseConfig.options.plugins.legend.labels.padding = 15;
-        baseConfig.options.plugins.legend.labels.boxWidth = 15;
-      }
-      
-      mainChart = new Chart(mainCtx, baseConfig);
+      mainChart = new Chart(mainCtx, finalConfig);
     }
     
     // Función auxiliar para convertir HEX a RGB
@@ -1453,21 +1526,27 @@
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
       
+      // Actualizar resumen de encuestas y ubicaciones
       summaryEncuestas.textContent = currentData.length;
       
+      // Calcular ubicaciones únicas
       const ubicacionesUnicas = [...new Set(currentData.map(r => r.lugar).filter(Boolean))];
       summaryUbicaciones.textContent = ubicacionesUnicas.length;
       
+      // Actualizar total de kg
       summaryTotalKg.textContent = currentSummary.totalSum.toFixed(2) + ' kg';
       
+      // Calcular promedio por encuesta (total de kg / número de encuestas)
       const promedioPorEncuesta = currentData.length > 0 ? currentSummary.totalSum / currentData.length : 0;
       summaryPromedio.textContent = promedioPorEncuesta.toFixed(2) + ' kg';
       
+      // Llenar tabla con categorías y subcategorías
       let totalGeneral = 0;
       let esPrimeraCategoria = true;
       
       currentSummary.detalles.forEach((detalle, index) => {
         if (detalle.total > 0) {
+          // Si no es la primera categoría, agregar una fila separadora
           if (!esPrimeraCategoria) {
             const separador = document.createElement('tr');
             separador.className = 'separator-row';
@@ -1475,6 +1554,7 @@
             tbody.appendChild(separador);
           }
           
+          // Fila de categoría principal
           const trCategoria = document.createElement('tr');
           trCategoria.className = 'category-header';
           trCategoria.innerHTML = `
@@ -1486,6 +1566,7 @@
           
           totalGeneral += detalle.total;
           
+          // Filas de subcategorías
           detalle.subcategorias.forEach(subcategoria => {
             const porcentajeSubcategoria = currentSummary.totalSum > 0 ? 
               ((subcategoria.valor / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
@@ -1500,6 +1581,7 @@
             tbody.appendChild(trSubcategoria);
           });
           
+          // Fila de TOTAL de la categoría
           const porcentajeCategoria = currentSummary.totalSum > 0 ? 
             ((detalle.total / currentSummary.totalSum) * 100).toFixed(2) + '%' : '0.00%';
           
@@ -1516,6 +1598,7 @@
         }
       });
       
+      // Si no hay datos, mostrar mensaje
       if (currentSummary.detalles.length === 0) {
         const trVacio = document.createElement('tr');
         trVacio.innerHTML = `
@@ -1525,6 +1608,7 @@
         `;
         tbody.appendChild(trVacio);
       } else {
+        // Agregar fila de total general al final de la tabla
         const totalRow = document.createElement('tr');
         totalRow.className = 'total-row';
         totalRow.innerHTML = `
@@ -1539,10 +1623,16 @@
     // Acción principal: obtener datos, procesar y renderizar
     async function actualizar() {
       try {
+        // Obtener datos del período actual
         currentData = await obtenerFiltrados();
+        
+        // Procesar datos por categorías
         const currentSummary = calcularResumenPorCategorias(currentData);
+        
+        // Renderizar gráfico y tabla
         renderChart(currentSummary.categorias, currentSummary.valores, currentChartType);
         renderResumen(currentSummary);
+        
       } catch (err) {
         console.error(err);
         alert('Error al actualizar. Revisa la consola para más detalles.');
