@@ -1135,7 +1135,10 @@
                 size: 16,
                 weight: 'bold'
               },
-              padding: 20
+              padding: {
+                top: 10,
+                bottom: 30
+              }
             },
             tooltip: {
               callbacks: {
@@ -1155,7 +1158,7 @@
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS con ajuste de posición del título
+      // Configuraciones específicas por tipo de gráfico - MEJORADAS
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1166,40 +1169,51 @@
                 text: 'Peso (kg)',
                 font: { 
                   size: 14, 
-                  weight: 'bold' 
+                  weight: 'bold',
+                  family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
                 },
-                // POSICIÓN MÁS ARRIBA para evitar superposición
                 padding: {
-                  top: 40,    // Más espacio arriba
-                  bottom: 50  // Más espacio abajo
+                  top: 0,
+                  bottom: 20  // Más espacio en la parte inferior
                 }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 20 // Más espacio para evitar superposición con porcentajes
+                padding: 15, // Espacio para evitar superposición
+                maxTicksLimit: 8 // Limitar número de ticks para más espacio
               },
-              // Añadir más espacio en la parte superior del gráfico
               grid: {
                 drawBorder: true,
-                drawTicks: true
+                color: 'rgba(0, 0, 0, 0.05)'
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' },
+                font: { 
+                  size: 14, 
+                  weight: 'bold',
+                  family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
+                },
                 padding: {
-                  top: 20,    // Más espacio arriba
-                  bottom: 10  // Espacio normal abajo
+                  top: 15,
+                  bottom: 0
                 }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 15 // Más espacio para evitar superposición
+                padding: 10, // Espacio para evitar superposición
+                font: {
+                  size: 11 // Texto más pequeño para categorías largas
+                }
+              },
+              grid: {
+                drawBorder: true,
+                color: 'rgba(0, 0, 0, 0.05)'
               }
             }
           },
@@ -1209,23 +1223,16 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11
+                size: 11,
+                family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'end',
               align: 'top',
-              offset: 4 // Ligero aumento para mejor visibilidad
-            }
-          },
-          // Layout específico para gráficos de barras
-          layout: {
-            padding: {
-              top: 30,    // Más espacio arriba para el título "Peso (kg)"
-              bottom: 40,
-              left: 20,
-              right: 20
+              offset: 4, // Reducido para mejor visualización
+              clip: false // Permitir que se dibuje fuera del área del gráfico
             }
           }
         },
@@ -1238,40 +1245,51 @@
                 text: 'Peso (kg)',
                 font: { 
                   size: 14, 
-                  weight: 'bold' 
+                  weight: 'bold',
+                  family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
                 },
-                // POSICIÓN MÁS ARRIBA para evitar superposición
                 padding: {
-                  top: 10,    // Más espacio arriba
-                  bottom: 30  // Más espacio abajo
+                  top: 0,
+                  bottom: 20  // Más espacio en la parte inferior
                 }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 25 // Más espacio para evitar superposición con porcentajes
+                padding: 20, // Más espacio para evitar superposición
+                maxTicksLimit: 8 // Limitar número de ticks
               },
-              // Añadir más espacio en la parte superior del gráfico
               grid: {
                 drawBorder: true,
-                drawTicks: true
+                color: 'rgba(0, 0, 0, 0.05)'
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' },
+                font: { 
+                  size: 14, 
+                  weight: 'bold',
+                  family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
+                },
                 padding: {
-                  top: 20,    // Más espacio arriba
-                  bottom: 10  // Espacio normal abajo
+                  top: 15,
+                  bottom: 0
                 }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 15 // Más espacio para evitar superposición
+                padding: 15, // Más espacio para evitar superposición
+                font: {
+                  size: 11 // Texto más pequeño
+                }
+              },
+              grid: {
+                drawBorder: true,
+                color: 'rgba(0, 0, 0, 0.05)'
               }
             }
           },
@@ -1282,24 +1300,16 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11
+                size: 11,
+                family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'center',
               align: 'top', // ENCIMA del punto
-              offset: 15, // Aumentado para estar más arriba y evitar superposición
-              clamp: true
-            }
-          },
-          // Layout específico para gráficos de línea
-          layout: {
-            padding: {
-              top: 40,    // Más espacio arriba para el título "Peso (kg)"
-              bottom: 50,
-              left: 20,
-              right: 20
+              offset: 15, // Más espacio para evitar superposición con el punto
+              clip: false // Permitir que se dibuje fuera del área
             }
           }
         },
@@ -1317,7 +1327,8 @@
               },
               font: {
                 weight: 'bold',
-                size: 12
+                size: 12,
+                family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
               },
               formatter: function(value, context) {
                 // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
@@ -1340,15 +1351,6 @@
               hoverBorderWidth: 2.5,
               hoverBorderColor: '#ffffff'
             }
-          },
-          // Layout específico para gráficos circulares
-          layout: {
-            padding: {
-              top: 20,
-              bottom: 20,
-              left: 10,
-              right: 10
-            }
           }
         }
       };
@@ -1360,6 +1362,15 @@
         options: {
           ...baseConfig.options,
           ...(typeSpecificConfigs[chartType] || {}),
+          // Configuración común para evitar superposición en gráficos
+          layout: {
+            padding: {
+              top: chartType === 'line' ? 60 : 30, // Más espacio arriba
+              bottom: 40, // Más espacio abajo
+              left: 20, // Más espacio izquierda
+              right: chartType === 'pie' ? 50 : 20 // Más espacio derecha para torta
+            }
+          }
         },
         plugins: chartType === 'pie' || chartType === 'bar' || chartType === 'line' ? [ChartDataLabels] : []
       };
@@ -1516,4 +1527,3 @@
   </script>
 </body>
 </html>
-
