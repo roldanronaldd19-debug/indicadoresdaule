@@ -279,15 +279,16 @@
       color: var(--danger);
     }
     
+    /* GRÁFICOS MÁS GRANDES */
     .chart-container {
       position: relative;
-      height: 500px;
+      height: 550px; /* AUMENTADO de 500px a 550px */
       margin-top: 20px;
     }
     
     .chart-container-sm {
       position: relative;
-      height: 350px;
+      height: 400px; /* AUMENTADO de 350px a 400px */
       margin-top: 20px;
     }
     
@@ -498,7 +499,7 @@
     
     .question-chart-container {
       position: relative;
-      height: 400px;
+      height: 450px; /* AUMENTADO de 400px a 450px */
       margin-top: 20px;
     }
     
@@ -606,7 +607,7 @@
       }
       
       .chart-container {
-        height: 400px;
+        height: 450px; /* AUMENTADO de 400px a 450px */
       }
       
       .summary-cards {
@@ -1192,7 +1193,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - MEJORADO PARA EVITAR SUPERPOSICIÓN
+    // Renderizar gráfico principal con tipo seleccionado - GRÁFICOS MÁS GRANDES Y EJE Y SIN DECIMALES
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1204,7 +1205,7 @@
       // Calcular el valor máximo para ajustar el eje Y dinámicamente
       const maxValue = Math.max(...values);
       const yAxisMax = Math.ceil(maxValue * 1.2); // 20% más que el valor máximo
-      const stepSize = Math.ceil(yAxisMax / 10); // 10 pasos en el eje Y
+      const stepSize = Math.max(1, Math.ceil(yAxisMax / 10)); // Mínimo paso de 1
       
       // Colores más atractivos y consistentes
       const colors = [
@@ -1244,7 +1245,7 @@
               position: 'right',
               labels: {
                 font: {
-                  size: 11
+                  size: 12 // Aumentado para gráficos más grandes
                 },
                 // Mostrar porcentajes en la leyenda del gráfico circular
                 generateLabels: function(chart) {
@@ -1265,10 +1266,10 @@
               display: true,
               text: `Distribución de Desechos Sólidos por Categoría - ${getChartTypeName(chartType)}`,
               font: {
-                size: 16,
+                size: 18, // Aumentado para gráficos más grandes
                 weight: 'bold'
               },
-              padding: 20
+              padding: 25 // Más padding para título más grande
             },
             tooltip: {
               callbacks: {
@@ -1288,7 +1289,7 @@
         }
       };
       
-      // CONFIGURACIÓN ESPECÍFICA PARA CADA TIPO DE GRÁFICO CON EJE Y MEJORADO
+      // CONFIGURACIÓN ESPECÍFICA PARA CADA TIPO DE GRÁFICO CON EJE Y SIN DECIMALES
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1298,41 +1299,42 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' },
-                padding: { top: 20, bottom: 10 } // Más espacio para evitar choque
+                font: { size: 15, weight: 'bold' }, // Aumentado para gráfico más grande
+                padding: { top: 25, bottom: 15 } // Más espacio para evitar choque
               },
               ticks: {
                 callback: function(value) {
-                  return value.toFixed(1) + ' kg';
+                  // QUITAR DECIMALES .0 - Mostrar solo números enteros
+                  if (Number.isInteger(value)) {
+                    return value + ' kg';
+                  }
+                  return value.toFixed(0) + ' kg'; // Redondear a entero
                 },
-                padding: 25, // MÁS espacio para evitar choque con porcentajes
+                padding: 30, // MÁS espacio para evitar choque con porcentajes
                 stepSize: stepSize, // Pasos dinámicos
-                maxTicksLimit: 12
+                maxTicksLimit: 12,
+                font: {
+                  size: 12 // Aumentado para gráfico más grande
+                }
               },
               grid: {
-                drawBorder: false
-              },
-              // Ajustar la posición del título del eje Y
-              title: {
-                display: true,
-                text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' },
-                padding: { top: 30, bottom: 0 } // MUCHO más espacio arriba
+                drawBorder: false,
+                color: 'rgba(0, 0, 0, 0.05)'
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' },
-                padding: { top: 10, bottom: 20 }
+                font: { size: 15, weight: 'bold' }, // Aumentado para gráfico más grande
+                padding: { top: 15, bottom: 25 }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10, // Más espacio para evitar choque
+                padding: 15, // Más espacio para evitar choque
                 font: {
-                  size: 11
+                  size: 12 // Aumentado para gráfico más grande
                 },
                 autoSkip: true,
                 maxTicksLimit: 15
@@ -1342,26 +1344,28 @@
               }
             }
           },
-          barPercentage: 0.7,
-          categoryPercentage: 0.8,
+          barPercentage: 0.8, // Barras más anchas
+          categoryPercentage: 0.9, // Más espacio entre categorías
           plugins: {
             datalabels: {
               display: true,
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11
+                size: 12 // Aumentado para gráfico más grande
               },
               formatter: function(value, context) {
                 return percentageLabels[context.dataIndex];
               },
               anchor: 'end',
               align: 'top',
-              offset: 12, // Ajustado para estar claramente encima de la barra
+              offset: 15, // Ajustado para estar claramente encima de la barra
               clamp: true,
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
               borderRadius: 4,
-              padding: { top: 2, right: 4, bottom: 2, left: 4 }
+              padding: { top: 3, right: 5, bottom: 3, left: 5 },
+              borderWidth: 1,
+              borderColor: 'rgba(0, 0, 0, 0.1)'
             }
           }
         },
@@ -1373,41 +1377,42 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' },
-                padding: { top: 20, bottom: 10 } // Más espacio para evitar choque
+                font: { size: 15, weight: 'bold' }, // Aumentado para gráfico más grande
+                padding: { top: 25, bottom: 15 } // Más espacio para evitar choque
               },
               ticks: {
                 callback: function(value) {
-                  return value.toFixed(1) + ' kg';
+                  // QUITAR DECIMALES .0 - Mostrar solo números enteros
+                  if (Number.isInteger(value)) {
+                    return value + ' kg';
+                  }
+                  return value.toFixed(0) + ' kg'; // Redondear a entero
                 },
-                padding: 25, // MÁS espacio para evitar choque con porcentajes
+                padding: 30, // MÁS espacio para evitar choque con porcentajes
                 stepSize: stepSize, // Pasos dinámicos
-                maxTicksLimit: 12
+                maxTicksLimit: 12,
+                font: {
+                  size: 12 // Aumentado para gráfico más grande
+                }
               },
               grid: {
-                drawBorder: false
-              },
-              // Ajustar la posición del título del eje Y
-              title: {
-                display: true,
-                text: 'Peso (kg)',
-                font: { size: 14, weight: 'bold' },
-                padding: { top: 30, bottom: 0 } // MUCHO más espacio arriba
+                drawBorder: false,
+                color: 'rgba(0, 0, 0, 0.05)'
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 14, weight: 'bold' },
-                padding: { top: 10, bottom: 20 }
+                font: { size: 15, weight: 'bold' }, // Aumentado para gráfico más grande
+                padding: { top: 15, bottom: 25 }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10, // Más espacio para evitar choque
+                padding: 15, // Más espacio para evitar choque
                 font: {
-                  size: 11
+                  size: 12 // Aumentado para gráfico más grande
                 },
                 autoSkip: true,
                 maxTicksLimit: 15
@@ -1423,20 +1428,20 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11
+                size: 12 // Aumentado para gráfico más grande
               },
               formatter: function(value, context) {
                 return percentageLabels[context.dataIndex];
               },
               anchor: 'center',
               align: 'top',
-              offset: 18, // Ajustado para estar claramente encima del punto
+              offset: 20, // Ajustado para estar claramente encima del punto
               clamp: true,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
               borderRadius: 4,
-              padding: { top: 3, right: 5, bottom: 3, left: 5 },
+              padding: { top: 4, right: 6, bottom: 4, left: 6 },
               borderWidth: 1,
-              borderColor: 'rgba(0, 0, 0, 0.1)'
+              borderColor: 'rgba(0, 0, 0, 0.15)'
             }
           }
         },
@@ -1444,9 +1449,9 @@
           // Configuración para gráfico circular con porcentajes DENTRO
           elements: {
             arc: {
-              borderWidth: 1.5,
+              borderWidth: 2, // Aumentado para gráfico más grande
               borderColor: '#ffffff',
-              hoverBorderWidth: 2.5,
+              hoverBorderWidth: 3, // Aumentado para gráfico más grande
               hoverBorderColor: '#ffffff'
             }
           },
@@ -1462,7 +1467,7 @@
               },
               font: {
                 weight: 'bold',
-                size: 12
+                size: 13 // Aumentado para gráfico más grande
               },
               formatter: function(value, context) {
                 // Mostrar porcentaje dentro del segmento
@@ -1478,7 +1483,7 @@
               offset: 0, // Dentro del segmento
               textAlign: 'center',
               textShadow: true,
-              shadowBlur: 3,
+              shadowBlur: 4, // Aumentado para gráfico más grande
               shadowColor: 'rgba(0,0,0,0.5)',
               clamp: false
             }
@@ -1486,30 +1491,30 @@
         }
       };
       
-      // Ajustes de layout específicos para evitar superposición
+      // Ajustes de layout específicos para GRÁFICOS MÁS GRANDES
       const layoutConfigs = {
         bar: {
           padding: {
-            top: 60, // MUCHO más espacio arriba para el título del eje Y
-            bottom: 70, // Más espacio para etiquetas del eje X
-            left: 25, // Más espacio para etiquetas del eje Y
-            right: 25
+            top: 70, // MUCHO más espacio arriba para el título del eje Y
+            bottom: 80, // Más espacio para etiquetas del eje X
+            left: 30, // Más espacio para etiquetas del eje Y
+            right: 30
           }
         },
         line: {
           padding: {
-            top: 60, // MUCHO más espacio arriba para el título del eje Y
-            bottom: 70, // Más espacio para etiquetas del eje X
-            left: 25, // Más espacio para etiquetas del eje Y
-            right: 25
+            top: 70, // MUCHO más espacio arriba para el título del eje Y
+            bottom: 80, // Más espacio para etiquetas del eje X
+            left: 30, // Más espacio para etiquetas del eje Y
+            right: 30
           }
         },
         pie: {
           padding: {
-            top: 20,
-            bottom: 20,
-            left: 10,
-            right: 10
+            top: 25, // Aumentado para gráfico más grande
+            bottom: 25, // Aumentado para gráfico más grande
+            left: 15, // Aumentado para gráfico más grande
+            right: 15 // Aumentado para gráfico más grande
           }
         }
       };
@@ -1523,10 +1528,10 @@
           ...(typeSpecificConfigs[chartType] || {}),
           layout: layoutConfigs[chartType] || {
             padding: {
-              top: 40,
-              bottom: 50,
-              left: 20,
-              right: 20
+              top: 50,
+              bottom: 60,
+              left: 25,
+              right: 25
             }
           }
         },
