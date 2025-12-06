@@ -1155,7 +1155,7 @@
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS con título de eje Y más arriba
+      // Configuraciones específicas por tipo de gráfico - MEJORADAS con ajuste de posición del título
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1168,19 +1168,21 @@
                   size: 14, 
                   weight: 'bold' 
                 },
-                // Posición más arriba para el título del eje Y
-                padding: { top: 0, bottom: 20 }
+                // POSICIÓN MÁS ARRIBA para evitar superposición
+                padding: {
+                  top: 10,    // Más espacio arriba
+                  bottom: 30  // Más espacio abajo
+                }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 8 // Reducido para dar más espacio arriba
+                padding: 20 // Más espacio para evitar superposición con porcentajes
               },
-              // Ajustar el grid para que el título esté más arriba
+              // Añadir más espacio en la parte superior del gráfico
               grid: {
                 drawBorder: true,
-                drawOnChartArea: true,
                 drawTicks: true
               }
             },
@@ -1188,16 +1190,16 @@
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { 
-                  size: 14, 
-                  weight: 'bold' 
-                },
-                padding: { top: 10, bottom: 0 }
+                font: { size: 14, weight: 'bold' },
+                padding: {
+                  top: 20,    // Más espacio arriba
+                  bottom: 10  // Espacio normal abajo
+                }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10
+                padding: 15 // Más espacio para evitar superposición
               }
             }
           },
@@ -1214,7 +1216,16 @@
               },
               anchor: 'end',
               align: 'top',
-              offset: 2
+              offset: 4 // Ligero aumento para mejor visibilidad
+            }
+          },
+          // Layout específico para gráficos de barras
+          layout: {
+            padding: {
+              top: 30,    // Más espacio arriba para el título "Peso (kg)"
+              bottom: 40,
+              left: 20,
+              right: 20
             }
           }
         },
@@ -1229,19 +1240,21 @@
                   size: 14, 
                   weight: 'bold' 
                 },
-                // Posición más arriba para el título del eje Y
-                padding: { top: 0, bottom: 20 }
+                // POSICIÓN MÁS ARRIBA para evitar superposición
+                padding: {
+                  top: 10,    // Más espacio arriba
+                  bottom: 30  // Más espacio abajo
+                }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 8 // Reducido para dar más espacio arriba
+                padding: 25 // Más espacio para evitar superposición con porcentajes
               },
-              // Ajustar el grid para que el título esté más arriba
+              // Añadir más espacio en la parte superior del gráfico
               grid: {
                 drawBorder: true,
-                drawOnChartArea: true,
                 drawTicks: true
               }
             },
@@ -1249,16 +1262,16 @@
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { 
-                  size: 14, 
-                  weight: 'bold' 
-                },
-                padding: { top: 10, bottom: 0 }
+                font: { size: 14, weight: 'bold' },
+                padding: {
+                  top: 20,    // Más espacio arriba
+                  bottom: 10  // Espacio normal abajo
+                }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10
+                padding: 15 // Más espacio para evitar superposición
               }
             }
           },
@@ -1275,9 +1288,18 @@
                 return percentages[context.dataIndex];
               },
               anchor: 'center',
-              align: 'top',
-              offset: 10,
+              align: 'top', // ENCIMA del punto
+              offset: 15, // Aumentado para estar más arriba y evitar superposición
               clamp: true
+            }
+          },
+          // Layout específico para gráficos de línea
+          layout: {
+            padding: {
+              top: 40,    // Más espacio arriba para el título "Peso (kg)"
+              bottom: 50,
+              left: 20,
+              right: 20
             }
           }
         },
@@ -1318,6 +1340,15 @@
               hoverBorderWidth: 2.5,
               hoverBorderColor: '#ffffff'
             }
+          },
+          // Layout específico para gráficos circulares
+          layout: {
+            padding: {
+              top: 20,
+              bottom: 20,
+              left: 10,
+              right: 10
+            }
           }
         }
       };
@@ -1329,15 +1360,6 @@
         options: {
           ...baseConfig.options,
           ...(typeSpecificConfigs[chartType] || {}),
-          // Configuración común para evitar superposición en gráficos
-          layout: {
-            padding: {
-              top: chartType === 'line' ? 50 : 30, // Aumentado para dar más espacio arriba
-              bottom: 30,
-              left: 15,
-              right: 15
-            }
-          }
         },
         plugins: chartType === 'pie' || chartType === 'bar' || chartType === 'line' ? [ChartDataLabels] : []
       };
