@@ -1084,7 +1084,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - MEJORADO PROFESIONALMENTE
+    // Renderizar gráfico principal con tipo seleccionado - CORREGIDO: porcentajes arriba de cada categoría
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1172,59 +1172,63 @@
                 }
               }
             },
-            // Plugin para mostrar porcentajes - MEJORADO
+            // Plugin para mostrar porcentajes - CORREGIDO
             datalabels: {
               display: true,
               color: function(context) {
-                // Colores contrastantes para mejor legibilidad
                 if (chartType === 'pie') {
+                  // Para gráfico circular, usar color contrastante
                   const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
                   const rgb = hexToRgb(backgroundColor);
                   const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
                   return brightness > 128 ? '#1e293b' : '#ffffff';
                 }
-                return '#1e293b';
+                return '#1e293b'; // Negro para otros tipos de gráficos
               },
               font: {
                 weight: 'bold',
                 size: function(context) {
-                  return chartType === 'pie' ? 11 : 10;
+                  return chartType === 'pie' ? 12 : 11;
                 }
               },
               formatter: function(value, context) {
-                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
-                
-                // Para gráfico circular, mostrar solo porcentajes > 3%
-                if (chartType === 'pie' && percentage <= 3) return '';
-                
-                // Para gráfico de líneas, mostrar en un formato más limpio
-                if (chartType === 'line') {
-                  return `${percentage.toFixed(1)}%`;
-                }
-                
-                // Para gráfico de barras
-                return `${percentage.toFixed(1)}%`;
+                const percentage = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
+                return `${percentage}%`;
               },
               anchor: function(context) {
-                return chartType === 'line' ? 'center' : 'end';
+                // Para gráfico de líneas, centrar sobre el punto
+                // Para gráfico de barras, poner arriba de la barra
+                // Para gráfico circular, centrar en el segmento
+                if (chartType === 'line') return 'center';
+                if (chartType === 'bar') return 'end';
+                return 'center'; // Para pie
               },
               align: function(context) {
-                return chartType === 'line' ? 'top' : 'top';
+                // Para gráfico de líneas, poner arriba del punto
+                // Para gráfico de barras, poner arriba de la barra
+                // Para gráfico circular, centrar en el segmento
+                if (chartType === 'line') return 'top';
+                if (chartType === 'bar') return 'top';
+                return 'center'; // Para pie
               },
               offset: function(context) {
-                return chartType === 'line' ? 12 : 5;
+                // Ajustar la distancia del texto al elemento
+                if (chartType === 'line') return 12;
+                if (chartType === 'bar') return 5;
+                return 0; // Para pie
               },
               textAlign: 'center',
               textShadow: chartType === 'pie',
               shadowBlur: chartType === 'pie' ? 4 : 0,
               shadowColor: 'rgba(0,0,0,0.5)',
-              clamp: true
+              clamp: true,
+              clip: false
             }
           }
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS PROFESIONALMENTE
+      // Configuraciones específicas por tipo de gráfico
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1239,7 +1243,7 @@
                 callback: function(value) {
                   return value.toFixed(1) + ' kg';
                 },
-                padding: 10
+                padding: 15 // Más espacio para evitar superposición
               },
               grid: {
                 drawBorder: false
@@ -1254,9 +1258,9 @@
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 5,
+                padding: 10,
                 font: {
-                  size: 11 // Texto más pequeño para evitar superposición
+                  size: 11
                 }
               },
               grid: {
@@ -1281,7 +1285,7 @@
                 callback: function(value) {
                   return value.toFixed(1) + ' kg';
                 },
-                padding: 10
+                padding: 15
               },
               grid: {
                 drawBorder: false
@@ -1296,9 +1300,9 @@
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 5,
+                padding: 10,
                 font: {
-                  size: 11 // Texto más pequeño para evitar superposición
+                  size: 11
                 }
               },
               grid: {
@@ -1308,7 +1312,7 @@
           }
         },
         pie: {
-          // Configuración MEJORADA para gráfico circular
+          // Configuración para gráfico circular
           elements: {
             arc: {
               borderWidth: 1.5,
@@ -1330,14 +1334,14 @@
           // Configuración común para evitar superposición en gráficos
           layout: {
             padding: {
-              top: chartType === 'line' ? 60 : 30,
-              bottom: 50, // Más espacio para etiquetas del eje X
-              left: 15,
-              right: 15
+              top: chartType === 'line' ? 70 : 40, // Más espacio para porcentajes
+              bottom: 60, // Más espacio para etiquetas del eje X
+              left: 20,
+              right: 20
             }
           }
         },
-        plugins: [ChartDataLabels] // Siempre incluir el plugin para etiquetas de datos
+        plugins: [ChartDataLabels]
       };
       
       mainChart = new Chart(mainCtx, finalConfig);
@@ -1368,7 +1372,7 @@
       alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
-    // Rellenar tabla resumen y actualizar resúmenes - MEJORADA
+    // Rellenar tabla resumen y actualizar resúmenes
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
       
