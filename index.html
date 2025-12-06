@@ -1064,7 +1064,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - MEJORADO con ajuste de posición
+    // Renderizar gráfico principal con tipo seleccionado - MEJORADO CON POSICIÓN DE ETIQUETAS AJUSTADA
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1155,7 +1155,7 @@
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS con posición ajustada
+      // Configuraciones específicas por tipo de gráfico - MEJORADAS CON POSICIÓN AJUSTADA
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1165,17 +1165,13 @@
                 display: true,
                 text: 'Peso (kg)',
                 font: { size: 14, weight: 'bold' },
-                padding: { top: 0, bottom: 30 } // Añadido padding para subir la etiqueta
+                padding: { top: 0, bottom: 20 } // Ajuste de padding
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
                 padding: 15 // Espacio para evitar superposición
-              },
-              // Añadir más espacio en la parte superior para la etiqueta
-              grid: {
-                drawBorder: false
               }
             },
             x: {
@@ -1183,16 +1179,17 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' },
-                padding: { top: 20, bottom: 0 } // Ajustado padding
+                padding: { top: 25, bottom: 0 } // POSICIÓN SUBIDA - más espacio arriba
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
                 padding: 10 // Espacio para evitar superposición
               },
-              // Añadir más espacio en la parte inferior para los porcentajes
-              afterFit: function(scale) {
-                scale.height = scale.height + 20;
+              // Ajustar la posición del eje X
+              offset: true,
+              grid: {
+                offset: false
               }
             }
           },
@@ -1209,7 +1206,16 @@
               },
               anchor: 'end',
               align: 'top',
-              offset: 2 // Reducido para mejor visualización
+              offset: 5 // Aumentado para más espacio
+            }
+          },
+          // Layout con más espacio en la parte inferior
+          layout: {
+            padding: {
+              top: chartType === 'line' ? 50 : 20,
+              bottom: 60, // Aumentado para dar más espacio a la etiqueta del eje X
+              left: 15,
+              right: 15
             }
           }
         },
@@ -1221,17 +1227,13 @@
                 display: true,
                 text: 'Peso (kg)',
                 font: { size: 14, weight: 'bold' },
-                padding: { top: 0, bottom: 30 } // Añadido padding para subir la etiqueta
+                padding: { top: 0, bottom: 20 } // Ajuste de padding
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
                 padding: 15 // Espacio para evitar superposición
-              },
-              // Añadir más espacio en la parte superior para la etiqueta
-              grid: {
-                drawBorder: false
               }
             },
             x: {
@@ -1239,16 +1241,17 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' },
-                padding: { top: 20, bottom: 0 } // Ajustado padding
+                padding: { top: 30, bottom: 0 } // POSICIÓN SUBIDA - más espacio arriba
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
                 padding: 10 // Espacio para evitar superposición
               },
-              // Añadir más espacio en la parte inferior para los porcentajes
-              afterFit: function(scale) {
-                scale.height = scale.height + 20;
+              // Ajustar la posición del eje X
+              offset: true,
+              grid: {
+                offset: false
               }
             }
           },
@@ -1266,8 +1269,17 @@
               },
               anchor: 'center',
               align: 'top', // ENCIMA del punto
-              offset: 15, // Aumentado para estar más arriba
+              offset: 15, // Aumentado para más espacio entre punto y porcentaje
               clamp: true
+            }
+          },
+          // Layout con más espacio en la parte inferior
+          layout: {
+            padding: {
+              top: 70, // Aumentado para líneas
+              bottom: 70, // Aumentado para dar más espacio a la etiqueta del eje X
+              left: 15,
+              right: 15
             }
           }
         },
@@ -1308,6 +1320,14 @@
               hoverBorderWidth: 2.5,
               hoverBorderColor: '#ffffff'
             }
+          },
+          layout: {
+            padding: {
+              top: 20,
+              bottom: 20,
+              left: 15,
+              right: 15
+            }
           }
         }
       };
@@ -1320,14 +1340,7 @@
           ...baseConfig.options,
           ...(typeSpecificConfigs[chartType] || {}),
           // Configuración común para evitar superposición en gráficos
-          layout: {
-            padding: {
-              top: chartType === 'line' ? 60 : 30, // Aumentado para dar más espacio
-              bottom: 40, // Aumentado para dar más espacio
-              left: 15,
-              right: 15
-            }
-          }
+          // Layout ya definido en typeSpecificConfigs
         },
         plugins: chartType === 'pie' || chartType === 'bar' || chartType === 'line' ? [ChartDataLabels] : []
       };
