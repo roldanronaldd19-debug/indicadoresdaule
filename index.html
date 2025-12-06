@@ -524,6 +524,71 @@
       font-weight: 600;
     }
     
+    /* Modal de ayuda */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal {
+      background: white;
+      border-radius: var(--radius);
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: var(--shadow);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    
+    .modal-content {
+      line-height: 1.6;
+      color: #334155;
+    }
+    
+    .modal-content ul {
+      margin: 15px 0;
+      padding-left: 20px;
+    }
+    
+    .modal-content li {
+      margin-bottom: 8px;
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -567,6 +632,11 @@
       
       .category-total-row td:first-child {
         padding-left: 15px;
+      }
+      
+      .modal {
+        width: 95%;
+        padding: 20px;
       }
     }
   </style>
@@ -719,6 +789,30 @@
     </footer>
   </main>
 
+  <!-- Modal de ayuda -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-question-circle"></i> Ayuda - Panel de Análisis
+        </h3>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-content">
+        <p><strong>PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS</strong></p>
+        <p>Este panel permite analizar datos de desechos sólidos del Cantón Daule.</p>
+        <ul>
+          <li><strong>Filtros:</strong> Utilice el filtro de ubicación para analizar datos específicos de diferentes zonas.</li>
+          <li><strong>Gráficos:</strong> Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia.</li>
+          <li><strong>Porcentajes:</strong> Los porcentajes se muestran claramente encima de cada categoría en los gráficos.</li>
+          <li><strong>Tabla:</strong> La tabla muestra el desglose detallado por categorías y subcategorías con sus respectivos porcentajes.</li>
+          <li><strong>Interactividad:</strong> Pase el cursor sobre los gráficos para ver detalles adicionales.</li>
+        </ul>
+        <p><em>Los datos se actualizan automáticamente al aplicar filtros.</em></p>
+      </div>
+    </div>
+  </div>
+
   <script>
   (async function(){
     // ---------- CONFIGURACIÓN ----------
@@ -730,6 +824,8 @@
     const selectLugar = document.getElementById('selectLugar');
     const btnResetFilters = document.getElementById('btnResetFilters');
     const btnHelp = document.getElementById('btnHelp');
+    const helpModal = document.getElementById('helpModal');
+    const closeModal = document.getElementById('closeModal');
 
     // Elementos de información de filtros
     const lugarInfo = document.getElementById('lugarInfo');
@@ -940,9 +1036,21 @@
         actualizar();
       });
       
-      // Ayuda
+      // Ayuda - Modal
       btnHelp.addEventListener('click', () => {
-        mostrarModalAyuda();
+        helpModal.classList.add('active');
+      });
+      
+      // Cerrar modal
+      closeModal.addEventListener('click', () => {
+        helpModal.classList.remove('active');
+      });
+      
+      // Cerrar modal al hacer clic fuera
+      helpModal.addEventListener('click', (e) => {
+        if (e.target === helpModal) {
+          helpModal.classList.remove('active');
+        }
       });
     }
 
@@ -1084,13 +1192,14 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - CORREGIDO: porcentajes arriba de cada categoría
+    // Renderizar gráfico principal con tipo seleccionado - MEJORADO CON PORCENTAJES VISIBLES
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
       // Calcular porcentajes para mostrar en los gráficos
       const totalSum = values.reduce((a, b) => a + b, 0);
-      const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100).toFixed(1) + '%' : '0%');
+      const percentages = values.map(v => totalSum > 0 ? ((v / totalSum) * 100) : 0);
+      const percentageLabels = percentages.map(p => p.toFixed(1) + '%');
       
       // Colores más atractivos y consistentes
       const colors = [
@@ -1139,9 +1248,7 @@
                     const labels = original.call(this, chart);
                     // Agregar porcentaje y valor a cada etiqueta
                     labels.forEach((label, i) => {
-                      const value = chart.data.datasets[0].data[i];
-                      const percentage = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
-                      label.text += ` (${percentage}%)`;
+                      label.text += ` (${percentageLabels[i]})`;
                     });
                     return labels;
                   }
@@ -1171,59 +1278,59 @@
                   return label;
                 }
               }
-            },
-            // Plugin para mostrar porcentajes - CORREGIDO
-            datalabels: {
-              display: true,
-              color: function(context) {
-                if (chartType === 'pie') {
-                  // Para gráfico circular, usar color contrastante
-                  const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
-                  const rgb = hexToRgb(backgroundColor);
-                  const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-                  return brightness > 128 ? '#1e293b' : '#ffffff';
-                }
-                return '#1e293b'; // Negro para otros tipos de gráficos
-              },
-              font: {
-                weight: 'bold',
-                size: function(context) {
-                  return chartType === 'pie' ? 12 : 11;
-                }
-              },
-              formatter: function(value, context) {
-                const percentage = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
-                return `${percentage}%`;
-              },
-              anchor: function(context) {
-                // Para gráfico de líneas, centrar sobre el punto
-                // Para gráfico de barras, poner arriba de la barra
-                // Para gráfico circular, centrar en el segmento
-                if (chartType === 'line') return 'center';
-                if (chartType === 'bar') return 'end';
-                return 'center'; // Para pie
-              },
-              align: function(context) {
-                // Para gráfico de líneas, poner arriba del punto
-                // Para gráfico de barras, poner arriba de la barra
-                // Para gráfico circular, centrar en el segmento
-                if (chartType === 'line') return 'top';
-                if (chartType === 'bar') return 'top';
-                return 'center'; // Para pie
-              },
-              offset: function(context) {
-                // Ajustar la distancia del texto al elemento
-                if (chartType === 'line') return 12;
-                if (chartType === 'bar') return 5;
-                return 0; // Para pie
-              },
-              textAlign: 'center',
-              textShadow: chartType === 'pie',
-              shadowBlur: chartType === 'pie' ? 4 : 0,
-              shadowColor: 'rgba(0,0,0,0.5)',
-              clamp: true,
-              clip: false
             }
+          }
+        }
+      };
+      
+      // Configuración específica para mostrar porcentajes VISIBLES
+      const percentageDisplayConfig = {
+        plugins: {
+          datalabels: {
+            display: true,
+            color: function(context) {
+              // Colores contrastantes para mejor legibilidad
+              if (chartType === 'pie') {
+                const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
+                const rgb = hexToRgb(backgroundColor);
+                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+                return brightness > 128 ? '#1e293b' : '#ffffff';
+              }
+              // Para barras y líneas, usar color oscuro
+              return '#1e293b';
+            },
+            font: {
+              weight: 'bold',
+              size: function(context) {
+                return chartType === 'pie' ? 12 : 11;
+              }
+            },
+            formatter: function(value, context) {
+              // Mostrar siempre el porcentaje
+              return percentageLabels[context.dataIndex];
+            },
+            anchor: function(context) {
+              if (chartType === 'line') return 'center';
+              if (chartType === 'bar') return 'end';
+              return 'center';
+            },
+            align: function(context) {
+              if (chartType === 'line') return 'top';
+              if (chartType === 'bar') return 'top';
+              return 'center';
+            },
+            offset: function(context) {
+              if (chartType === 'line') return 12;
+              if (chartType === 'bar') return 5;
+              return 0;
+            },
+            clamp: true,
+            textShadow: chartType === 'pie',
+            shadowBlur: chartType === 'pie' ? 3 : 0,
+            shadowColor: 'rgba(0,0,0,0.3)',
+            padding: 3,
+            borderRadius: 4,
+            backgroundColor: chartType === 'pie' ? 'transparent' : 'rgba(255, 255, 255, 0.8)'
           }
         }
       };
@@ -1243,7 +1350,7 @@
                 callback: function(value) {
                   return value.toFixed(1) + ' kg';
                 },
-                padding: 15 // Más espacio para evitar superposición
+                padding: 10
               },
               grid: {
                 drawBorder: false
@@ -1258,7 +1365,7 @@
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10,
+                padding: 5,
                 font: {
                   size: 11
                 }
@@ -1268,7 +1375,6 @@
               }
             }
           },
-          // Mejor espaciado para barras
           barPercentage: 0.7,
           categoryPercentage: 0.8
         },
@@ -1285,7 +1391,7 @@
                 callback: function(value) {
                   return value.toFixed(1) + ' kg';
                 },
-                padding: 15
+                padding: 10
               },
               grid: {
                 drawBorder: false
@@ -1300,7 +1406,7 @@
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10,
+                padding: 5,
                 font: {
                   size: 11
                 }
@@ -1312,13 +1418,21 @@
           }
         },
         pie: {
-          // Configuración para gráfico circular
+          // Configuración para gráfico circular con porcentajes visibles
           elements: {
             arc: {
               borderWidth: 1.5,
               borderColor: '#ffffff',
               hoverBorderWidth: 2.5,
               hoverBorderColor: '#ffffff'
+            }
+          },
+          plugins: {
+            ...percentageDisplayConfig.plugins,
+            datalabels: {
+              ...percentageDisplayConfig.plugins.datalabels,
+              // Para gráfico circular, mostrar todos los porcentajes
+              display: true
             }
           }
         }
@@ -1330,14 +1444,14 @@
         data: baseConfig.data,
         options: {
           ...baseConfig.options,
+          ...percentageDisplayConfig,
           ...(typeSpecificConfigs[chartType] || {}),
-          // Configuración común para evitar superposición en gráficos
           layout: {
             padding: {
-              top: chartType === 'line' ? 70 : 40, // Más espacio para porcentajes
+              top: chartType === 'line' ? 60 : 40,
               bottom: 60, // Más espacio para etiquetas del eje X
               left: 20,
-              right: 20
+              right: chartType === 'pie' ? 40 : 20
             }
           }
         },
@@ -1365,11 +1479,6 @@
         'line': 'Gráfico de Líneas'
       };
       return names[type] || type;
-    }
-
-    // Mostrar modal de ayuda
-    function mostrarModalAyuda() {
-      alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
     // Rellenar tabla resumen y actualizar resúmenes
@@ -1404,7 +1513,7 @@
             tbody.appendChild(separador);
           }
           
-          // Fila de categoría principal - SIN kg ni porcentaje
+          // Fila de categoría principal
           const trCategoria = document.createElement('tr');
           trCategoria.className = 'category-header';
           trCategoria.innerHTML = `
