@@ -279,7 +279,6 @@
       color: var(--danger);
     }
     
-    /* GRÁFICOS MÁS GRANDES */
     .chart-container {
       position: relative;
       height: 550px; /* AUMENTADO de 500px a 550px */
@@ -288,7 +287,7 @@
     
     .chart-container-sm {
       position: relative;
-      height: 400px; /* AUMENTADO de 350px a 400px */
+      height: 350px;
       margin-top: 20px;
     }
     
@@ -499,7 +498,7 @@
     
     .question-chart-container {
       position: relative;
-      height: 450px; /* AUMENTADO de 400px a 450px */
+      height: 400px;
       margin-top: 20px;
     }
     
@@ -607,7 +606,7 @@
       }
       
       .chart-container {
-        height: 450px; /* AUMENTADO de 400px a 450px */
+        height: 450px; /* Ajustado para móviles */
       }
       
       .summary-cards {
@@ -1193,7 +1192,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - GRÁFICOS MÁS GRANDES Y EJE Y SIN DECIMALES
+    // Renderizar gráfico principal con tipo seleccionado - GRÁFICOS MÁS GRANDES Y EJE Y CON NÚMEROS ENTEROS
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1205,7 +1204,7 @@
       // Calcular el valor máximo para ajustar el eje Y dinámicamente
       const maxValue = Math.max(...values);
       const yAxisMax = Math.ceil(maxValue * 1.2); // 20% más que el valor máximo
-      const stepSize = Math.max(1, Math.ceil(yAxisMax / 10)); // Mínimo paso de 1
+      const stepSize = Math.max(1, Math.ceil(yAxisMax / 10)); // Mínimo paso de 1, 10 pasos en el eje Y
       
       // Colores más atractivos y consistentes
       const colors = [
@@ -1245,7 +1244,7 @@
               position: 'right',
               labels: {
                 font: {
-                  size: 12 // Aumentado para gráficos más grandes
+                  size: 11
                 },
                 // Mostrar porcentajes en la leyenda del gráfico circular
                 generateLabels: function(chart) {
@@ -1266,10 +1265,10 @@
               display: true,
               text: `Distribución de Desechos Sólidos por Categoría - ${getChartTypeName(chartType)}`,
               font: {
-                size: 18, // Aumentado para gráficos más grandes
+                size: 16,
                 weight: 'bold'
               },
-              padding: 25 // Más padding para título más grande
+              padding: 20
             },
             tooltip: {
               callbacks: {
@@ -1289,7 +1288,7 @@
         }
       };
       
-      // CONFIGURACIÓN ESPECÍFICA PARA CADA TIPO DE GRÁFICO CON EJE Y SIN DECIMALES
+      // CONFIGURACIÓN ESPECÍFICA PARA CADA TIPO DE GRÁFICO CON GRÁFICOS MÁS GRANDES
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1299,42 +1298,39 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 15, weight: 'bold' }, // Aumentado para gráfico más grande
-                padding: { top: 25, bottom: 15 } // Más espacio para evitar choque
+                font: { size: 14, weight: 'bold' },
+                padding: { top: 25, bottom: 10 } // Más espacio
               },
               ticks: {
                 callback: function(value) {
-                  // QUITAR DECIMALES .0 - Mostrar solo números enteros
-                  if (Number.isInteger(value)) {
-                    return value + ' kg';
-                  }
-                  return value.toFixed(0) + ' kg'; // Redondear a entero
+                  // NÚMEROS ENTEROS - quita el .0
+                  return Number.isInteger(value) ? value + ' kg' : value.toFixed(0) + ' kg';
                 },
                 padding: 30, // MÁS espacio para evitar choque con porcentajes
                 stepSize: stepSize, // Pasos dinámicos
                 maxTicksLimit: 12,
                 font: {
-                  size: 12 // Aumentado para gráfico más grande
+                  size: 12 // Texto un poco más grande
                 }
               },
               grid: {
                 drawBorder: false,
-                color: 'rgba(0, 0, 0, 0.05)'
+                lineWidth: 1
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 15, weight: 'bold' }, // Aumentado para gráfico más grande
-                padding: { top: 15, bottom: 25 }
+                font: { size: 14, weight: 'bold' },
+                padding: { top: 10, bottom: 25 } // Más espacio abajo
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
                 padding: 15, // Más espacio para evitar choque
                 font: {
-                  size: 12 // Aumentado para gráfico más grande
+                  size: 12 // Texto un poco más grande
                 },
                 autoSkip: true,
                 maxTicksLimit: 15
@@ -1344,26 +1340,26 @@
               }
             }
           },
-          barPercentage: 0.8, // Barras más anchas
-          categoryPercentage: 0.9, // Más espacio entre categorías
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
           plugins: {
             datalabels: {
               display: true,
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 12 // Aumentado para gráfico más grande
+                size: 12 // Texto un poco más grande
               },
               formatter: function(value, context) {
                 return percentageLabels[context.dataIndex];
               },
               anchor: 'end',
               align: 'top',
-              offset: 15, // Ajustado para estar claramente encima de la barra
+              offset: 15, // Más espacio para estar claramente encima
               clamp: true,
               backgroundColor: 'rgba(255, 255, 255, 0.9)',
               borderRadius: 4,
-              padding: { top: 3, right: 5, bottom: 3, left: 5 },
+              padding: { top: 3, right: 6, bottom: 3, left: 6 },
               borderWidth: 1,
               borderColor: 'rgba(0, 0, 0, 0.1)'
             }
@@ -1377,42 +1373,39 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { size: 15, weight: 'bold' }, // Aumentado para gráfico más grande
-                padding: { top: 25, bottom: 15 } // Más espacio para evitar choque
+                font: { size: 14, weight: 'bold' },
+                padding: { top: 25, bottom: 10 } // Más espacio
               },
               ticks: {
                 callback: function(value) {
-                  // QUITAR DECIMALES .0 - Mostrar solo números enteros
-                  if (Number.isInteger(value)) {
-                    return value + ' kg';
-                  }
-                  return value.toFixed(0) + ' kg'; // Redondear a entero
+                  // NÚMEROS ENTEROS - quita el .0
+                  return Number.isInteger(value) ? value + ' kg' : value.toFixed(0) + ' kg';
                 },
                 padding: 30, // MÁS espacio para evitar choque con porcentajes
                 stepSize: stepSize, // Pasos dinámicos
                 maxTicksLimit: 12,
                 font: {
-                  size: 12 // Aumentado para gráfico más grande
+                  size: 12 // Texto un poco más grande
                 }
               },
               grid: {
                 drawBorder: false,
-                color: 'rgba(0, 0, 0, 0.05)'
+                lineWidth: 1
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { size: 15, weight: 'bold' }, // Aumentado para gráfico más grande
-                padding: { top: 15, bottom: 25 }
+                font: { size: 14, weight: 'bold' },
+                padding: { top: 10, bottom: 25 } // Más espacio abajo
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
                 padding: 15, // Más espacio para evitar choque
                 font: {
-                  size: 12 // Aumentado para gráfico más grande
+                  size: 12 // Texto un poco más grande
                 },
                 autoSkip: true,
                 maxTicksLimit: 15
@@ -1428,14 +1421,14 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 12 // Aumentado para gráfico más grande
+                size: 12 // Texto un poco más grande
               },
               formatter: function(value, context) {
                 return percentageLabels[context.dataIndex];
               },
               anchor: 'center',
               align: 'top',
-              offset: 20, // Ajustado para estar claramente encima del punto
+              offset: 20, // Más espacio para estar claramente encima del punto
               clamp: true,
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               borderRadius: 4,
@@ -1449,9 +1442,9 @@
           // Configuración para gráfico circular con porcentajes DENTRO
           elements: {
             arc: {
-              borderWidth: 2, // Aumentado para gráfico más grande
+              borderWidth: 1.5,
               borderColor: '#ffffff',
-              hoverBorderWidth: 3, // Aumentado para gráfico más grande
+              hoverBorderWidth: 2.5,
               hoverBorderColor: '#ffffff'
             }
           },
@@ -1467,7 +1460,7 @@
               },
               font: {
                 weight: 'bold',
-                size: 13 // Aumentado para gráfico más grande
+                size: 13 // Texto un poco más grande
               },
               formatter: function(value, context) {
                 // Mostrar porcentaje dentro del segmento
@@ -1483,7 +1476,7 @@
               offset: 0, // Dentro del segmento
               textAlign: 'center',
               textShadow: true,
-              shadowBlur: 4, // Aumentado para gráfico más grande
+              shadowBlur: 3,
               shadowColor: 'rgba(0,0,0,0.5)',
               clamp: false
             }
@@ -1511,10 +1504,10 @@
         },
         pie: {
           padding: {
-            top: 25, // Aumentado para gráfico más grande
-            bottom: 25, // Aumentado para gráfico más grande
-            left: 15, // Aumentado para gráfico más grande
-            right: 15 // Aumentado para gráfico más grande
+            top: 20,
+            bottom: 20,
+            left: 10,
+            right: 10
           }
         }
       };
@@ -1528,10 +1521,10 @@
           ...(typeSpecificConfigs[chartType] || {}),
           layout: layoutConfigs[chartType] || {
             padding: {
-              top: 50,
-              bottom: 60,
-              left: 25,
-              right: 25
+              top: 40,
+              bottom: 50,
+              left: 20,
+              right: 20
             }
           }
         },
