@@ -1064,7 +1064,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - MEJORADO CON POSICIONES CORREGIDAS
+    // Renderizar gráfico principal con tipo seleccionado - CORREGIDO Y MEJORADO
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1120,7 +1120,8 @@
                     // Agregar porcentaje y valor a cada etiqueta
                     labels.forEach((label, i) => {
                       const value = chart.data.datasets[0].data[i];
-                      label.text += ` (${percentages[i]} - ${value.toFixed(1)} kg)`;
+                      const percentage = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
+                      label.text += ` (${percentage}% - ${value.toFixed(1)} kg)`;
                     });
                     return labels;
                   }
@@ -1150,60 +1151,8 @@
                   return label;
                 }
               }
-            }
-          }
-        }
-      };
-      
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS CON POSICIONES CORREGIDAS
-      const typeSpecificConfigs = {
-        bar: {
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Peso (kg)',
-                font: { 
-                  size: 14, 
-                  weight: 'bold' 
-                },
-                // POSICIÓN MEJORADA: subir la etiqueta más arriba
-                padding: { top: 0, bottom: 15 }
-              },
-              ticks: {
-                callback: function(value) {
-                  return value + ' kg';
-                },
-                padding: 10 // Espacio reducido para evitar superposición
-              },
-              // Aumentar espacio en la parte superior para acomodar la etiqueta
-              afterFit: function(scaleInstance) {
-                scaleInstance.height += 20;
-              }
             },
-            x: {
-              title: {
-                display: true,
-                text: 'Categorías de Desechos',
-                font: { 
-                  size: 14, 
-                  weight: 'bold' 
-                },
-                padding: { top: 10, bottom: 0 }
-              },
-              ticks: {
-                maxRotation: 45,
-                minRotation: 45,
-                padding: 10
-              },
-              // Aumentar espacio para rotación de etiquetas
-              afterFit: function(scaleInstance) {
-                scaleInstance.width += 30;
-              }
-            }
-          },
-          plugins: {
+            // Configuración de datalabels para evitar superposición
             datalabels: {
               display: true,
               color: '#1e293b',
@@ -1214,9 +1163,67 @@
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
-              anchor: 'end',
-              align: 'top',
-              offset: 2
+              anchor: function(context) {
+                return chartType === 'line' ? 'center' : 'end';
+              },
+              align: function(context) {
+                return chartType === 'line' ? 'top' : 'top';
+              },
+              offset: function(context) {
+                return chartType === 'line' ? 12 : 2;
+              },
+              clamp: true
+            }
+          }
+        }
+      };
+      
+      // Configuraciones específicas por tipo de gráfico - MEJORADAS
+      const typeSpecificConfigs = {
+        bar: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Peso (kg)',
+                font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                callback: function(value) {
+                  return value + ' kg';
+                },
+                padding: 15 // Espacio para evitar superposición
+              },
+              grid: {
+                drawBorder: false
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Categorías de Desechos',
+                font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45,
+                padding: 10, // Espacio para evitar superposición
+                autoSkip: true,
+                maxTicksLimit: 15
+              },
+              grid: {
+                display: false
+            }
+          },
+          plugins: {
+            datalabels: {
+              display: function(context) {
+                // Solo mostrar si el valor es > 0 y el porcentaje es legible
+                const value = context.dataset.data[context.dataIndex];
+                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
+                return percentage > 1; // Solo mostrar si > 1% para evitar superposición
+              }
             }
           }
         },
@@ -1227,61 +1234,48 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { 
-                  size: 14, 
-                  weight: 'bold' 
-                },
-                // POSICIÓN MEJORADA: subir la etiqueta más arriba
-                padding: { top: 0, bottom: 15 }
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 10
+                padding: 15 // Espacio para evitar superposición
               },
-              // Aumentar espacio en la parte superior para acomodar la etiqueta
-              afterFit: function(scaleInstance) {
-                scaleInstance.height += 20;
+              grid: {
+                drawBorder: false
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { 
-                  size: 14, 
-                  weight: 'bold' 
-                },
-                padding: { top: 10, bottom: 0 }
+                font: { size: 14, weight: 'bold' }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10
+                padding: 10, // Espacio para evitar superposición
+                autoSkip: true,
+                maxTicksLimit: 15
               },
-              // Aumentar espacio para rotación de etiquetas
-              afterFit: function(scaleInstance) {
-                scaleInstance.width += 30;
+              grid: {
+                display: false
               }
             }
           },
-          // Configuración específica para líneas - porcentajes ENCIMA del punto
           plugins: {
             datalabels: {
-              display: true,
-              color: '#1e293b',
-              font: {
-                weight: 'bold',
-                size: 11
+              display: function(context) {
+                // Solo mostrar si el valor es > 0
+                const value = context.dataset.data[context.dataIndex];
+                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
+                return percentage > 1.5; // Solo mostrar si > 1.5% para evitar superposición
               },
-              formatter: function(value, context) {
-                return percentages[context.dataIndex];
-              },
-              anchor: 'center',
-              align: 'top', // ENCIMA del punto
-              offset: 10,
-              clamp: true
+              offset: 15, // Mayor offset para gráficos de línea
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 4,
+              padding: 4
             }
           }
         },
@@ -1291,6 +1285,7 @@
             datalabels: {
               display: true,
               color: function(context) {
+                // Colores contrastantes para mejor legibilidad
                 const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
                 const rgb = hexToRgb(backgroundColor);
                 const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
@@ -1301,17 +1296,17 @@
                 size: 12
               },
               formatter: function(value, context) {
+                // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
                 const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
                 return percentage > 3 ? percentages[context.dataIndex] : '';
               },
               anchor: 'center',
               align: 'center',
               textAlign: 'center',
-              textShadow: true,
-              shadowBlur: 4,
-              shadowColor: 'rgba(0,0,0,0.5)'
+              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
             }
           },
+          // Separar segmentos pequeños para evitar superposición
           elements: {
             arc: {
               borderWidth: 1.5,
@@ -1333,10 +1328,10 @@
           // Configuración común para evitar superposición en gráficos
           layout: {
             padding: {
-              top: chartType === 'line' ? 60 : 40, // Más espacio en la parte superior
+              top: chartType === 'line' ? 60 : 30,
               bottom: 40,
               left: 20,
-              right: 20
+              right: chartType === 'pie' ? 50 : 20
             }
           }
         },
