@@ -755,14 +755,15 @@
       lugares: []
     };
 
-    // Definición de las 15 categorías principales con sus subcategorías (basado en la estructura real de la BD)
+    // Definición de las 15 categorías principales con sus subcategorías (CORREGIDAS según la imagen)
     const categoriasPrincipales = [
       {
         id: 1,
-        nombre: "MATERIA ORGÁNICA",
+        nombre: "MATERIA ORGÁNICA Y CARTÓN",
         subcategorias: [
           { campo: "materia_organica_jardin_kg", nombre: "De jardín" },
-          { campo: "materia_organica_cocina_kg", nombre: "De cocina" }
+          { campo: "materia_organica_cocina_kg", nombre: "De cocina" },
+          { campo: "carton_kg", nombre: "Cartón" }
         ]
       },
       {
@@ -782,12 +783,11 @@
       },
       {
         id: 4,
-        nombre: "PAPELES Y CARTÓN",
+        nombre: "PAPELES",
         subcategorias: [
           { campo: "papel_blanco_kg", nombre: "Papel blanco" },
           { campo: "papel_periodico_kg", nombre: "Papel periódico" },
           { campo: "papel_archivo_kg", nombre: "Papel archivo" },
-          { campo: "carton_kg", nombre: "Cartón" },
           { campo: "tetra_brik_kg", nombre: "Tetra-brik" }
         ]
       },
@@ -1064,7 +1064,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - CORREGIDO Y MEJORADO
+    // Renderizar gráfico principal con tipo seleccionado - CORREGIDO
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1087,7 +1087,7 @@
             label: 'Peso (kg)',
             data: values,
             backgroundColor: colors,
-            borderColor: colors.map(c => c.replace(')', ', 0.8)')),
+            borderColor: chartType === 'line' ? colors.map(c => c) : colors.map(c => c + '80'),
             borderWidth: chartType === 'line' ? 3 : 1,
             pointBackgroundColor: colors,
             pointBorderColor: '#ffffff',
@@ -1120,8 +1120,7 @@
                     // Agregar porcentaje y valor a cada etiqueta
                     labels.forEach((label, i) => {
                       const value = chart.data.datasets[0].data[i];
-                      const percentage = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
-                      label.text += ` (${percentage}% - ${value.toFixed(1)} kg)`;
+                      label.text += ` (${percentages[i]} - ${value.toFixed(1)} kg)`;
                     });
                     return labels;
                   }
@@ -1152,33 +1151,53 @@
                 }
               }
             },
-            // Configuración de datalabels para evitar superposición
             datalabels: {
               display: true,
-              color: '#1e293b',
+              color: function(context) {
+                // Para gráfico de línea, usar color oscuro para mejor contraste
+                if (chartType === 'line') return '#1e293b';
+                // Para otros gráficos, determinar basado en el color de fondo
+                const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
+                const rgb = hexToRgb(backgroundColor);
+                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+                return brightness > 128 ? '#1e293b' : '#ffffff';
+              },
               font: {
                 weight: 'bold',
-                size: 11
+                size: chartType === 'line' ? 10 : 12
               },
               formatter: function(value, context) {
-                return percentages[context.dataIndex];
+                // Mostrar porcentaje solo si es > 2%
+                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
+                if (percentage > 2) {
+                  return percentages[context.dataIndex];
+                }
+                return ''; // Omitir para valores pequeños
               },
               anchor: function(context) {
-                return chartType === 'line' ? 'center' : 'end';
+                return chartType === 'line' ? 'end' : 'center';
               },
               align: function(context) {
-                return chartType === 'line' ? 'top' : 'top';
+                return chartType === 'line' ? 'top' : 'center';
               },
               offset: function(context) {
-                return chartType === 'line' ? 12 : 2;
+                return chartType === 'line' ? 8 : 0;
               },
               clamp: true
+            }
+          },
+          layout: {
+            padding: {
+              top: chartType === 'line' ? 50 : 20,
+              bottom: 30,
+              left: 15,
+              right: chartType === 'pie' ? 0 : 15
             }
           }
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS
+      // Configuraciones específicas por tipo de gráfico - CORREGIDAS
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1193,10 +1212,7 @@
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 15 // Espacio para evitar superposición
-              },
-              grid: {
-                drawBorder: false
+                padding: 15
               }
             },
             x: {
@@ -1208,21 +1224,7 @@
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10, // Espacio para evitar superposición
-                autoSkip: true,
-                maxTicksLimit: 15
-              },
-              grid: {
-                display: false
-            }
-          },
-          plugins: {
-            datalabels: {
-              display: function(context) {
-                // Solo mostrar si el valor es > 0 y el porcentaje es legible
-                const value = context.dataset.data[context.dataIndex];
-                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
-                return percentage > 1; // Solo mostrar si > 1% para evitar superposición
+                padding: 10
               }
             }
           }
@@ -1240,10 +1242,7 @@
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 15 // Espacio para evitar superposición
-              },
-              grid: {
-                drawBorder: false
+                padding: 15
               }
             },
             x: {
@@ -1255,58 +1254,23 @@
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10, // Espacio para evitar superposición
-                autoSkip: true,
-                maxTicksLimit: 15
-              },
-              grid: {
-                display: false
+                padding: 10
               }
-            }
-          },
-          plugins: {
-            datalabels: {
-              display: function(context) {
-                // Solo mostrar si el valor es > 0
-                const value = context.dataset.data[context.dataIndex];
-                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
-                return percentage > 1.5; // Solo mostrar si > 1.5% para evitar superposición
-              },
-              offset: 15, // Mayor offset para gráficos de línea
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              borderRadius: 4,
-              padding: 4
             }
           }
         },
         pie: {
           // Configuración MEJORADA para gráfico circular
           plugins: {
-            datalabels: {
-              display: true,
-              color: function(context) {
-                // Colores contrastantes para mejor legibilidad
-                const backgroundColor = context.dataset.backgroundColor[context.dataIndex];
-                const rgb = hexToRgb(backgroundColor);
-                const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-                return brightness > 128 ? '#1e293b' : '#ffffff';
-              },
-              font: {
-                weight: 'bold',
-                size: 12
-              },
-              formatter: function(value, context) {
-                // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
-                const percentage = totalSum > 0 ? ((value / totalSum) * 100) : 0;
-                return percentage > 3 ? percentages[context.dataIndex] : '';
-              },
-              anchor: 'center',
-              align: 'center',
-              textAlign: 'center',
-              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+            legend: {
+              position: 'right',
+              labels: {
+                padding: 20,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
             }
           },
-          // Separar segmentos pequeños para evitar superposición
           elements: {
             arc: {
               borderWidth: 1.5,
@@ -1324,18 +1288,9 @@
         data: baseConfig.data,
         options: {
           ...baseConfig.options,
-          ...(typeSpecificConfigs[chartType] || {}),
-          // Configuración común para evitar superposición en gráficos
-          layout: {
-            padding: {
-              top: chartType === 'line' ? 60 : 30,
-              bottom: 40,
-              left: 20,
-              right: chartType === 'pie' ? 50 : 20
-            }
-          }
+          ...(typeSpecificConfigs[chartType] || {})
         },
-        plugins: chartType === 'pie' || chartType === 'bar' || chartType === 'line' ? [ChartDataLabels] : []
+        plugins: [ChartDataLabels] // Siempre incluir el plugin
       };
       
       mainChart = new Chart(mainCtx, finalConfig);
@@ -1366,7 +1321,7 @@
       alert('PANEL DE ANÁLISIS DE DESECHOS SÓLIDOS\n\nEste panel permite analizar datos de desechos sólidos del Cantón Daule.\n\n• Utilice el filtro de ubicación para analizar datos específicos\n• Cambie entre tipos de gráficos (barras, torta, líneas) según su preferencia\n• Los gráficos muestran porcentajes directamente en las visualizaciones\n• La tabla muestra el desglose detallado por categorías y subcategorías\n\nLos datos se actualizan automáticamente al aplicar filtros.');
     }
 
-    // Rellenar tabla resumen y actualizar resúmenes - MEJORADA
+    // Rellenar tabla resumen y actualizar resúmenes
     function renderResumen(currentSummary) {
       tbody.innerHTML = '';
       
