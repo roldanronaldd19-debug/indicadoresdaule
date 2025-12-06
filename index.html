@@ -1064,7 +1064,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - MEJORADO
+    // Renderizar gráfico principal con tipo seleccionado - MEJORADO con ajuste de posición
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1135,10 +1135,7 @@
                 size: 16,
                 weight: 'bold'
               },
-              padding: {
-                top: 10,
-                bottom: 30
-              }
+              padding: 20
             },
             tooltip: {
               callbacks: {
@@ -1158,7 +1155,7 @@
         }
       };
       
-      // Configuraciones específicas por tipo de gráfico - MEJORADAS
+      // Configuraciones específicas por tipo de gráfico - MEJORADAS con posición ajustada
       const typeSpecificConfigs = {
         bar: {
           scales: {
@@ -1167,53 +1164,35 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { 
-                  size: 14, 
-                  weight: 'bold',
-                  family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
-                },
-                padding: {
-                  top: 0,
-                  bottom: 20  // Más espacio en la parte inferior
-                }
+                font: { size: 14, weight: 'bold' },
+                padding: { top: 0, bottom: 30 } // Añadido padding para subir la etiqueta
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 15, // Espacio para evitar superposición
-                maxTicksLimit: 8 // Limitar número de ticks para más espacio
+                padding: 15 // Espacio para evitar superposición
               },
+              // Añadir más espacio en la parte superior para la etiqueta
               grid: {
-                drawBorder: true,
-                color: 'rgba(0, 0, 0, 0.05)'
+                drawBorder: false
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { 
-                  size: 14, 
-                  weight: 'bold',
-                  family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
-                },
-                padding: {
-                  top: 15,
-                  bottom: 0
-                }
+                font: { size: 14, weight: 'bold' },
+                padding: { top: 20, bottom: 0 } // Ajustado padding
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 10, // Espacio para evitar superposición
-                font: {
-                  size: 11 // Texto más pequeño para categorías largas
-                }
+                padding: 10 // Espacio para evitar superposición
               },
-              grid: {
-                drawBorder: true,
-                color: 'rgba(0, 0, 0, 0.05)'
+              // Añadir más espacio en la parte inferior para los porcentajes
+              afterFit: function(scale) {
+                scale.height = scale.height + 20;
               }
             }
           },
@@ -1223,16 +1202,14 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11,
-                family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
+                size: 11
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'end',
               align: 'top',
-              offset: 4, // Reducido para mejor visualización
-              clip: false // Permitir que se dibuje fuera del área del gráfico
+              offset: 2 // Reducido para mejor visualización
             }
           }
         },
@@ -1243,53 +1220,35 @@
               title: {
                 display: true,
                 text: 'Peso (kg)',
-                font: { 
-                  size: 14, 
-                  weight: 'bold',
-                  family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
-                },
-                padding: {
-                  top: 0,
-                  bottom: 20  // Más espacio en la parte inferior
-                }
+                font: { size: 14, weight: 'bold' },
+                padding: { top: 0, bottom: 30 } // Añadido padding para subir la etiqueta
               },
               ticks: {
                 callback: function(value) {
                   return value + ' kg';
                 },
-                padding: 20, // Más espacio para evitar superposición
-                maxTicksLimit: 8 // Limitar número de ticks
+                padding: 15 // Espacio para evitar superposición
               },
+              // Añadir más espacio en la parte superior para la etiqueta
               grid: {
-                drawBorder: true,
-                color: 'rgba(0, 0, 0, 0.05)'
+                drawBorder: false
               }
             },
             x: {
               title: {
                 display: true,
                 text: 'Categorías de Desechos',
-                font: { 
-                  size: 14, 
-                  weight: 'bold',
-                  family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
-                },
-                padding: {
-                  top: 15,
-                  bottom: 0
-                }
+                font: { size: 14, weight: 'bold' },
+                padding: { top: 20, bottom: 0 } // Ajustado padding
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 15, // Más espacio para evitar superposición
-                font: {
-                  size: 11 // Texto más pequeño
-                }
+                padding: 10 // Espacio para evitar superposición
               },
-              grid: {
-                drawBorder: true,
-                color: 'rgba(0, 0, 0, 0.05)'
+              // Añadir más espacio en la parte inferior para los porcentajes
+              afterFit: function(scale) {
+                scale.height = scale.height + 20;
               }
             }
           },
@@ -1300,16 +1259,15 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 11,
-                family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
+                size: 11
               },
               formatter: function(value, context) {
                 return percentages[context.dataIndex];
               },
               anchor: 'center',
               align: 'top', // ENCIMA del punto
-              offset: 15, // Más espacio para evitar superposición con el punto
-              clip: false // Permitir que se dibuje fuera del área
+              offset: 15, // Aumentado para estar más arriba
+              clamp: true
             }
           }
         },
@@ -1327,8 +1285,7 @@
               },
               font: {
                 weight: 'bold',
-                size: 12,
-                family: "'Inter', 'Segoe UI', Roboto, Arial, sans-serif"
+                size: 12
               },
               formatter: function(value, context) {
                 // Mostrar porcentaje si es > 3%, de lo contrario omitir para evitar superposición
@@ -1365,10 +1322,10 @@
           // Configuración común para evitar superposición en gráficos
           layout: {
             padding: {
-              top: chartType === 'line' ? 60 : 30, // Más espacio arriba
-              bottom: 40, // Más espacio abajo
-              left: 20, // Más espacio izquierda
-              right: chartType === 'pie' ? 50 : 20 // Más espacio derecha para torta
+              top: chartType === 'line' ? 60 : 30, // Aumentado para dar más espacio
+              bottom: 40, // Aumentado para dar más espacio
+              left: 15,
+              right: 15
             }
           }
         },
