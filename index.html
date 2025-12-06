@@ -281,13 +281,13 @@
     
     .chart-container {
       position: relative;
-      height: 600px; /* AUMENTADO de 500px a 600px */
+      height: 550px; /* Aumentada para más espacio */
       margin-top: 20px;
     }
     
     .chart-container-sm {
       position: relative;
-      height: 350px;
+      height: 400px;
       margin-top: 20px;
     }
     
@@ -606,7 +606,7 @@
       }
       
       .chart-container {
-        height: 500px; /* Ajustado para móviles */
+        height: 450px; /* Ajustada para móviles */
       }
       
       .summary-cards {
@@ -1192,7 +1192,7 @@
       };
     }
 
-    // Renderizar gráfico principal con tipo seleccionado - MEJORADO CON ALTURA DINÁMICA
+    // Renderizar gráfico principal con tipo seleccionado - ALTURA DINÁMICA Y EJE Y ENTEROS
     function renderChart(labels, values, chartType) {
       if (mainChart) mainChart.destroy();
       
@@ -1204,7 +1204,24 @@
       // Calcular el valor máximo para ajustar el eje Y dinámicamente
       const maxValue = Math.max(...values);
       const yAxisMax = Math.ceil(maxValue * 1.3); // 30% más que el valor máximo para más espacio
-      const stepSize = Math.max(1, Math.ceil(yAxisMax / 12)); // Mínimo paso de 1, máximo 12 divisiones
+      const stepSize = Math.max(1, Math.ceil(yAxisMax / 8)); // 8 pasos en el eje Y, mínimo 1
+      
+      // Ajustar altura del contenedor dinámicamente basado en el número de categorías
+      const chartContainer = document.querySelector('.chart-container');
+      const numCategories = labels.length;
+      let dynamicHeight = 550; // Altura base
+      
+      if (chartType === 'bar' || chartType === 'line') {
+        // Para barras y líneas, aumentar altura según número de categorías
+        if (numCategories > 10) {
+          dynamicHeight = 650;
+        } else if (numCategories > 15) {
+          dynamicHeight = 750;
+        }
+      }
+      
+      // Aplicar altura dinámica
+      chartContainer.style.height = `${dynamicHeight}px`;
       
       // Colores más atractivos y consistentes
       const colors = [
@@ -1288,34 +1305,33 @@
         }
       };
       
-      // CONFIGURACIÓN ESPECÍFICA PARA CADA TIPO DE GRÁFICO CON ALTURA MEJORADA
+      // CONFIGURACIÓN ESPECÍFICA PARA CADA TIPO DE GRÁFICO
       const typeSpecificConfigs = {
         bar: {
           scales: {
             y: {
               beginAtZero: true,
-              max: yAxisMax, // Límite dinámico del eje Y
+              max: yAxisMax,
               title: {
                 display: true,
                 text: 'Peso (kg)',
                 font: { size: 14, weight: 'bold' },
-                padding: { top: 25, bottom: 10 } // Espacio optimizado
+                padding: { top: 20, bottom: 10 }
               },
               ticks: {
                 callback: function(value) {
-                  // MOSTRAR NÚMEROS ENTEROS SIN .0
-                  return Math.round(value) + ' kg';
+                  // Mostrar números enteros sin .0
+                  return Number.isInteger(value) ? value + ' kg' : value.toFixed(0) + ' kg';
                 },
-                padding: 20, // Espacio suficiente para evitar choque
-                stepSize: stepSize, // Pasos dinámicos
-                maxTicksLimit: 15,
+                padding: 30,
+                stepSize: stepSize,
+                maxTicksLimit: 12,
                 font: {
-                  size: 12 // Texto ligeramente más grande
+                  size: 12
                 }
               },
               grid: {
-                drawBorder: false,
-                color: 'rgba(0, 0, 0, 0.05)'
+                drawBorder: false
               }
             },
             x: {
@@ -1323,12 +1339,12 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' },
-                padding: { top: 10, bottom: 25 }
+                padding: { top: 10, bottom: 20 }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 12, // Más espacio para evitar choque
+                padding: 12,
                 font: {
                   size: 11
                 },
@@ -1340,7 +1356,7 @@
               }
             }
           },
-          barPercentage: 0.65, // Barras un poco más delgadas para más espacio
+          barPercentage: 0.7,
           categoryPercentage: 0.8,
           plugins: {
             datalabels: {
@@ -1348,14 +1364,14 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 12 // Texto más grande para porcentajes
+                size: 12
               },
               formatter: function(value, context) {
                 return percentageLabels[context.dataIndex];
               },
               anchor: 'end',
               align: 'top',
-              offset: 15, // Ajustado para estar claramente encima de la barra
+              offset: 15,
               clamp: true,
               backgroundColor: 'rgba(255, 255, 255, 0.9)',
               borderRadius: 4,
@@ -1369,29 +1385,27 @@
           scales: {
             y: {
               beginAtZero: true,
-              max: yAxisMax, // Límite dinámico del eje Y
+              max: yAxisMax,
               title: {
                 display: true,
                 text: 'Peso (kg)',
                 font: { size: 14, weight: 'bold' },
-                padding: { top: 25, bottom: 10 } // Espacio optimizado
+                padding: { top: 20, bottom: 10 }
               },
               ticks: {
                 callback: function(value) {
-                  // MOSTRAR NÚMEROS ENTEROS SIN .0
-                  return Math.round(value) + ' kg';
+                  // Mostrar números enteros sin .0
+                  return Number.isInteger(value) ? value + ' kg' : value.toFixed(0) + ' kg';
                 },
-                padding: 20, // Espacio suficiente para evitar choque
-                stepSize: stepSize, // Pasos dinámicos
-                maxTicksLimit: 15,
+                padding: 30,
+                stepSize: stepSize,
+                maxTicksLimit: 12,
                 font: {
-                  size: 12 // Texto ligeramente más grande
+                  size: 12
                 }
               },
               grid: {
-                drawBorder: false,
-                color: 'rgba(0, 0, 0, 0.05)',
-                drawTicks: false
+                drawBorder: false
               }
             },
             x: {
@@ -1399,12 +1413,12 @@
                 display: true,
                 text: 'Categorías de Desechos',
                 font: { size: 14, weight: 'bold' },
-                padding: { top: 10, bottom: 25 }
+                padding: { top: 10, bottom: 20 }
               },
               ticks: {
                 maxRotation: 45,
                 minRotation: 45,
-                padding: 12, // Más espacio para evitar choque
+                padding: 12,
                 font: {
                   size: 11
                 },
@@ -1422,14 +1436,14 @@
               color: '#1e293b',
               font: {
                 weight: 'bold',
-                size: 12 // Texto más grande para porcentajes
+                size: 12
               },
               formatter: function(value, context) {
                 return percentageLabels[context.dataIndex];
               },
               anchor: 'center',
               align: 'top',
-              offset: 20, // Ajustado para estar claramente encima del punto
+              offset: 20,
               clamp: true,
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               borderRadius: 4,
@@ -1440,7 +1454,7 @@
           }
         },
         pie: {
-          // Configuración para gráfico circular con porcentajes DENTRO
+          // Configuración para gráfico circular
           elements: {
             arc: {
               borderWidth: 1.5,
@@ -1461,20 +1475,20 @@
               },
               font: {
                 weight: 'bold',
-                size: 13 // Texto más grande
+                size: 12
               },
               formatter: function(value, context) {
                 // Mostrar porcentaje dentro del segmento
                 const percentage = percentages[context.dataIndex];
                 // Solo mostrar si el segmento es lo suficientemente grande
-                if (percentage > 2) { // Reducido de 3% a 2% para mostrar más
+                if (percentage > 3) {
                   return percentageLabels[context.dataIndex];
                 }
                 return ''; // Ocultar en segmentos muy pequeños
               },
               anchor: 'center',
               align: 'center',
-              offset: 0, // Dentro del segmento
+              offset: 0,
               textAlign: 'center',
               textShadow: true,
               shadowBlur: 3,
@@ -1485,21 +1499,21 @@
         }
       };
       
-      // Ajustes de layout específicos para gráficos más altos
+      // Ajustes de layout específicos para cada tipo de gráfico
       const layoutConfigs = {
         bar: {
           padding: {
-            top: 50, // Espacio para el título y etiquetas
-            bottom: 80, // MUCHO más espacio para etiquetas del eje X
-            left: 30, // Más espacio para etiquetas del eje Y
+            top: 70,
+            bottom: 80,
+            left: 30,
             right: 30
           }
         },
         line: {
           padding: {
-            top: 50, // Espacio para el título y etiquetas
-            bottom: 80, // MUCHO más espacio para etiquetas del eje X
-            left: 30, // Más espacio para etiquetas del eje Y
+            top: 70,
+            bottom: 80,
+            left: 30,
             right: 30
           }
         },
@@ -1507,19 +1521,11 @@
           padding: {
             top: 20,
             bottom: 20,
-            left: 15,
-            right: 15
+            left: 10,
+            right: 10
           }
         }
       };
-      
-      // Ajustar dinámicamente la altura del contenedor según el tipo de gráfico
-      const chartContainer = document.querySelector('.chart-container');
-      if (chartType === 'pie') {
-        chartContainer.style.height = '450px'; // Altura media para torta
-      } else {
-        chartContainer.style.height = '600px'; // Altura máxima para barras y líneas
-      }
       
       // Combinar configuración base con configuración específica del tipo
       const finalConfig = {
